@@ -1,69 +1,249 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="بوابة اطلاع عامة لمستجدات المنتدى الثاني للعمل التطوعي والمبادرات المرتبطة به.">
-<meta name="theme-color" content="#122c3c">
+<meta name="theme-color" content="#524791">
 <title>بوابة متابعة المنتدى | المنتدى الثاني للعمل التطوعي</title>
 <style>
-:root{--navy:#102d3d;--teal:#00877f;--ink:#173342;--muted:#617985;--bg:#f5f8fa;--line:#dce7ec;--white:#fff}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Tahoma,"Segoe UI",Arial,sans-serif;line-height:1.85}
-a{color:inherit}header{background:linear-gradient(120deg,#102d3d,#174858);color:white;padding:30px max(20px,calc((100vw - 1120px)/2)) 65px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
-.mark{display:inline-flex;align-items:center;gap:12px;font-size:18px;font-weight:bold}
-.logo{width:47px;height:47px;background:#ffffff20;border:1px solid #ffffff55;border-radius:14px;display:grid;place-items:center;font-size:24px}
-.tag{padding:5px 14px;border:1px solid #ffffff44;border-radius:50px;font-size:13px}
-h1{font-size:clamp(26px,4vw,43px);line-height:1.4;margin:38px 0 12px}header p{color:#c6e1e6;max-width:710px;margin:0}
-main{max-width:1120px;margin:-35px auto 70px;padding:0 20px}
-.summary{background:white;border-radius:18px;padding:19px 24px;border:1px solid var(--line);box-shadow:0 12px 35px #1733420e;display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap}
-.summary b{font-size:16px}.summary span{font-size:13px;color:var(--muted)}
-nav{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 28px}
-nav a{text-decoration:none;border-radius:30px;padding:7px 16px;background:white;border:1px solid var(--line);font-size:14px}
-section{margin:35px 0;scroll-margin-top:20px}
-.heading{display:flex;justify-content:space-between;gap:15px;align-items:end;margin-bottom:14px;flex-wrap:wrap}
-h2{margin:0;font-size:21px}.hint{font-size:13px;color:var(--muted)}
-.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.card{border:1px solid var(--line);background:white;border-radius:16px;padding:20px;min-height:158px}
-.card h3{font-size:17px;margin:4px 0 9px}.card p{font-size:14px;color:#58707a;margin:0 0 10px}
-.pill{display:inline-flex;color:#006f69;background:#e6f5f2;border-radius:20px;padding:2px 11px;font-size:12px}
-.note{background:#fffaf0;border:1px solid #eee4c9;border-radius:14px;padding:17px 20px;color:#76623f;font-size:14px}
-.empty{padding:20px;border:1px dashed var(--line);background:#fff;border-radius:14px;color:var(--muted)}
-.footer{background:#eaf0f3;padding:24px 20px;text-align:center;font-size:13px;color:#657d87}
-.card a{font-weight:bold;color:var(--teal)}
-@media(max-width:750px){.grid{grid-template-columns:1fr}header{padding-bottom:58px}main{padding:0 14px}}
+:root{
+  --c-coral:#ff7175;
+  --c-pink:#ff5892;
+  --c-magenta:#a6348b;
+  --c-lavender:#9c86dd;
+  --c-indigo:#524791;
+  --c-blue:#2083ba;
+  --c-aqua:#4cccbA;
+  --c-stone:#938b89;
+  --bg:#f5f3f7;
+  --surface:#ffffff;
+  --surface-2:#fcfbfd;
+  --text:#2c2438;
+  --muted:#71697b;
+  --line:#e6e1ec;
+  --shadow:0 14px 40px rgba(82,71,145,.10);
+  --gradient-main:linear-gradient(130deg,var(--c-indigo) 0%,var(--c-blue) 23%,var(--c-aqua) 45%,var(--c-lavender) 65%,var(--c-magenta) 82%,var(--c-pink) 100%);
+  --gradient-soft:linear-gradient(135deg, rgba(76,204,186,.14), rgba(156,134,221,.16), rgba(255,88,146,.12));
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:Tahoma,"Segoe UI",Arial,sans-serif;
+  color:var(--text);
+  background:
+   radial-gradient(circle at 5% 15%, rgba(76,204,186,.10), transparent 26%),
+   radial-gradient(circle at 93% 8%, rgba(255,88,146,.10), transparent 24%),
+   radial-gradient(circle at 80% 78%, rgba(156,134,221,.12), transparent 26%),
+   var(--bg);
+  line-height:1.9;
+}
+a{color:inherit;text-decoration:none}
+.container{max-width:1160px;margin:auto;padding:0 20px}
+.hero-wrap{position:relative;overflow:hidden;background:linear-gradient(135deg,#f7f6fa 0%,#ffffff 100%)}
+.hero-wrap::before{content:"";position:absolute;inset:-10% -5% auto auto;width:460px;height:460px;background:radial-gradient(circle,rgba(255,88,146,.18),transparent 60%);pointer-events:none}
+.hero-wrap::after{content:"";position:absolute;inset:auto auto -120px -120px;width:420px;height:420px;background:radial-gradient(circle,rgba(32,131,186,.16),transparent 63%);pointer-events:none}
+header{padding:28px 0 48px;position:relative}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:24px}
+.brand{display:flex;align-items:center;gap:15px}
+.brand-logo{width:64px;height:64px;border-radius:20px;background:#fff;box-shadow:var(--shadow);display:grid;place-items:center;padding:10px;border:1px solid rgba(82,71,145,.08)}
+.brand-logo img{width:100%;height:100%;object-fit:contain}
+.brand-text b{display:block;font-size:20px}
+.brand-text span{display:block;color:var(--muted);font-size:13px}
+.tag{padding:8px 14px;border-radius:999px;background:rgba(82,71,145,.07);color:var(--c-indigo);font-size:13px;font-weight:bold;border:1px solid rgba(82,71,145,.10)}
+.hero-card{display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:center;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:28px;padding:34px;position:relative;overflow:hidden}
+.hero-card::before{content:"";position:absolute;inset:0;background:var(--gradient-soft);opacity:.8;pointer-events:none}
+.hero-main,.hero-side{position:relative;z-index:1}
+.kicker{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.75);backdrop-filter:blur(10px);border:1px solid rgba(82,71,145,.10);font-size:13px;color:var(--c-indigo);font-weight:700}
+.kicker i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gradient-main)}
+h1{font-size:clamp(30px,4vw,48px);line-height:1.35;margin:16px 0 14px}
+.hero-main p{margin:0 0 18px;color:#5f5570;font-size:16px;max-width:690px}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 16px;border-radius:14px;font-weight:700;font-size:14px;border:1px solid transparent;transition:.2s ease}
+.btn.primary{background:var(--gradient-main);color:#fff;box-shadow:0 10px 24px rgba(82,71,145,.18)}
+.btn.secondary{background:#fff;color:var(--c-indigo);border-color:rgba(82,71,145,.14)}
+.hero-side{padding:18px;border-radius:24px;background:rgba(255,255,255,.72);border:1px solid rgba(82,71,145,.10)}
+.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.metric{padding:16px;border-radius:18px;background:#fff;border:1px solid rgba(82,71,145,.08)}
+.metric b{display:block;font-size:24px;line-height:1.2}
+.metric span{font-size:13px;color:var(--muted)}
+.notice-inline{margin-top:14px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.86);color:#695f78;font-size:13px;border:1px dashed rgba(82,71,145,.18)}
+main{padding:28px 0 64px}
+.summary{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:20px;padding:17px 20px;background:#fff;border-radius:20px;border:1px solid var(--line);box-shadow:0 10px 25px rgba(36,24,56,.04)}
+.summary strong{font-size:16px}
+.summary small{display:block;color:var(--muted);font-size:13px}
+nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:26px}
+nav a{padding:10px 16px;border-radius:14px;background:#fff;border:1px solid var(--line);font-size:14px;font-weight:700;color:#524791}
+section{margin:34px 0;scroll-margin-top:20px}
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.section-head h2{margin:0;font-size:24px;position:relative;padding-right:14px}
+.section-head h2::before{content:"";position:absolute;right:0;top:6px;bottom:6px;width:5px;border-radius:999px;background:var(--gradient-main)}
+.section-head p{margin:0;color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 10px 28px rgba(34,22,55,.05);overflow:hidden;min-height:190px}
+.card::before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:var(--gradient-main)}
+.card h3{margin:14px 0 10px;font-size:18px;line-height:1.6}
+.card p{margin:0 0 10px;color:#675f73;font-size:14px}
+.card .hint{font-size:13px;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:700;background:rgba(82,71,145,.08);color:var(--c-indigo)}
+.pill::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--gradient-main)}
+.card a.link{display:inline-flex;margin-top:6px;color:var(--c-blue);font-weight:700}
+.note{padding:18px 20px;border-radius:20px;background:#fff;border:1px solid #ece6d7;box-shadow:0 10px 25px rgba(85,73,33,.04);background:linear-gradient(135deg,#fffefc,#fff9ef)}
+.note strong{color:#7d5e11}
+.empty{padding:24px;border-radius:18px;border:1px dashed var(--line);background:#fff;color:var(--muted)}
+footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
+.footer-bar{height:4px;background:var(--gradient-main);border-radius:999px;margin:0 auto 18px;max-width:420px}
+@media (max-width: 960px){
+  .hero-card{grid-template-columns:1fr}
+  .grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width: 640px){
+  .container{padding:0 14px}
+  .brand-logo{width:56px;height:56px}
+  .hero-card{padding:22px}
+  .grid{grid-template-columns:1fr}
+  h1{font-size:30px}
+}
 </style>
 </head>
 <body>
-<header>
-<div class="top"><div class="mark"><div class="logo">أثـر</div><div>المنتدى الثاني للعمل التطوعي<br><small style="font-weight:normal;color:#b5d9dc">شراكات .. لأثر مستدام</small></div></div><div class="tag">نسخة عامة للاطلاع</div></div>
-<h1>متابعة المنتدى والمبادرات المجتمعية</h1>
-<p>مساحة موحدة لمتابعة أبرز المستجدات والمناقشات والمبادرات والتقارير المسموح بنشرها. تتطور هذه البوابة تدريجيًا بالتنسيق مع الجهات المعنية.</p>
-</header>
-<main>
-<div class="summary"><div><b>بوابة المتابعة العامة</b><div><span>تُعرض المعلومات المنشورة للمطالعة فقط؛ ولا تتضمن بيانات المشاركين أو السجلات الداخلية.</span></div></div><span id="updated">آخر تحديث: —</span></div>
-<nav aria-label="أقسام الصفحة"><a href="#meetings">الاجتماعات</a><a href="#initiatives">المبادرات</a><a href="#reports">التقارير</a><a href="#notice">حول البوابة</a></nav>
-<section id="meetings"><div class="heading"><h2>الاجتماعات والمناقشات</h2><span class="hint">ملخصات مناسبة للمشاركة العامة</span></div><div id="meetings-grid" class="grid"></div></section>
-<section id="initiatives"><div class="heading"><h2>المشاريع والمبادرات</h2><span class="hint">الحالات المعلنة لا تعني اعتمادًا نهائيًا</span></div><div id="initiatives-grid" class="grid"></div></section>
-<section id="reports"><div class="heading"><h2>التقارير والمنشورات</h2><span class="hint">فقط الروابط المعتمدة للنشر</span></div><div id="reports-grid" class="grid"></div></section>
-<section id="notice"><div class="note"><strong>تنويه:</strong> هذا الموقع إصدار تعريفي أولي. الملاحظات والمقترحات ليست قرارات معتمدة ما لم يُعلن اعتمادها رسميًا. تُدار تحديثات الموقع بواسطة صاحب مستودع GitHub والمخولين منه فقط، ولا يمكن للزوار تعديل محتوى الموقع.</div></section>
+<div class="hero-wrap">
+  <header class="container">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-logo"><img src="./logo-mark.png" alt="شعار المنتدى"></div>
+        <div class="brand-text">
+          <b>المنتدى الثاني للعمل التطوعي</b>
+          <span>شراكات .. لأثر مستدام</span>
+        </div>
+      </div>
+      <div class="tag">نسخة عامة للاطلاع</div>
+    </div>
+
+    <div class="hero-card">
+      <div class="hero-main">
+        <span class="kicker"><i></i> بوابة متابعة المنتدى</span>
+        <h1>واجهة موحّدة لعرض الاجتماعات والمبادرات والتقارير بأسلوب منسجم مع هوية المنتدى</h1>
+        <p>تعرض هذه البوابة المواد العامة القابلة للنشر والمشاركة مع أعضاء القروب والمهتمين، مع الحفاظ على بساطة الوصول وإمكانية تطويرها تدريجيًا لاحقًا.</p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#meetings">الاطلاع على الاجتماعات</a>
+          <a class="btn secondary" href="#reports">استعراض التقارير</a>
+        </div>
+      </div>
+      <div class="hero-side">
+        <div class="mini-grid">
+          <div class="metric"><b id="meetings-count">0</b><span>اجتماعات منشورة</span></div>
+          <div class="metric"><b id="initiatives-count">0</b><span>مبادرات ومشاريع</span></div>
+          <div class="metric"><b id="reports-count">0</b><span>تقارير وروابط</span></div>
+          <div class="metric"><b>عام</b><span>الوصول للقراءة فقط</span></div>
+        </div>
+        <div class="notice-inline">يتم تحديث هذه الصفحة من خلال حساب المنتدى على GitHub فقط، بينما يقتصر دور الزائر على الاطلاع.</div>
+      </div>
+    </div>
+  </header>
+</div>
+
+<main class="container">
+  <div class="summary">
+    <div>
+      <strong>بوابة المتابعة العامة</strong>
+      <small>البيانات الظاهرة هنا مخصصة للنشر العام فقط ولا تتضمن السجلات الداخلية أو بيانات الحضور.</small>
+    </div>
+    <div id="updated">آخر تحديث: —</div>
+  </div>
+
+  <nav aria-label="أقسام الصفحة">
+    <a href="#meetings">الاجتماعات</a>
+    <a href="#initiatives">المبادرات</a>
+    <a href="#reports">التقارير</a>
+    <a href="#notice">تنويه</a>
+  </nav>
+
+  <section id="meetings">
+    <div class="section-head">
+      <h2>الاجتماعات والمناقشات</h2>
+      <p>ملخصات مناسبة للمشاركة العامة</p>
+    </div>
+    <div id="meetings-grid" class="grid"></div>
+  </section>
+
+  <section id="initiatives">
+    <div class="section-head">
+      <h2>المشاريع والمبادرات</h2>
+      <p>الحالات الظاهرة تعكس ما تم نشره، ولا تعني دائمًا الاعتماد النهائي</p>
+    </div>
+    <div id="initiatives-grid" class="grid"></div>
+  </section>
+
+  <section id="reports">
+    <div class="section-head">
+      <h2>التقارير والمنشورات</h2>
+      <p>الروابط المعتمدة للنشر العام فقط</p>
+    </div>
+    <div id="reports-grid" class="grid"></div>
+  </section>
+
+  <section id="notice">
+    <div class="note"><strong>تنويه:</strong> المقترحات أو الأفكار الواردة في هذه البوابة لا تُعد قرارات معتمدة إلا إذا أعلن المنتدى اعتمادها رسميًا. كما أن التحديثات العامة تُدار عبر حساب GitHub التابع للمنتدى، بينما تبقى قواعد البيانات الداخلية خارج هذا الموقع.</div>
+  </section>
 </main>
-<div class="footer">المنتدى الثاني للعمل التطوعي 2026 · صفحة اطلاع عامة</div>
+
+<footer class="container">
+  <div class="footer-bar"></div>
+  المنتدى الثاني للعمل التطوعي 2026 · تصميم أولي بهوية المنتدى البصرية
+</footer>
+
 <script>
-function node(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;}
-function card(item,kind){
- const c=node("article","card");c.append(node("span","pill",item.status||(kind==="meetings"?"نقاش":"متاح لاحقًا")));
- c.append(node("h3","",item.title));c.append(node("p","",item.description||""));
- if(item.date)c.append(node("div","hint","التاريخ: "+item.date));
- if(item.url&&/^https:\/\/(docs\.google\.com|drive\.google\.com|www\.youtube\.com|youtube\.com)\//.test(item.url)){const a=node("a","","عرض التقرير");a.href=item.url;a.target="_blank";a.rel="noopener noreferrer";c.append(a);}
- return c;
+function createNode(tag, className, text){
+  const n = document.createElement(tag);
+  if(className) n.className = className;
+  if(text !== undefined) n.textContent = text;
+  return n;
 }
-fetch("./public-data.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw Error("load");return r.json()}).then(data=>{
- document.getElementById("updated").textContent="آخر تحديث: "+(data.updated||"غير محدد");
- for(const [key,id] of [["meetings","meetings-grid"],["initiatives","initiatives-grid"],["reports","reports-grid"]]){
-  const host=document.getElementById(id),items=Array.isArray(data[key])?data[key]:[];
-  if(!items.length)host.append(node("div","empty","لا توجد مواد منشورة حاليًا."));
-  else items.forEach(item=>host.append(card(item,key)));
- }
-}).catch(()=>{["meetings-grid","initiatives-grid","reports-grid"].forEach(id=>document.getElementById(id).append(node("div","empty","تعذر تحميل المحتوى. افتح الموقع عبر GitHub Pages أو خادم ويب.")));});
+function createCard(item, kind){
+  const card = createNode('article','card');
+  card.append(createNode('span','pill', item.status || (kind==='meetings' ? 'ملخص منشور' : 'مادة منشورة')));
+  card.append(createNode('h3','', item.title || 'بدون عنوان'));
+  card.append(createNode('p','', item.description || ''));
+  if(item.date) card.append(createNode('div','hint','التاريخ: ' + item.date));
+  if(item.url && /^https:\/\//.test(item.url)){
+    const link = createNode('a','link','فتح الرابط');
+    link.href = item.url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    card.append(link);
+  }
+  return card;
+}
+function renderSection(list, hostId, kind){
+  const host = document.getElementById(hostId);
+  host.innerHTML = '';
+  if(!Array.isArray(list) || !list.length){
+    host.append(createNode('div','empty','لا توجد مواد منشورة حاليًا في هذا القسم.'));
+    return;
+  }
+  list.forEach(item => host.append(createCard(item, kind)));
+}
+fetch('./public-data.json', {cache:'no-store'})
+  .then(r => { if(!r.ok) throw new Error('load'); return r.json(); })
+  .then(data => {
+    document.getElementById('updated').textContent = 'آخر تحديث: ' + (data.updated || 'غير محدد');
+    const meetings = Array.isArray(data.meetings) ? data.meetings : [];
+    const initiatives = Array.isArray(data.initiatives) ? data.initiatives : [];
+    const reports = Array.isArray(data.reports) ? data.reports : [];
+    document.getElementById('meetings-count').textContent = meetings.length;
+    document.getElementById('initiatives-count').textContent = initiatives.length;
+    document.getElementById('reports-count').textContent = reports.length;
+    renderSection(meetings, 'meetings-grid', 'meetings');
+    renderSection(initiatives, 'initiatives-grid', 'initiatives');
+    renderSection(reports, 'reports-grid', 'reports');
+  })
+  .catch(() => {
+    ['meetings-grid','initiatives-grid','reports-grid'].forEach(id => {
+      document.getElementById(id).append(createNode('div','empty','تعذر تحميل المحتوى. تأكد من رفع الملفات أو افتح الصفحة من GitHub Pages.'));
+    });
+  });
 </script>
-</body></html>
+</body>
+</html>

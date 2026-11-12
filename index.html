@@ -105,6 +105,20 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
   .grid{grid-template-columns:1fr}
   h1{font-size:30px}
 }
+
+.org-intro{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:20px;padding:18px 22px;background:linear-gradient(110deg,rgba(76,204,186,.12),rgba(156,134,221,.13),rgba(255,88,146,.10));margin-bottom:22px}
+.org-intro span{font-size:13px;color:var(--muted)}
+.org-subheading{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:22px 0 12px;flex-wrap:wrap}
+.org-subheading h3{margin:0;font-size:19px}
+.org-subheading p{font-size:13px;color:var(--muted);margin:0}
+.member-card{display:flex;gap:14px;align-items:flex-start}
+.member-photo{width:76px;height:76px;border-radius:18px;object-fit:cover;background:#f4f0f8;flex-shrink:0}
+.member-placeholder{width:76px;height:76px;border-radius:18px;background:linear-gradient(145deg,#f7e8f6,#e7f7f3);color:#524791;display:grid;place-items:center;font-size:25px;flex-shrink:0}
+.org-empty{grid-column:1/-1}
+.committee-card{border-top:5px solid var(--c-lavender)}
+.committee-card summary{font-weight:700;cursor:pointer;list-style-position:inside}
+.committee-card summary:hover{color:var(--c-indigo)}
+.committee-card .committee-members{margin:14px 0 0;padding:10px 0 0;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
 </style>
 </head>
 <body>
@@ -154,11 +168,25 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
   </div>
 
   <nav aria-label="أقسام الصفحة">
+    <a href="#organization">الهيكل التنظيمي</a>
     <a href="#meetings">الاجتماعات</a>
     <a href="#initiatives">المبادرات</a>
     <a href="#reports">التقارير</a>
     <a href="#notice">تنويه</a>
   </nav>
+
+  <section id="organization">
+    <div class="section-head">
+      <h2>الهيكل التنظيمي واللجان</h2>
+      <p>تُنشر الصفة والنبذة والصورة بعد اعتمادها والحصول على الموافقة</p>
+    </div>
+    <div class="org-intro"><strong>اللجنة العليا واللجان التنفيذية</strong><span>يجري استكمال بيانات المسؤولين والأعضاء. هذه الصفحة لا تنشر أسماء غير معتمدة.</span></div>
+    <div class="org-subheading"><h3>اللجنة العليا</h3><p>البطاقات المعتمدة للنشر</p></div>
+    <div id="leadership-grid" class="grid"></div>
+    <div class="org-subheading"><h3>اللجان وفرق العمل</h3><p>اختَر اللجنة لعرض بياناتها وعضويتها المنشورة</p></div>
+    <div id="committees-grid" class="grid"></div>
+    <div class="note" style="margin-top:16px"><strong>إكمال البيانات:</strong> إن لم يظهر اسمك أو كانت بياناتك غير مكتملة، ستُتاح لاحقًا استمارة مرتبطة بالملف المركزي لاستكمال البيانات ومراجعتها قبل النشر. لا توجد استمارة فعالة في هذه النسخة.</div>
+  </section>
 
   <section id="meetings">
     <div class="section-head">
@@ -244,6 +272,33 @@ fetch('./public-data.json', {cache:'no-store'})
       document.getElementById(id).append(createNode('div','empty','تعذر تحميل المحتوى. تأكد من رفع الملفات أو افتح الصفحة من GitHub Pages.'));
     });
   });
+
+function renderOrganization(data){
+ const leaders=document.getElementById('leadership-grid');
+ const committees=document.getElementById('committees-grid');
+ const approved=Array.isArray(data.leadership)?data.leadership.filter(x=>x.publicApproved===true):[];
+ if(!approved.length)leaders.append(createNode('div','empty org-empty','بيانات اللجنة العليا قيد التوثيق والاعتماد للنشر.'));
+ else approved.forEach(m=>{
+   const c=createNode('article','card member-card');
+   const pic=/^\.\/assets\/[\w.\-/]+\.(png|jpg|jpeg|webp)$/i.test(m.image||'')?createNode('img','member-photo'):createNode('div','member-placeholder','♧');
+   if(pic.tagName==='IMG'){pic.src=m.image;pic.alt='صورة '+(m.name||'');pic.loading='lazy'}
+   const detail=createNode('div');detail.append(createNode('h3','',m.name||'عضو'));detail.append(createNode('span','pill',m.role||'عضو'));detail.append(createNode('p','',m.bio||''));c.append(pic,detail);leaders.append(c)
+ });
+ const publicCommittees=Array.isArray(data.committees)?data.committees.filter(x=>x.publicApproved===true):[];
+ if(!publicCommittees.length)committees.append(createNode('div','empty org-empty','لم تُنشر عضوية اللجان بعد؛ يجري مراجعة الأسماء والصفات الحالية.'));
+ else publicCommittees.forEach(item=>{
+   const c=createNode('article','card committee-card'),details=createNode('details');
+   details.append(createNode('summary','',item.name||'لجنة'));details.append(createNode('p','',item.description||''));
+   const members=createNode('div','committee-members');
+   const people=Array.isArray(item.members)?item.members.filter(x=>x.publicApproved===true):[];
+   members.textContent=people.length?people.map(x=>(x.name||'')+' — '+(x.role||'عضو')).join(' • '):'لم تُنشر أسماء أعضاء هذه اللجنة بعد.';
+   details.append(members);c.append(details);committees.append(c)
+ });
+}
+fetch('./organization-public.json',{cache:'no-store'})
+.then(r=>{if(!r.ok)throw new Error('load');return r.json()})
+.then(renderOrganization)
+.catch(()=>{document.getElementById('leadership-grid').append(createNode('div','empty org-empty','تعذر تحميل بيانات الهيكل التنظيمي.'));});
 </script>
 </body>
 </html>

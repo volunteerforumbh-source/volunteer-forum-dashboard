@@ -164,6 +164,12 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 .updates-filter select{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px 12px}
 #updates-feed{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(max-width:640px){#updates-feed{grid-template-columns:1fr}}
+.home-updates{margin-block-end:24px}
+#home-updates-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;list-style:none;padding:0;margin:0}
+#home-updates-list a{display:block;height:100%;padding:12px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+#home-updates-list a:hover{text-decoration:underline}
+#home-updates-list time{display:block;color:var(--muted);font-size:13px}
+@media(max-width:640px){#home-updates-list{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -180,6 +186,13 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
       <div class="tag">نسخة عامة للاطلاع</div>
     </div>
 
+    <div class="home-only home-updates" aria-labelledby="home-updates-heading">
+      <div class="section-head">
+        <h2 id="home-updates-heading">آخر المستجدات</h2>
+        <a class="btn secondary" href="?section=updates">عرض جميع المستجدات</a>
+      </div>
+      <ul id="home-updates-list"></ul>
+    </div>
     <div class="hero-card home-only">
       <div class="hero-main">
         <span class="kicker"><i></i> بوابة متابعة المنتدى</span>
@@ -592,19 +605,35 @@ const forumUpdates = [
   }
 ];
 
+const latestForumUpdates = [...forumUpdates].sort((a,b) => b.date.localeCompare(a.date));
+const updateDateFormatter = new Intl.DateTimeFormat('ar-BH',{dateStyle:'long',timeZone:'Asia/Bahrain'});
+function formatUpdateDate(value){
+  const date = createNode('time','hint',updateDateFormatter.format(new Date(value + 'T12:00:00Z')));
+  date.dateTime = value;
+  return date;
+}
+
+if (!document.documentElement.dataset.section){
+  const preview = document.getElementById('home-updates-list');
+  for (const item of latestForumUpdates.slice(0,3)){
+    const row = createNode('li');
+    const link = planningLink(item.title,'?section=updates#' + item.id);
+    link.append(formatUpdateDate(item.date));
+    row.append(link);
+    preview.append(row);
+  }
+}
+
 function renderForumUpdates(kind){
   const feed = document.getElementById('updates-feed');
-  const entries = forumUpdates.filter(item => kind === 'all' || item.kind === kind)
-    .sort((a,b) => b.date.localeCompare(a.date));
+  const entries = latestForumUpdates.filter(item => kind === 'all' || item.kind === kind);
   feed.replaceChildren();
   for (const item of entries){
     const card = createNode('article','card');
     card.id = item.id;
     card.append(createNode('span','pill',(item.kind === 'task' ? 'متابعة' : 'تحديث') + ' · ' + item.status));
     card.append(createNode('h3','',item.title));
-    const date = createNode('time','hint',new Intl.DateTimeFormat('ar-BH',{dateStyle:'long',timeZone:'Asia/Bahrain'}).format(new Date(item.date + 'T12:00:00Z')));
-    date.dateTime = item.date;
-    card.append(date,createNode('p','',item.description));
+    card.append(formatUpdateDate(item.date),createNode('p','',item.description));
     card.append(createNode('p','hint','الخطوة التالية · ' + item.next));
     card.append(planningLink(item.linkLabel || 'المحور المرتبط في اجتماع 11 نوفمبر',item.url));
     feed.append(card);
@@ -616,6 +645,7 @@ if (section === 'updates'){
   const type = document.getElementById('update-type');
   type.addEventListener('change',() => renderForumUpdates(type.value));
   renderForumUpdates(type.value);
+  if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView();
 }
 
 fetch('./public-data.json', {cache:'no-store'})

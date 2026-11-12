@@ -6,7 +6,24 @@
 <meta name="description" content="بوابة اطلاع عامة لمستجدات المنتدى الثاني للعمل التطوعي والمبادرات المرتبطة به.">
 <meta name="theme-color" content="#524791">
 <title>بوابة متابعة المنتدى | المنتدى الثاني للعمل التطوعي</title>
+<script>
+  const sections = ["organization","meetings","initiatives","reports","notice"];
+  const params = new URLSearchParams(location.search);
+  const section = params.get('section') || location.hash.slice(1);
+  if (sections.includes(section)) document.documentElement.dataset.section = section;
+</script>
 <style>
+html:not([data-section]) main > section,
+html:not([data-section]) .section-home,
+html[data-section] .home-only,
+html[data-section] main > section{display:none}
+html[data-section="organization"] #organization,
+html[data-section="meetings"] #meetings,
+html[data-section="initiatives"] #initiatives,
+html[data-section="reports"] #reports,
+html[data-section="notice"] #notice{display:block}
+.section-home{margin-block-start:24px}
+
 :root{
   --c-coral:#ff7175;
   --c-pink:#ff5892;
@@ -27,7 +44,7 @@
   --gradient-soft:linear-gradient(135deg, rgba(76,204,186,.14), rgba(156,134,221,.16), rgba(255,88,146,.12));
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
+
 body{
   margin:0;
   font-family:Tahoma,"Segoe UI",Arial,sans-serif;
@@ -77,8 +94,8 @@ nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:26px}
 nav a{padding:10px 16px;border-radius:14px;background:#fff;border:1px solid var(--line);font-size:14px;font-weight:700;color:#524791}
 section{margin:34px 0;scroll-margin-top:20px}
 .section-head{display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-.section-head h2{margin:0;font-size:24px;position:relative;padding-right:14px}
-.section-head h2::before{content:"";position:absolute;right:0;top:6px;bottom:6px;width:5px;border-radius:999px;background:var(--gradient-main)}
+.section-head :is(h2,.section-title){margin:0;font-size:24px;position:relative;padding-right:14px}
+.section-head :is(h2,.section-title)::before{content:"";position:absolute;right:0;top:6px;bottom:6px;width:5px;border-radius:999px;background:var(--gradient-main)}
 .section-head p{margin:0;color:var(--muted);font-size:13px}
 .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 .card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 10px 28px rgba(34,22,55,.05);overflow:hidden;min-height:190px}
@@ -135,14 +152,14 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
       <div class="tag">نسخة عامة للاطلاع</div>
     </div>
 
-    <div class="hero-card">
+    <div class="hero-card home-only">
       <div class="hero-main">
         <span class="kicker"><i></i> بوابة متابعة المنتدى</span>
         <h1>واجهة موحّدة لعرض الاجتماعات والمبادرات والتقارير بأسلوب منسجم مع هوية المنتدى</h1>
         <p>تعرض هذه البوابة المواد العامة القابلة للنشر والمشاركة مع أعضاء القروب والمهتمين، مع الحفاظ على بساطة الوصول وإمكانية تطويرها تدريجيًا لاحقًا.</p>
         <div class="hero-actions">
-          <a class="btn primary" href="#meetings">الاطلاع على الاجتماعات</a>
-          <a class="btn secondary" href="#reports">استعراض التقارير</a>
+          <a class="btn primary" href="?section=meetings">الاطلاع على الاجتماعات</a>
+          <a class="btn secondary" href="?section=reports">استعراض التقارير</a>
         </div>
       </div>
       <div class="hero-side">
@@ -159,7 +176,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 </div>
 
 <main class="container">
-  <div class="summary">
+  <div class="summary home-only">
     <div>
       <strong>بوابة المتابعة العامة</strong>
       <small>البيانات الظاهرة هنا مخصصة للنشر العام فقط ولا تتضمن السجلات الداخلية أو بيانات الحضور.</small>
@@ -167,13 +184,15 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
     <div id="updated">آخر تحديث: —</div>
   </div>
 
-  <nav aria-label="أقسام الصفحة">
-    <a href="#organization">الهيكل التنظيمي</a>
-    <a href="#meetings">الاجتماعات</a>
-    <a href="#initiatives">المبادرات</a>
-    <a href="#reports">التقارير</a>
-    <a href="#notice">تنويه</a>
+  <nav class="home-only" aria-label="أقسام الصفحة">
+    <a href="?section=organization">الهيكل التنظيمي</a>
+    <a href="?section=meetings">الاجتماعات</a>
+    <a href="?section=initiatives">المبادرات</a>
+    <a href="?section=reports">التقارير</a>
+    <a href="?section=notice">تنويه</a>
   </nav>
+
+  <a class="btn secondary section-home" href="./">العودة إلى الرئيسية</a>
 
   <section id="organization">
     <div class="section-head">
@@ -213,6 +232,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
   </section>
 
   <section id="notice">
+    <div class="section-head"><h2>تنويه</h2></div>
     <div class="note"><strong>تنويه:</strong> المقترحات أو الأفكار الواردة في هذه البوابة لا تُعد قرارات معتمدة إلا إذا أعلن المنتدى اعتمادها رسميًا. كما أن التحديثات العامة تُدار عبر حساب GitHub التابع للمنتدى، بينما تبقى قواعد البيانات الداخلية خارج هذا الموقع.</div>
   </section>
 </main>
@@ -223,6 +243,15 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 </footer>
 
 <script>
+const activeHeading = document.querySelector('main > section#' + (document.documentElement.dataset.section || 'none') + ' h2');
+if (activeHeading) {
+  document.title = activeHeading.textContent + ' | بوابة متابعة المنتدى';
+  const pageHeading = document.createElement('h1');
+  pageHeading.textContent = activeHeading.textContent;
+  pageHeading.className = 'section-title';
+  activeHeading.replaceWith(pageHeading);
+}
+
 function createNode(tag, className, text){
   const n = document.createElement(tag);
   if(className) n.className = className;

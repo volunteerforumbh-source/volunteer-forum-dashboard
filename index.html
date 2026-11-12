@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#524791">
 <title>بوابة متابعة المنتدى | المنتدى الثاني للعمل التطوعي</title>
 <script>
-  const sections = ["organization","meetings","initiatives","reports","calendar","plan","meeting-01","notice"];
+  const sections = ["organization","meetings","initiatives","reports","calendar","plan","meeting-01","forum-vision","notice"];
   const params = new URLSearchParams(location.search);
   const section = params.get('section') || location.hash.slice(1);
   if (sections.includes(section)) document.documentElement.dataset.section = section;
@@ -24,6 +24,7 @@ html[data-section="reports"] #reports,
 html[data-section="calendar"] #calendar,
 html[data-section="plan"] #plan,
 html[data-section="meeting-01"] #meeting-01,
+html[data-section="forum-vision"] #forum-vision,
 html[data-section="notice"] #notice{display:block}
 .section-home{margin-block-start:24px}
 
@@ -156,6 +157,8 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 .meeting-topics .muted{color:var(--muted)}
 #meeting-01 .links{display:flex;gap:12px;flex-wrap:wrap;color:var(--c-indigo)}
 @media(max-width:640px){.meeting-topics{grid-template-columns:1fr}}
+.vision-feature{margin-block:16px 24px;min-height:0}
+#forum-vision .meeting-topics{margin-block-start:16px}
 </style>
 </head>
 <body>
@@ -241,6 +244,12 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
     <div class="section-head"><h2>الاجتماع 01 | ما بعد المنتدى</h2></div>
     <p>الأربعاء <time datetime="2026-11-11">11 نوفمبر 2026</time> · جمعية السنابس الخيرية · 7:15–8:40 مساءً بتوقيت البحرين · 8 مشاركين</p>
     <a class="btn secondary" href="?section=meetings">العودة إلى الاجتماعات والمحاضر</a>
+    <article class="card vision-feature">
+      <span class="pill">مشروع رئيسي · مقترح للدراسة</span>
+      <h3>رؤية تطوير المنتدى الثالث</h3>
+      <p>برنامج سنوي مقترح لتحويل التوصيات إلى مشاريع، وتأهيل قيادات تطوعية، وقياس الأثر وعرض النتائج في المنتدى الثالث.</p>
+      <a class="btn secondary" href="?section=forum-vision">فتح رؤية تطوير المنتدى الثالث</a>
+    </article>
     <article class="note">
 <h2>ملخص الاجتماع</h2><p>راجع الاجتماع تجربة المنتدى الثاني وبحث تحويله إلى برنامج مستمر طوال العام. تناول النقاش إعداد قيادات تطوعية، وتشكيل لجان للتدريب والتنسيق، وتوسيع الشراكات، وقياس أثر المبادرات، والتحضير للمنتدى الثالث.</p>
 <h2>فهرس المحاور الستة عشر</h2><p class="muted">افتح المحور لقراءة ملخص المناقشة والخطوات المقترحة.</p><div class="grid meeting-topics"><details id="topic-1"><summary><bdi>01</bdi> الرؤية السنوية واستدامة المنتدى</summary><div class="detail"><p>نوقش تحويل المنتدى إلى برنامج مستمر طوال العام، مع مبادرات ومؤشرات يمكن تتبعها.</p><p class="muted">توافق مبدئي؛ لم تعتمد خطة تفصيلية.</p><p><strong>خطوة مقترحة</strong> · صياغة أهداف سنوية، تحديد نطاق البرنامج ومؤشرات الأداء وجدول الأنشطة.</p><div class="links"><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=plan#activity-follow-up" target="_blank" rel="noopener noreferrer">النشاط ذو الصلة في الخطة</a></div></div></details>
@@ -264,6 +273,74 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
     </article>
   </section>
 
+  <section id="forum-vision">
+    <div class="section-head"><h2>رؤية تطوير المنتدى الثالث</h2></div>
+    <span class="pill">مشروع رئيسي · مقترح للدراسة</span>
+    <p>رؤية مرتبطة باجتماع 11 نوفمبر 2026، تجمع التصور السنوي والحوكمة وتأهيل القيادات والشراكات والتوثيق وقياس الأثر. يعرض الفهرس أسئلة المقترح وإجراءاته للدراسة.</p>
+    <a class="btn secondary" href="?section=meeting-01">اجتماع 11 نوفمبر 2026</a>
+    <a class="btn secondary" href="?section=initiatives">المشاريع والمبادرات</a>
+    <h2>فهرس الرؤية · 19 سؤالًا</h2>
+    <div class="grid meeting-topics">
+      <details><summary><bdi>01</bdi> هدف استمرار المنتدى</summary>
+        <div class="detail"><p><strong>ما الذي يجعل السنة بين المنتدى الثاني والثالث ناجحة؟</strong></p><p>تحويل التوصيات إلى مشاريع؛ بناء شراكات بين الجمعيات؛ شبكة كوادر تطوعية؛ ورش ولقاءات؛ هيكلية وفرق؛ منصة إعلامية معرفية؛ قياس أثر؛ إنجازات موثقة في المنتدى الثالث.</p><p><strong>الإجراء المقترح</strong> · إقرار رؤية سنوية قابلة للقياس وبناء القدرات قبل التوسع في الأنشطة.</p></div>
+      </details>
+      <details><summary><bdi>02</bdi> أولويات الأشهر الثلاثة الأولى</summary>
+        <div class="detail"><p><strong>بماذا نبدأ مباشرة بعد المنتدى؟</strong></p><p>تأسيس شبكة الكوادر وقاعدة بياناتها؛ لقاء رؤساء وممثلي الجمعيات لتحديد الاحتياجات؛ تفعيل النشر ويوتيوب وتوثيق الأوراق.</p><p><strong>الإجراء المقترح</strong> · إطلاق مسح الاحتياجات وتصميم سجل المتطوعين وتجهيز سلسلة النشر.</p></div>
+      </details>
+      <details><summary><bdi>03</bdi> معايير اختيار التوصيات</summary>
+        <div class="detail"><p><strong>كيف نفرز التوصيات القابلة للتنفيذ؟</strong></p><p>الحاجة الفعلية؛ القابلية للتنفيذ؛ وضوح الأثر وقابليته للقياس؛ المساهمة في تأهيل المتطوعين والقيادات والفرق.</p><p><strong>الإجراء المقترح</strong> · اعتماد مصفوفة تقييم للتوصيات وفق المعايير الأربعة.</p></div>
+      </details>
+      <details><summary><bdi>04</bdi> اللجنة العليا والهيكل التنظيمي</summary>
+        <div class="detail"><p><strong>من يقود العمل المستمر؟</strong></p><p>لجنة متابعة مركزية صغيرة؛ ممثل مفوض من كل جمعية؛ فريق لشبكة المتطوعين؛ فريق تأسيسي صغير يتوسع تدريجيًا.</p><p><strong>الإجراء المقترح</strong> · وضع اختصاصات اللجنة العليا والفرق وآلية تفويض الصلاحيات.</p></div>
+      </details>
+      <details><summary><bdi>05</bdi> الشراكات الرسمية مع الجمعيات</summary>
+        <div class="detail"><p><strong>كيف تصبح الجمعيات شركاء في التنفيذ؟</strong></p><p>ممثل مفوض؛ استمارة احتياجات؛ حصر كفاءات الجمعيات؛ مشاريع مشتركة؛ برامج تدريب؛ لقاءات دورية؛ التزامات واقعية؛ قناة تنسيق دائمة.</p><p><strong>الإجراء المقترح</strong> · إعداد مسودة اتفاقية تعاون واستمارة احتياجات وترشيحات.</p></div>
+      </details>
+      <details><summary><bdi>06</bdi> شبكة الكوادر التطوعية ومشروع أثر</summary>
+        <div class="detail"><p><strong>ما الوظائف المطلوبة من شبكة المتطوعين؟</strong></p><p>قاعدة مهارات وخبرات؛ تدريب قبل التكليف؛ تأهيل قادة؛ مشروع تجريبي مع جمعيات محدودة؛ اعتماد هوية وآلية إدارة تحت اللجنة العليا.</p><p><strong>الإجراء المقترح</strong> · تصميم التسجيل والمسارات التدريبية والمشروع التجريبي.</p></div>
+      </details>
+      <details><summary><bdi>07</bdi> البرنامج السنوي بأربع مراحل</summary>
+        <div class="detail"><p><strong>كيف نرتب السنة للوصول إلى الأثر؟</strong></p><p>اعتماد التدرج المرحلي: التأسيس؛ التدريب؛ التطبيق؛ قياس الأثر.</p><p><strong>الإجراء المقترح</strong> · دراسة برنامج 12 شهرًا وتحديد مخرجات ومؤشرات لكل مرحلة.</p></div>
+      </details>
+      <details><summary><bdi>08</bdi> المتحدثون والشراكة المعرفية</summary>
+        <div class="detail"><p><strong>كيف نستفيد من متحدثي المنتدى الثاني؟</strong></p><p>ورش متخصصة؛ استشارات للفرق؛ تحويل الأوراق إلى برامج؛ نشر الأوراق والفيديوهات؛ تحليل أسئلة الجمهور؛ مشاركة اختيارية للمتحدثين.</p><p><strong>الإجراء المقترح</strong> · إعداد سلسلة ورش شهرية وخطة لتوثيق كل ورقة وأسئلة الجمهور.</p></div>
+      </details>
+      <details><summary><bdi>09</bdi> الأنشطة والورش والتعلم الميداني</summary>
+        <div class="detail"><p><strong>ما الأنشطة المفيدة على مدار السنة؟</strong></p><p>ورشة شهرية؛ تدريب مجالس الإدارات؛ تأهيل المتطوعين وقادة الفرق؛ مشاريع مشتركة؛ لقاءات الجمعيات؛ زيارات ميدانية؛ ورش تحويل الأفكار؛ لقاءات عن بعد؛ مراجعة ربع سنوية.</p><p><strong>الإجراء المقترح</strong> · تطوير نموذج تقرير ملاحظة ميدانية وجدول لقاءات ربع سنوية.</p></div>
+      </details>
+      <details><summary><bdi>10</bdi> البيانات والتوثيق وقياس الأثر</summary>
+        <div class="detail"><p><strong>كيف نوثق النتائج ونميز النشاط من الأثر؟</strong></p><p>قاعدة مركزية؛ نماذج توثيق موحدة؛ قياس قبل وبعد؛ تطور مهارات المشاركين؛ رضا المستفيدين؛ تقارير ربع سنوية؛ قصص نجاح؛ لوحة متابعة؛ تقرير أثر سنوي.</p><p><strong>الإجراء المقترح</strong> · وضع نموذج مؤشرات أساسية وسياسة صلاحيات وخصوصية للبيانات.</p></div>
+      </details>
+      <details><summary><bdi>11</bdi> الإعلام والمنصة المعرفية ويوتيوب</summary>
+        <div class="detail"><p><strong>كيف يخدم الإعلام التدريب والأثر؟</strong></p><p>سلسلة أسبوعية للمتحدثين؛ تغطية الورش معرفيًا؛ قصص المتطوعين؛ مشاريع الجمعيات؛ تقرير مصور كل مرحلة؛ مكتبة يوتيوب؛ فريق إعلامي دائم؛ خطة نشر سنوية مرنة.</p><p><strong>الإجراء المقترح</strong> · توزيع أدوار التصوير والمونتاج والتحرير والنشر والتوثيق.</p></div>
+      </details>
+      <details><summary><bdi>12</bdi> الإجراءات الوقائية والدروس التشغيلية</summary>
+        <div class="detail"><p><strong>ما الأخطاء التي نحولها إلى نظام وقائي؟</strong></p><p>الفرق المبكرة؛ سياسة تسليم العروض؛ بروفة تقنية؛ إدارة الوقت؛ خطة مونتاج وتسليم؛ مسؤول اتصال لكل ضيف؛ قوائم تحقق؛ خطط بديلة؛ تقييم ما بعد الفعاليات؛ دليل تنظيمي.</p><p><strong>الإجراء المقترح</strong> · إعداد دليل إجراءات وتأسيس نموذج مجلس تدريبي لا يحل محل مجالس الإدارات الرسمية.</p></div>
+      </details>
+      <details><summary><bdi>13</bdi> اختيار القيادات والمجلس التطوعي التدريبي</summary>
+        <div class="detail"><p><strong>كيف نختار أعضاء المجلس التدريبي؟</strong></p><p>ترشيحات الجمعيات؛ قبول مستقلين؛ مزيج من الجهتين؛ معيار المهارات والاستعداد؛ الالتزام؛ موجه لكل مجموعة؛ مشاريع بميزانية وصلاحيات معتمدة؛ عرض التجارب في المنتدى الثالث.</p><p><strong>الإجراء المقترح</strong> · صياغة معايير الاختيار والتقييم ومسؤوليات المجلس في المرحلة الثالثة.</p></div>
+      </details>
+      <details><summary><bdi>14</bdi> الدور الشخصي وبناء الأنظمة</summary>
+        <div class="detail"><p><strong>ما الدور الشخصي المناسب دون حمل المشروع منفردًا؟</strong></p><p>المشاركة في الرؤية؛ بناء الأنظمة والاستمارات؛ الإشراف الإعلامي مع فريق؛ شبكة الكوادر؛ التنسيق؛ تحليل التقارير؛ التدريب على الرقمنة والذكاء الاصطناعي؛ الاستشارة؛ التسليم التدريجي.</p><p><strong>الإجراء المقترح</strong> · تحديد مسؤول لكل نظام وخطة تدريب وتسليم وصلاحيات.</p></div>
+      </details>
+      <details><summary><bdi>15</bdi> فرق العمل والحوكمة في المرحلة الأولى</summary>
+        <div class="detail"><p><strong>كيف نبني فرقًا مستقلة قادرة على التنفيذ؟</strong></p><p>فريق إعلام؛ فريق تقني؛ فريق توثيق وأثر؛ فريق علاقات؛ فريق متطوعين؛ قائد ونائب لكل فريق؛ تدريب؛ تبعية للجنة العليا؛ تسليم تدريجي.</p><p><strong>الإجراء المقترح</strong> · مسودة ميثاق أدوار وهيكل فرق ومواعيد تقارير وتسليم.</p></div>
+      </details>
+      <details><summary><bdi>16</bdi> مخرجات اجتماع مراجعة المنتدى</summary>
+        <div class="detail"><p><strong>ما الذي نطرحه في اجتماع التقييم؟</strong></p><p>استمرار المنتدى سنويًا وبين النسخ؛ دراسة الحوكمة؛ فريق تأسيسي؛ ممثلو الجمعيات؛ دراسة مشروع القيادات؛ برنامج أربع مراحل؛ ورش شهرية؛ خطة إعلامية؛ اجتماع لاحق؛ فرز التوصيات.</p><p><strong>الإجراء المقترح</strong> · طلب دراسة الفكرة لاحقًا مع اللجنة العليا وتسجيلها كمقترح غير معتمد.</p></div>
+      </details>
+      <details><summary><bdi>17</bdi> تصميم المنتدى الثالث</summary>
+        <div class="detail"><p><strong>ماذا يرى الجمهور في المنتدى الثالث؟</strong></p><p>المتطوعون متحدثون؛ نتائج رقمية؛ قصص إنسانية؛ تجربة المجلس التدريبي؛ مشاريع الجمعيات؛ تقرير أثر؛ معرض؛ تكريم بمعايير؛ فرص التوسع.</p><p><strong>الإجراء المقترح</strong> · إعداد تصور برنامج يعتمد شهادات المتطوعين وعرض النتائج والأدلة.</p></div>
+      </details>
+      <details><summary><bdi>18</bdi> أسلوب تقديم الرؤية</summary>
+        <div class="detail"><p><strong>كيف نقدمها دون مصادمة برنامج التقييم؟</strong></p><p>التقدير أولًا؛ الانتقال إلى سؤال ما بعد المنتدى؛ عرض المنتدى الثالث؛ المراحل باختصار؛ القيادات؛ المقترح تحت إشراف رئاسة اللجنة العليا؛ دعوة للحوار؛ استعداد للمساهمة؛ مداخلة قصيرة.</p><p><strong>الإجراء المقترح</strong> · الالتزام بلغة الاحترام والتركيز على الرسالة الكبرى.</p></div>
+      </details>
+      <details><summary><bdi>19</bdi> الرسالة المحورية</summary>
+        <div class="detail"><p><strong>ما الرسالة الواحدة التي يجب أن تبقى؟</strong></p><p>علينا صناعة قيادات تطوعية جديدة تتعلم وتدير المشاريع وتعرض إنجازاتها بنفسها.</p><p><strong>الإجراء المقترح</strong> · استخدام الرسالة كعنوان محوري لرؤية المنتدى الثالث.</p></div>
+      </details>
+    </div>
+  </section>
+
   <section id="calendar">
     <div class="section-head"><h2>تقويم الاجتماعات القادمة</h2><p>الأوقات بتوقيت البحرين</p></div>
     <div class="calendar-controls">
@@ -285,6 +362,12 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
       <h2>المشاريع والمبادرات</h2>
       <p>الحالات الظاهرة تعكس ما تم نشره، ولا تعني دائمًا الاعتماد النهائي</p>
     </div>
+    <article class="card vision-feature">
+      <span class="pill">مشروع رئيسي · مقترح للدراسة</span>
+      <h3>رؤية تطوير المنتدى الثالث</h3>
+      <p>برنامج سنوي مقترح لتحويل التوصيات إلى مشاريع، وتأهيل قيادات تطوعية، وقياس الأثر وعرض النتائج في المنتدى الثالث.</p>
+      <a class="btn secondary" href="?section=forum-vision">فتح رؤية تطوير المنتدى الثالث</a>
+    </article>
     <div id="initiatives-grid" class="grid"></div>
   </section>
 
@@ -449,7 +532,7 @@ fetch('./public-data.json', {cache:'no-store'})
     const initiatives = Array.isArray(data.initiatives) ? data.initiatives : [];
     const reports = Array.isArray(data.reports) ? data.reports : [];
     document.getElementById('meetings-count').textContent = meetings.length;
-    document.getElementById('initiatives-count').textContent = initiatives.length;
+    document.getElementById('initiatives-count').textContent = initiatives.length + 1;
     document.getElementById('reports-count').textContent = reports.length;
     const activities = Array.isArray(data.activities) ? data.activities : draftActivities;
     renderPlan(activities);

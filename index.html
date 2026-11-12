@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="بوابة اطلاع عامة لمستجدات المنتدى الثاني للعمل التطوعي والمبادرات المرتبطة به.">
+<meta name="theme-color" content="#122c3c">
+<title>بوابة متابعة المنتدى | المنتدى الثاني للعمل التطوعي</title>
+<style>
+:root{--navy:#102d3d;--teal:#00877f;--ink:#173342;--muted:#617985;--bg:#f5f8fa;--line:#dce7ec;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Tahoma,"Segoe UI",Arial,sans-serif;line-height:1.85}
+a{color:inherit}header{background:linear-gradient(120deg,#102d3d,#174858);color:white;padding:30px max(20px,calc((100vw - 1120px)/2)) 65px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.mark{display:inline-flex;align-items:center;gap:12px;font-size:18px;font-weight:bold}
+.logo{width:47px;height:47px;background:#ffffff20;border:1px solid #ffffff55;border-radius:14px;display:grid;place-items:center;font-size:24px}
+.tag{padding:5px 14px;border:1px solid #ffffff44;border-radius:50px;font-size:13px}
+h1{font-size:clamp(26px,4vw,43px);line-height:1.4;margin:38px 0 12px}header p{color:#c6e1e6;max-width:710px;margin:0}
+main{max-width:1120px;margin:-35px auto 70px;padding:0 20px}
+.summary{background:white;border-radius:18px;padding:19px 24px;border:1px solid var(--line);box-shadow:0 12px 35px #1733420e;display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap}
+.summary b{font-size:16px}.summary span{font-size:13px;color:var(--muted)}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 28px}
+nav a{text-decoration:none;border-radius:30px;padding:7px 16px;background:white;border:1px solid var(--line);font-size:14px}
+section{margin:35px 0;scroll-margin-top:20px}
+.heading{display:flex;justify-content:space-between;gap:15px;align-items:end;margin-bottom:14px;flex-wrap:wrap}
+h2{margin:0;font-size:21px}.hint{font-size:13px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card{border:1px solid var(--line);background:white;border-radius:16px;padding:20px;min-height:158px}
+.card h3{font-size:17px;margin:4px 0 9px}.card p{font-size:14px;color:#58707a;margin:0 0 10px}
+.pill{display:inline-flex;color:#006f69;background:#e6f5f2;border-radius:20px;padding:2px 11px;font-size:12px}
+.note{background:#fffaf0;border:1px solid #eee4c9;border-radius:14px;padding:17px 20px;color:#76623f;font-size:14px}
+.empty{padding:20px;border:1px dashed var(--line);background:#fff;border-radius:14px;color:var(--muted)}
+.footer{background:#eaf0f3;padding:24px 20px;text-align:center;font-size:13px;color:#657d87}
+.card a{font-weight:bold;color:var(--teal)}
+@media(max-width:750px){.grid{grid-template-columns:1fr}header{padding-bottom:58px}main{padding:0 14px}}
+</style>
+</head>
+<body>
+<header>
+<div class="top"><div class="mark"><div class="logo">أثـر</div><div>المنتدى الثاني للعمل التطوعي<br><small style="font-weight:normal;color:#b5d9dc">شراكات .. لأثر مستدام</small></div></div><div class="tag">نسخة عامة للاطلاع</div></div>
+<h1>متابعة المنتدى والمبادرات المجتمعية</h1>
+<p>مساحة موحدة لمتابعة أبرز المستجدات والمناقشات والمبادرات والتقارير المسموح بنشرها. تتطور هذه البوابة تدريجيًا بالتنسيق مع الجهات المعنية.</p>
+</header>
+<main>
+<div class="summary"><div><b>بوابة المتابعة العامة</b><div><span>تُعرض المعلومات المنشورة للمطالعة فقط؛ ولا تتضمن بيانات المشاركين أو السجلات الداخلية.</span></div></div><span id="updated">آخر تحديث: —</span></div>
+<nav aria-label="أقسام الصفحة"><a href="#meetings">الاجتماعات</a><a href="#initiatives">المبادرات</a><a href="#reports">التقارير</a><a href="#notice">حول البوابة</a></nav>
+<section id="meetings"><div class="heading"><h2>الاجتماعات والمناقشات</h2><span class="hint">ملخصات مناسبة للمشاركة العامة</span></div><div id="meetings-grid" class="grid"></div></section>
+<section id="initiatives"><div class="heading"><h2>المشاريع والمبادرات</h2><span class="hint">الحالات المعلنة لا تعني اعتمادًا نهائيًا</span></div><div id="initiatives-grid" class="grid"></div></section>
+<section id="reports"><div class="heading"><h2>التقارير والمنشورات</h2><span class="hint">فقط الروابط المعتمدة للنشر</span></div><div id="reports-grid" class="grid"></div></section>
+<section id="notice"><div class="note"><strong>تنويه:</strong> هذا الموقع إصدار تعريفي أولي. الملاحظات والمقترحات ليست قرارات معتمدة ما لم يُعلن اعتمادها رسميًا. تُدار تحديثات الموقع بواسطة صاحب مستودع GitHub والمخولين منه فقط، ولا يمكن للزوار تعديل محتوى الموقع.</div></section>
+</main>
+<div class="footer">المنتدى الثاني للعمل التطوعي 2026 · صفحة اطلاع عامة</div>
+<script>
+function node(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;}
+function card(item,kind){
+ const c=node("article","card");c.append(node("span","pill",item.status||(kind==="meetings"?"نقاش":"متاح لاحقًا")));
+ c.append(node("h3","",item.title));c.append(node("p","",item.description||""));
+ if(item.date)c.append(node("div","hint","التاريخ: "+item.date));
+ if(item.url&&/^https:\/\/(docs\.google\.com|drive\.google\.com|www\.youtube\.com|youtube\.com)\//.test(item.url)){const a=node("a","","عرض التقرير");a.href=item.url;a.target="_blank";a.rel="noopener noreferrer";c.append(a);}
+ return c;
+}
+fetch("./public-data.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw Error("load");return r.json()}).then(data=>{
+ document.getElementById("updated").textContent="آخر تحديث: "+(data.updated||"غير محدد");
+ for(const [key,id] of [["meetings","meetings-grid"],["initiatives","initiatives-grid"],["reports","reports-grid"]]){
+  const host=document.getElementById(id),items=Array.isArray(data[key])?data[key]:[];
+  if(!items.length)host.append(node("div","empty","لا توجد مواد منشورة حاليًا."));
+  else items.forEach(item=>host.append(card(item,key)));
+ }
+}).catch(()=>{["meetings-grid","initiatives-grid","reports-grid"].forEach(id=>document.getElementById(id).append(node("div","empty","تعذر تحميل المحتوى. افتح الموقع عبر GitHub Pages أو خادم ويب.")));});
+</script>
+</body></html>

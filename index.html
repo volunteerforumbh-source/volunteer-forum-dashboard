@@ -560,6 +560,17 @@ function renderCalendar(meetings){
 
 const forumUpdates = [
   {
+    id: 'november-11-meeting',
+    kind: 'update',
+    date: '2026-11-11',
+    title: 'انعقاد الاجتماع الأول لما بعد المنتدى',
+    status: 'عُقد الاجتماع',
+    description: 'عُقد الاجتماع في جمعية السنابس الخيرية بحضور 9 مشاركين. تناول مراجعة تجربة المنتدى الثاني، واستمرارية العمل طوال العام، وتأهيل القيادات التطوعية، والتحضير للمنتدى الثالث.',
+    next: 'متابعة المقترحات الواردة في ملخص الاجتماع.',
+    url: '?section=meeting-01',
+    linkLabel: 'عرض ملخص الاجتماع'
+  },
+  {
     id: 'athar-academic-invitations',
     kind: 'update',
     date: '2026-11-12',
@@ -595,7 +606,7 @@ function renderForumUpdates(kind){
     date.dateTime = item.date;
     card.append(date,createNode('p','',item.description));
     card.append(createNode('p','hint','الخطوة التالية · ' + item.next));
-    card.append(planningLink('المحور المرتبط في اجتماع 11 نوفمبر',item.url));
+    card.append(planningLink(item.linkLabel || 'المحور المرتبط في اجتماع 11 نوفمبر',item.url));
     feed.append(card);
   }
   if (!entries.length) feed.append(createNode('div','empty org-empty','لا توجد بنود منشورة ضمن هذا العرض.'));

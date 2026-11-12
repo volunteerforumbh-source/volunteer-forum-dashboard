@@ -589,6 +589,7 @@ const forumUpdates = [
     date: '2026-11-12',
     title: 'بدء تشكيل الفريق الأكاديمي لمشروع «أثَر»',
     status: 'أُرسلت الدعوات',
+    responsible: 'الأستاذة ابتهاج خليفة، قائدة الفريق الأكاديمي',
     description: 'أُنشئت مجموعة للتنسيق لتأسيس الفريق الأكاديمي بقيادة الأستاذة ابتهاج خليفة، وأُرسلت دعوات شخصية إلى متحدثي المنتدى السبعة للمساهمة في إعداد الخطط التدريبية وتأهيل الفرق والكوادر التطوعية.',
     next: 'استقبال الانضمامات حتى نهاية الأحد 15 نوفمبر 2026، ثم حصر المشاركين والتنسيق للاجتماع التأسيسي.',
     url: '?section=meeting-01#topic-5'
@@ -599,6 +600,7 @@ const forumUpdates = [
     date: '2026-11-12',
     title: 'حصر المشاركين والتنسيق للاجتماع التأسيسي',
     status: 'متابعة مرتقبة',
+    responsible: 'لم يُعلن اسم المكلّف بالمتابعة بعد',
     description: 'تجميع الردود وتحديد المشاركين الراغبين في المساهمة في الفريق الأكاديمي.',
     next: 'بعد إغلاق الدعوات، يُنسّق موعد اللقاء الأول ويُعلن بعد تأكيده.',
     url: '?section=meeting-01#topic-5'
@@ -619,6 +621,7 @@ if (!document.documentElement.dataset.section){
     const row = createNode('li');
     const link = planningLink(item.title,'?section=updates#' + item.id);
     link.append(formatUpdateDate(item.date));
+    if (item.responsible) link.append(createNode('span','hint','المسؤول · ' + item.responsible));
     row.append(link);
     preview.append(row);
   }
@@ -633,7 +636,13 @@ function renderForumUpdates(kind){
     card.id = item.id;
     card.append(createNode('span','pill',(item.kind === 'task' ? 'متابعة' : 'تحديث') + ' · ' + item.status));
     card.append(createNode('h3','',item.title));
-    card.append(formatUpdateDate(item.date),createNode('p','',item.description));
+    card.append(formatUpdateDate(item.date));
+    if (item.responsible){
+      const owner = createNode('p');
+      owner.append(createNode('strong','','المسؤول'),document.createTextNode(' · ' + item.responsible));
+      card.append(owner);
+    }
+    card.append(createNode('p','',item.description));
     card.append(createNode('p','hint','الخطوة التالية · ' + item.next));
     card.append(planningLink(item.linkLabel || 'المحور المرتبط في اجتماع 11 نوفمبر',item.url));
     feed.append(card);

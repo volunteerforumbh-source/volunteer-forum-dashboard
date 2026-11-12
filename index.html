@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#524791">
 <title>بوابة متابعة المنتدى | المنتدى الثاني للعمل التطوعي</title>
 <script>
-  const sections = ["organization","meetings","initiatives","reports","notice"];
+  const sections = ["organization","meetings","initiatives","reports","calendar","plan","notice"];
   const params = new URLSearchParams(location.search);
   const section = params.get('section') || location.hash.slice(1);
   if (sections.includes(section)) document.documentElement.dataset.section = section;
@@ -21,6 +21,8 @@ html[data-section="organization"] #organization,
 html[data-section="meetings"] #meetings,
 html[data-section="initiatives"] #initiatives,
 html[data-section="reports"] #reports,
+html[data-section="calendar"] #calendar,
+html[data-section="plan"] #plan,
 html[data-section="notice"] #notice{display:block}
 .section-home{margin-block-start:24px}
 
@@ -136,6 +138,15 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 .committee-card summary{font-weight:700;cursor:pointer;list-style-position:inside}
 .committee-card summary:hover{color:var(--c-indigo)}
 .committee-card .committee-members{margin:14px 0 0;padding:10px 0 0;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+.calendar-controls{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-block-end:14px}
+.calendar-controls button{cursor:pointer;font-family:inherit}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center;margin-block-end:18px}
+.calendar-grid span{padding:6px 0;font-size:clamp(10px,2.7vw,14px);border-radius:8px;background:var(--surface)}
+.calendar-grid .meeting-day{background:var(--c-indigo);color:white;font-weight:bold}
+.followup{margin-block:16px 0;border-block-start:1px solid var(--line);padding-block-start:12px}
+.followup summary{cursor:pointer;color:var(--c-indigo);font-weight:700}
+.followup li{margin-block:8px}
+.plan-grid .card{scroll-margin-top:16px}
 </style>
 </head>
 <body>
@@ -186,7 +197,9 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 
   <nav class="home-only" aria-label="أقسام الصفحة">
     <a href="?section=organization">الهيكل التنظيمي</a>
-    <a href="?section=meetings">الاجتماعات</a>
+    <a href="?section=meetings">الاجتماعات والمحاضر</a>
+    <a href="?section=calendar">تقويم الاجتماعات</a>
+    <a href="?section=plan">الخطة السنوية</a>
     <a href="?section=initiatives">المبادرات</a>
     <a href="?section=reports">التقارير</a>
     <a href="?section=notice">تنويه</a>
@@ -213,6 +226,22 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
       <p>ملخصات مناسبة للمشاركة العامة</p>
     </div>
     <div id="meetings-grid" class="grid"></div>
+  </section>
+
+  <section id="calendar">
+    <div class="section-head"><h2>تقويم الاجتماعات القادمة</h2><p>الأوقات بتوقيت البحرين</p></div>
+    <div class="calendar-controls">
+      <button type="button" class="btn secondary" id="prev-month">الشهر السابق</button>
+      <strong id="calendar-month" aria-live="polite"></strong>
+      <button type="button" class="btn secondary" id="next-month">الشهر التالي</button>
+    </div>
+    <div id="calendar-days" class="calendar-grid" aria-hidden="true"></div>
+    <div id="calendar-meetings" class="grid" aria-live="polite"></div>
+  </section>
+
+  <section id="plan">
+    <div class="section-head"><h2>الخطة السنوية للمنتدى</h2><p>نوفمبر 2026 – أكتوبر 2027 · مسودة للتخطيط</p></div>
+    <div id="plan-grid" class="grid plan-grid"></div>
   </section>
 
   <section id="initiatives">
@@ -264,6 +293,11 @@ function createCard(item, kind){
   card.append(createNode('h3','', item.title || 'بدون عنوان'));
   card.append(createNode('p','', item.description || ''));
   if(item.date) card.append(createNode('div','hint','التاريخ: ' + item.date));
+  if(kind === 'calendar'){
+    card.append(createNode('div','hint','الوقت: ' + (item.time || 'يُحدد لاحقًا')));
+    card.append(createNode('div','hint','المكان: ' + (item.location || 'يُحدد لاحقًا')));
+    card.append(planningLink('الاجتماعات والمحاضر','?section=meetings'));
+  }
   if(item.url && /^https:\/\//.test(item.url)){
     const link = createNode('a','link','فتح الرابط');
     link.href = item.url;
@@ -277,11 +311,92 @@ function renderSection(list, hostId, kind){
   const host = document.getElementById(hostId);
   host.innerHTML = '';
   if(!Array.isArray(list) || !list.length){
-    host.append(createNode('div','empty','لا توجد مواد منشورة حاليًا في هذا القسم.'));
+    host.append(createNode('div','empty org-empty',kind === 'calendar' ? 'لا توجد اجتماعات مؤكدة منشورة لهذا الشهر.' : 'لا توجد مواد منشورة حاليًا في هذا القسم.'));
     return;
   }
   list.forEach(item => host.append(createCard(item, kind)));
 }
+const draftActivities = [
+  {id:'follow-up', title:'لقاءات متابعة التوصيات', type:'لقاءات', period:'على مدار العام', goal:'مراجعة التوصيات والمهام وتحديد الخطوات التالية.'},
+  {id:'workshops', title:'ورش تطوير العمل التطوعي', type:'ورش', period:'فبراير – أبريل 2027 (مقترح)', goal:'تطوير مهارات التخطيط والحوكمة وقياس الأثر.'},
+  {id:'partnerships', title:'لقاءات الشراكة مع الجمعيات', type:'لقاءات', period:'نوفمبر 2026 – يناير 2027 (مقترح)', goal:'بحث فرص التعاون وتنسيق الأنشطة المشتركة.'},
+  {id:'athar', title:'لقاءات مشروع أثَر', type:'لقاءات', period:'مايو – يوليو 2027 (مقترح)', goal:'بلورة آلية ربط الكوادر التطوعية بالفرص والمشاريع.'},
+  {id:'forum', title:'المنتدى الثالث للعمل التطوعي', type:'فعالية', period:'أغسطس – أكتوبر 2027 (تحضير مقترح)', goal:'عرض نتائج العمل ومناقشة أولويات الدورة التالية.'}
+];
+const planningLink = (label, href) => {
+  const link = createNode('a','link',label);
+  link.href = href;
+  return link;
+};
+
+function renderMeetingFollowup(card, meeting, activities){
+  const details = createNode('details','followup');
+  details.append(createNode('summary','',meeting.minutes ? 'المحضر ومتابعة المهام' : 'الملخص الأولي ومتابعة المهام'));
+  if(meeting.minutes) details.append(createNode('p','',meeting.minutes));
+  const tasks = meeting.tasks || [];
+  const list = createNode('ul');
+  for(const task of tasks){
+    const row = createNode('li','',task.title + ' · ' + (task.status || 'الحالة غير محددة'));
+    row.append(createNode('div','hint','المسؤول: ' + (task.owner || 'يُحدد لاحقًا') + ' · الموعد: ' + (task.due || 'يُحدد لاحقًا')));
+    if(task.review) row.append(createNode('p','','آخر مراجعة: ' + task.review));
+    list.append(row);
+  }
+  details.append(tasks.length ? list : createNode('p','','لا توجد مهام معتمدة منشورة لهذا الاجتماع.'));
+  const linked = activities.filter(item => (meeting.activityIds || []).includes(item.id));
+  for(const item of linked){
+    details.append(createNode('div'));
+    details.lastElementChild.append(planningLink(item.title,'?section=plan#activity-' + encodeURIComponent(item.id)));
+  }
+  card.append(details);
+}
+
+function renderPlan(activities){
+  const host = document.getElementById('plan-grid');
+  for(const item of activities){
+    const card = createCard({title:item.title, status:item.type + ' · ' + (item.status || 'مقترح'), description:'الهدف: ' + item.goal},'plan');
+    card.id = 'activity-' + item.id;
+    for(const [label,value] of Object.entries({الفترة:item.period, التاريخ:item.date, الوقت:item.time, المكان:item.location, الجهة:item.owner})){
+      card.append(createNode('div','hint',label + ': ' + (value || 'يُحدد لاحقًا')));
+    }
+    host.append(card);
+  }
+  if(!activities.length) host.append(createNode('div','empty org-empty','لا توجد أنشطة منشورة في الخطة.'));
+  if(section === 'plan' && location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView();
+}
+
+function renderCalendar(meetings){
+  const today = new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Bahrain',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const [year,month] = today.split('-').map(Number);
+  let cursor = new Date(year,month-1,1);
+  const formatter = new Intl.DateTimeFormat('ar-BH',{month:'long',year:'numeric'});
+  const scheduled = meetings.filter(item => item.status === 'مؤكد' && /^\d{4}-\d{2}-\d{2}$/.test(item.date) && item.date >= today)
+    .sort((a,b) => a.date.localeCompare(b.date));
+  function showMonth(){
+    const y = cursor.getFullYear();
+    const m = cursor.getMonth();
+    const prefix = y + '-' + String(m+1).padStart(2,'0') + '-';
+    const entries = scheduled.filter(item => item.date.startsWith(prefix));
+    document.getElementById('calendar-month').textContent = formatter.format(cursor);
+    const days = document.getElementById('calendar-days');
+    days.replaceChildren(...['أحد','اثن','ثلا','أرب','خمي','جمع','سبت'].map(day => createNode('span','',day)));
+    for(let i=0;i<cursor.getDay();i++) days.append(createNode('span'));
+    for(let day=1;day<=new Date(y,m+1,0).getDate();day++){
+      const date = prefix + String(day).padStart(2,'0');
+      days.append(createNode('span',entries.some(item => item.date === date) ? 'meeting-day' : '',day));
+    }
+    renderSection(entries,'calendar-meetings','calendar');
+  }
+  document.getElementById('prev-month').addEventListener('click',() => {
+    cursor = new Date(cursor.getFullYear(),cursor.getMonth()-1,1);
+    showMonth();
+  });
+  document.getElementById('next-month').addEventListener('click',() => {
+    cursor = new Date(cursor.getFullYear(),cursor.getMonth()+1,1);
+    showMonth();
+  });
+  showMonth();
+}
+
 fetch('./public-data.json', {cache:'no-store'})
   .then(r => { if(!r.ok) throw new Error('load'); return r.json(); })
   .then(data => {
@@ -292,12 +407,20 @@ fetch('./public-data.json', {cache:'no-store'})
     document.getElementById('meetings-count').textContent = meetings.length;
     document.getElementById('initiatives-count').textContent = initiatives.length;
     document.getElementById('reports-count').textContent = reports.length;
+    const activities = Array.isArray(data.activities) ? data.activities : draftActivities;
+    renderPlan(activities);
+    renderCalendar(meetings);
     renderSection(meetings, 'meetings-grid', 'meetings');
+    const meetingCards = document.querySelectorAll('#meetings-grid article');
+    meetings.forEach((meeting,index) => {
+      const starterIds = meeting.title === 'مناقشة تطوير المنتدى إلى مشروع مستمر' ? ['follow-up','workshops','partnerships'] : [];
+      renderMeetingFollowup(meetingCards[index],{...meeting, activityIds:meeting.activityIds || starterIds},activities);
+    });
     renderSection(initiatives, 'initiatives-grid', 'initiatives');
     renderSection(reports, 'reports-grid', 'reports');
   })
   .catch(() => {
-    ['meetings-grid','initiatives-grid','reports-grid'].forEach(id => {
+    ['meetings-grid','initiatives-grid','reports-grid','plan-grid','calendar-meetings'].forEach(id => {
       document.getElementById(id).append(createNode('div','empty','تعذر تحميل المحتوى. تأكد من رفع الملفات أو افتح الصفحة من GitHub Pages.'));
     });
   });

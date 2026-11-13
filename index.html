@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#524791">
 <title>بوابة متابعة المنتدى | المنتدى الثاني للعمل التطوعي</title>
 <script>
-  const sections = ["organization","meetings","initiatives","reports","calendar","recommendations","plan","meeting-01","forum-vision","updates","news","associations","notice"];
+  const sections = ["organization","media-committee","meetings","initiatives","reports","calendar","recommendations","plan","meeting-01","forum-vision","updates","news","associations","notice"];
   const params = new URLSearchParams(location.search);
   const section = params.get('section') || location.hash.slice(1);
   if (sections.includes(section)) document.documentElement.dataset.section = section;
@@ -18,6 +18,7 @@ html:not([data-section]) .section-home,
 html[data-section] .home-only,
 html[data-section] main > section{display:none}
 html[data-section="organization"] #organization,
+html[data-section="media-committee"] #media-committee,
 html[data-section="meetings"] #meetings,
 html[data-section="initiatives"] #initiatives,
 html[data-section="reports"] #reports,
@@ -277,10 +278,29 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
         <span class="pill">الخطة قيد الإعداد</span>
         <h4>اللجنة الإعلامية والعلاقات العامة</h4>
         <p>يُضاف تصور اللجنة وخطتها هنا عند جاهزيتهما للنشر.</p>
+        <a class="btn secondary" href="?section=media-committee">صفحة اللجنة الإعلامية</a>
       </article>
     </div>
 
     <div class="note" style="margin-top:16px"><strong>إكمال البيانات:</strong> إن لم يظهر اسمك أو كانت بياناتك غير مكتملة، ستُتاح لاحقًا استمارة مرتبطة بالملف المركزي لاستكمال البيانات ومراجعتها قبل النشر. لا توجد استمارة فعالة في هذه النسخة.</div>
+  </section>
+
+  <section id="media-committee">
+    <div class="section-head"><h2>اللجنة الإعلامية والعلاقات العامة</h2><p>المنتدى الثاني للعمل التطوعي 2026</p></div>
+    <div class="grid">
+      <article class="card">
+        <h3>خطة اللجنة الإعلامية</h3>
+        <p>مسودة الأهداف وفرق العمل والأدوار.</p>
+        <a class="btn secondary" href="https://docs.google.com/document/d/18cw7uupKzDNpkjQ1bIFBrvi48Zf4Mbmf6rYIfWuEynI/edit">فتح خطة اللجنة</a>
+      </article>
+      <article class="card">
+        <h3>جدول النشر والمهام</h3>
+        <p>مسودة مواعيد النشر والمهام ومتابعة التنفيذ.</p>
+        <a class="btn secondary" href="https://docs.google.com/document/d/1PbuQyUN_37gz_aObkc9Fprfe_0b6mfsfvN50378J2v4/edit">فتح جدول النشر والمهام</a>
+      </article>
+    </div>
+    <p class="note">هذه الصفحة التعريفية عامة. يتحقق Google من صلاحية حسابك عند فتح كل مستند.</p>
+    <a class="btn secondary" href="?section=organization">العودة إلى الهيكل التنظيمي</a>
   </section>
 
   <section id="meetings">
@@ -711,6 +731,18 @@ function filterArchive(gridId, searchId, countId, label, categoryId){
 if (section === 'news') filterArchive('archive-news','archive-search','archive-count','الأخبار','archive-category');
 if (section === 'associations') filterArchive('association-directory','association-search','association-count','الجمعيات');
 const forumUpdates = [
+  {
+    id: 'media-committee-page',
+    kind: 'update',
+    date: '2026-11-13',
+    title: 'إضافة صفحة اللجنة الإعلامية والعلاقات العامة',
+    status: 'نُشرت الصفحة',
+    responsible: 'جعفر النشيط، رئيس اللجنة الإعلامية والعلاقات العامة',
+    description: 'أُضيفت صفحة اللجنة ضمن الهيكل التنظيمي للمنتدى، مع روابط لخطة اللجنة وجدول النشر والمهام للمخوّلين.',
+    next: 'إضافة الهيكل وفرق العمل بعد اعتمادها.',
+    url: '?section=media-committee',
+    linkLabel: 'فتح صفحة اللجنة الإعلامية'
+  },
   {
     id: 'news-and-associations-added',
     kind: 'update',

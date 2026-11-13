@@ -184,6 +184,23 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 .archive-grid [hidden]{display:none}
 .archive-grid summary{cursor:pointer}
 @media(max-width:640px){.archive-grid{grid-template-columns:1fr}}
+.media-tabs, .media-panel > form {margin-block: 1rem}
+.media-tabs {display:flex;flex-wrap:wrap;gap:.5rem}
+.media-tabs [aria-current="page"] {outline:2px solid #524791;outline-offset:2px}
+.media-panel > ul {padding-inline-start:1.25rem}
+.media-panel > ul li {padding-block:.65rem;overflow-wrap:anywhere}
+.media-panel > ul li + li {border-top:1px solid #dedbea}
+.media-panel > ul li p {margin:.3rem 0}
+.media-panel .media-overview {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:.6rem;padding:0}
+.media-panel .media-overview li {border:1px solid #dedbea;border-radius:.75rem;padding:.75rem;list-style:none}
+.media-panel .media-flow {counter-reset:media-step}
+.media-panel .media-flow li {counter-increment:media-step}
+.media-panel .media-flow li::before {content:counter(media-step);font-weight:700;margin-inline-end:.5rem;color:#524791}
+
+.media-board {display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;margin-block:1rem}
+.media-task-table {overflow-x:auto;margin-block:1rem}
+.media-task-table th,.media-task-table td {padding:.6rem;text-align:start}
+.media-board section {border:1px solid #dedbea;border-radius:12px;padding:.75rem;overflow-wrap:anywhere}
 #media-committee [hidden]{display:none!important}
 #media-committee .card{margin-block:12px}
 #media-committee label{display:block;margin-block:10px 4px}
@@ -290,19 +307,20 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
   </section>
 
   <section id="media-committee">
-    <div class="section-head"><h2>مساحة الأعضاء</h2><p>اللجنة الإعلامية والعلاقات العامة</p></div>
+    <div class="section-head"><h2>اللجنة الإعلامية والعلاقات العامة</h2><p>مساحة الأعضاء وإدارة العمل الإعلامي</p></div>
+    <article class="card" aria-labelledby="media-bylaws-heading">
+      <h3 id="media-bylaws-heading">اللائحة الداخلية</h3>
+      <a class="btn secondary" href="./media-bylaws.html">فتح الفهرس التفاعلي</a>
+    </article>
     <div class="card">
       <p id="media-status" role="status">جارٍ التحقق من تسجيل الدخول…</p>
       <button class="btn primary" id="media-login" type="button" hidden>الدخول بحساب Google</button>
       <button class="btn secondary" id="media-logout" type="button" hidden>تسجيل الخروج</button>
     </div>
-    <article class="card" aria-labelledby="media-bylaws-heading">
-      <h3 id="media-bylaws-heading">اللائحة الداخلية</h3>
-      <a class="btn secondary" href="./media-bylaws.html">فتح الفهرس التفاعلي</a>
-    </article>
+    <div id="media-operations" hidden></div>
     <div id="media-workspace" hidden>
       <form id="media-content" class="card">
-        <h3>خطة اللجنة وجدول النشر والمهام</h3>
+        <h3>الخطة والمهام المسجلة سابقًا</h3>
         <label for="media-plan">خطة اللجنة</label>
         <textarea id="media-plan" rows="9" maxlength="30000" readonly></textarea>
         <label for="media-tasks">جدول النشر والمهام</label>
@@ -945,8 +963,12 @@ if (new URLSearchParams(location.search).get('section') === 'media-committee' ||
     const db = dbSdk.getFirestore(app);
     const workspace = dbSdk.doc(db, 'mediaCommittee', 'workspace');
     const member = email => dbSdk.doc(db, 'mediaMembers', email);
+
+    let previousWorkspace;
     let generation = 0;
+    let stopOperations = () => {};
     function clearWorkspace(){
+      previousWorkspace = undefined;
       el('workspace').hidden = true;
       el('members').hidden = true;
       el('save').hidden = true;
@@ -958,6 +980,9 @@ if (new URLSearchParams(location.search).get('section') === 'media-committee' ||
     }
     authSdk.onAuthStateChanged(auth, async user => {
       const current = ++generation;
+      stopOperations();
+      el('operations').hidden = true;
+      el('operations').replaceChildren();
       clearWorkspace();
       el('login').hidden = Boolean(user);
       el('logout').hidden = !user;
@@ -965,7 +990,15 @@ if (new URLSearchParams(location.search).get('section') === 'media-committee' ||
         status.textContent = 'سجّل الدخول بحسابك المعتمد لفتح محتوى اللجنة.';
         return;
       }
-      status.textContent = 'جارٍ التحقق من عضويتك…';
+      status.textContent = 'تم تسجيل الدخول بحساب ' + (user.email || 'Google') + '.';
+      const operations = el('operations');
+      import('./media-operations.mjs').then(({mountOperations}) => {
+        if (current === generation) stopOperations = mountOperations(operations, db, dbSdk, user);
+      }).catch(() => {
+        if (current !== generation) return;
+        operations.hidden = false;
+        operations.textContent = 'تعذّر تحميل لوحة العمل الإعلامي. حدّث الصفحة وحاول مجددًا.';
+      });
       try {
         const email = user.email;
         const admin = email === 'jaffernasheet@gmail.com' && user.emailVerified;
@@ -973,6 +1006,7 @@ if (new URLSearchParams(location.search).get('section') === 'media-committee' ||
         const data = (await dbSdk.getDocFromServer(workspace)).data();
         if (current !== generation) return;
         const editable = role === 'admin' || role === 'editor';
+        previousWorkspace = data ?? {plan:'', tasks:''};
         el('plan').value = data?.plan ?? '';
         el('tasks').value = data?.tasks ?? '';
         el('plan').readOnly = !editable;
@@ -984,7 +1018,7 @@ if (new URLSearchParams(location.search).get('section') === 'media-committee' ||
       } catch (error) {
         if (current !== generation) return;
         status.textContent = error.code === 'permission-denied'
-          ? 'ليس لديك إذن بفتح محتوى اللجنة. جرّب حسابك المخوّل.'
+          ? 'الحساب المتصل: ' + (user.email || 'Google') + ' · لا يملك صلاحية فتح الخطة السابقة. استخدم حسابك المخوّل أو تواصل مع مسؤول اللجنة.'
           : 'تعذّر التحقق من العضوية. حدّث الصفحة وحاول مرة أخرى.';
       }
     });
@@ -998,12 +1032,29 @@ if (new URLSearchParams(location.search).get('section') === 'media-committee' ||
     };
     el('content').onsubmit = async event => {
       event.preventDefault();
-      if (el('save').hidden || el('save').disabled) return;
+      if (el('save').hidden || el('save').disabled || !previousWorkspace) return;
       el('save').disabled = true;
       try {
-        await dbSdk.setDoc(workspace, {plan:el('plan').value, tasks:el('tasks').value});
+        const baseline = previousWorkspace;
+        const next = {plan:el('plan').value, tasks:el('tasks').value};
+        await dbSdk.runTransaction(db, async transaction => {
+          const latest = (await transaction.get(workspace)).data() ?? {plan:'', tasks:''};
+          const patch = {...latest};
+          for (const key of ['plan', 'tasks']) {
+            if (next[key] === baseline[key]) continue;
+            if (latest[key] !== baseline[key]) throw new Error('legacy-conflict');
+            patch[key] = next[key];
+          }
+          transaction.set(workspace, patch);
+          return patch;
+        }).then(saved => {
+          if (previousWorkspace !== baseline) return;
+          previousWorkspace = saved;
+          el('plan').value = saved.plan;
+          el('tasks').value = saved.tasks;
+        });
         feedback.textContent = 'حُفظت التغييرات.';
-      } catch { feedback.textContent = 'تعذّر الحفظ. تحقق من الاتصال والصلاحية.'; }
+      } catch (error) { feedback.textContent = error.message === 'legacy-conflict' ? 'تغيّر السجل منذ فتحه. انسخ تعديلاتك محليًا ثم حدّث الصفحة وأعد المحاولة.' : 'تعذّر الحفظ. تحقق من الاتصال والصلاحية.'; }
       finally { el('save').disabled = false; }
     };
     el('members').onsubmit = async event => {

@@ -1,3 +1,5 @@
+import {plans} from './media-plans.mjs';
+
 const committee = 'media';
 const roles = {manager:'مسؤول اللجنة', deputy:'نائب المسؤول', lead:'قائد فريق', member:'عضو', observer:'اللجنة العليا'};
 const stages = {
@@ -54,6 +56,25 @@ function renderOperatingOverview(panel, teams, render) {
   }
   action(panel, 'عرض لوحة المهام', () => render('tasks'));
 }
+
+const planTasks = {
+  workPlan: [
+    ['إعداد تقويم النشر الأسبوعي', 'ربط المواد الجاهزة بمواعيد النشر على كل منصة ومراعاة أولوية المستجدات.', 'platforms'],
+    ['إعداد التقرير العام للمنتدى', 'جمع المواد المعتمدة وتحرير التقرير العام وتوثيق حضور الجهات الرسمية.', 'editorial'],
+    ['تجهيز حزمة متحدث', 'فيديو كامل وريلز وكاروسل وملخص وملف معتمد، وإضافة أسئلة الجمهور عند توفر الإجابات.', 'editorial'],
+    ['إعداد سلسلة شخصيات صنعت الأثر', 'جمع الصور وأسباب التكريم وإعداد المادة للمراجعة والنشر.', 'editorial'],
+    ['توثيق تجربة متطوع', 'اختيار موضوع المقابلة والحصول على الموافقة وتوثيق المساهمة.', 'field'],
+    ['أرشفة المادة المنشورة', 'ربط النسخة المعتمدة ومواد المصدر وروابط المنشورات بسجل المادة.', 'archive']
+  ],
+  coveragePlan: [
+    ['إعداد قائمة لقطات التغطية', 'حصر الفقرات والمواقع واللقطات المطلوبة وتحديد المصورين ومواعيد تسليم المواد.', 'field'],
+    ['جمع مواد التغطية والتصريحات', 'حصر التسجيل الأصلي والصور ومواد الجمعيات والتحقق من الإذن بالاستخدام.', 'field'],
+    ['إنتاج تقرير كلمة الوزير', 'اختيار مقتطفات موثقة من الكلمة ومراجعة الاقتباسات مع فريق التحرير.', 'visual'],
+    ['إجراء مقابلات ميدانية', 'تجهيز الأسئلة وتنسيق المواعيد وتوثيق الموافقات وتسليم التسجيلات.', 'field'],
+    ['إنتاج ريلز صوتي تجريبي', 'إعداد نص لمدة 60–90 ثانية ومزج التعليق مع الأصوات والمشاهد الأصلية.', 'visual'],
+    ['تسليم مواد التغطية للأرشيف', 'فهرسة المواد الخام والنسخ المعتمدة بحسب الفعالية وتسجيل روابط النشر.', 'archive']
+  ]
+};
 
 function element(tag, value, parent) {
   const node = document.createElement(tag);
@@ -178,7 +199,7 @@ export function mountOperations(root, db, sdk, user) {
     });
   }
 
-  async function render(tab = 'home') {
+  async function render(tab = 'home', taskPreset) {
     if (stopped) return;
     const current = ++renderId;
     root.replaceChildren();
@@ -196,6 +217,7 @@ export function mountOperations(root, db, sdk, user) {
       const lead = role === 'lead';
       const tabs = {home:'الرئيسية', ...Object.fromEntries(Object.entries(definitions).map(([key, value]) => [key,value.title])),
         applications:operator ? 'طلبات التطوع' : 'طلب التطوع'};
+      if (role) Object.assign(tabs, {workPlan:'خطة عمل اللجنة', coveragePlan:'خطة التغطية الإعلامية'});
       if (!role) for (const key of Object.keys(definitions)) delete tabs[key];
       if (role && !operator && !lead) delete tabs.members;
       if (manager) tabs.audit = 'سجل العمليات';
@@ -293,6 +315,32 @@ export function mountOperations(root, db, sdk, user) {
         return lead ? ['teamId','==',membership.teamId] : ['assigneeId','==',uid];
       }
 
+      if (Object.hasOwn(plans, tab)) {
+        element('p', 'بنود تشغيلية يمكن تحويلها إلى مهام وتحديد الفريق والمكلّف والموعد قبل الحفظ.', panel);
+        action(panel, 'عرض لوحة المهام', () => render('tasks'));
+        const tasksList = element('ul', '', panel);
+        tasksList.className = 'media-overview';
+        for (const [title, description, teamId] of planTasks[tab]) {
+          const item = element('li', '', tasksList);
+          element('strong', title, item);
+          element('p', description, item);
+          element('p', 'الفريق المقترح · ' + areas[teamId], item);
+          if (operator) action(item, 'إعداد مهمة', () => render('tasks', {
+            title, description, teamId, project:tabs[tab], state:'idea'
+          }));
+        }
+        for (const [id, section] of Object.entries(plans[tab])) {
+          const details = element('details', '', panel);
+          details.id = id;
+          element('summary', section.title, details);
+          const body = element('div', '', details);
+          // Only repository-authored markup from the previous bylaws is rendered here.
+          body.innerHTML = section.body;
+          if (location.hash.slice(1) === id) details.open = true;
+        }
+        return;
+      }
+
       if (tab === 'applications') {
         if (application) element('p', 'حالة طلبك · ' + decisions[application.state], panel);
         if (!application || ['draft','information'].includes(application.state)) {
@@ -368,7 +416,7 @@ export function mountOperations(root, db, sdk, user) {
         contentId:options(content), taskId:options(tasks, 'غير مرتبط')
       };
       let activeForm;
-      function edit(row) {
+      function edit(row, preset) {
         activeForm?.remove();
         const fields = definition.fields.filter(([name]) => {
           if (row && name === 'uid') return false;
@@ -378,7 +426,7 @@ export function mountOperations(root, db, sdk, user) {
             ? Object.fromEntries(Object.entries(stages).filter(([key]) => ['idea','preparation','production','review','changes'].includes(key)))
             : linked[name] ?? type,required
         ]);
-        activeForm = form(fields, row, values => {
+        activeForm = form(fields, row ?? preset, values => {
           const id = values.uid;
           delete values.uid;
           return save(tab, row ?? (id ? {id} : null), values);
@@ -386,6 +434,9 @@ export function mountOperations(root, db, sdk, user) {
         activeForm.querySelector('input,select,textarea')?.focus();
       }
       if (canCreate) action(panel, 'إضافة سجل', () => edit());
+      if (tab === 'tasks' && canCreate && taskPreset) {
+        edit(null, {...taskPreset, teamId:teams.some(team => team.id === taskPreset.teamId) ? taskPreset.teamId : ''});
+      }
       if (tab === 'teams' && operator) {
         for (const [id, name] of Object.entries(areas)) {
           if (rows.some(row => row.id === id)) continue;
@@ -489,7 +540,8 @@ export function mountOperations(root, db, sdk, user) {
     }
   }
 
-  render();
+  const initialView = new URLSearchParams(location.search).get('view');
+  render(Object.hasOwn(plans, initialView) ? initialView : 'home');
   return () => {
     stopped = true;
     root.replaceChildren();

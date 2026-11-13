@@ -184,6 +184,10 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 .archive-grid [hidden]{display:none}
 .archive-grid summary{cursor:pointer}
 @media(max-width:640px){.archive-grid{grid-template-columns:1fr}}
+#media-committee [hidden]{display:none!important}
+#media-committee .card{margin-block:12px}
+#media-committee label{display:block;margin-block:10px 4px}
+#media-committee textarea,#media-committee input,#media-committee select{display:block;width:100%;font:inherit;padding:8px;border:1px solid #aaa;border-radius:8px;margin-block-end:12px}
 </style>
 </head>
 <body>
@@ -286,20 +290,31 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
   </section>
 
   <section id="media-committee">
-    <div class="section-head"><h2>اللجنة الإعلامية والعلاقات العامة</h2><p>المنتدى الثاني للعمل التطوعي 2026</p></div>
-    <div class="grid">
-      <article class="card">
-        <h3>خطة اللجنة الإعلامية</h3>
-        <p>مسودة الأهداف وفرق العمل والأدوار.</p>
-        <a class="btn secondary" href="https://docs.google.com/document/d/18cw7uupKzDNpkjQ1bIFBrvi48Zf4Mbmf6rYIfWuEynI/edit">فتح خطة اللجنة</a>
-      </article>
-      <article class="card">
-        <h3>جدول النشر والمهام</h3>
-        <p>مسودة مواعيد النشر والمهام ومتابعة التنفيذ.</p>
-        <a class="btn secondary" href="https://docs.google.com/document/d/1PbuQyUN_37gz_aObkc9Fprfe_0b6mfsfvN50378J2v4/edit">فتح جدول النشر والمهام</a>
-      </article>
+    <div class="section-head"><h2>مساحة الأعضاء</h2><p>اللجنة الإعلامية والعلاقات العامة</p></div>
+    <div class="card">
+      <p id="media-status" role="status">جارٍ التحقق من تسجيل الدخول…</p>
+      <button class="btn primary" id="media-login" type="button" hidden>الدخول بحساب Google</button>
+      <button class="btn secondary" id="media-logout" type="button" hidden>تسجيل الخروج</button>
     </div>
-    <p class="note">هذه الصفحة التعريفية عامة. يتحقق Google من صلاحية حسابك عند فتح كل مستند.</p>
+    <div id="media-workspace" hidden>
+      <form id="media-content" class="card">
+        <h3>خطة اللجنة وجدول النشر والمهام</h3>
+        <label for="media-plan">خطة اللجنة</label>
+        <textarea id="media-plan" rows="9" maxlength="30000" readonly></textarea>
+        <label for="media-tasks">جدول النشر والمهام</label>
+        <textarea id="media-tasks" rows="9" maxlength="30000" readonly></textarea>
+        <button class="btn primary" id="media-save" hidden>حفظ التغييرات</button>
+      </form>
+      <form id="media-members" class="card" hidden>
+        <h3>إدارة العضوية</h3>
+        <label for="media-email">بريد العضو</label>
+        <input id="media-email" type="email" required>
+        <label for="media-role">الصلاحية</label>
+        <select id="media-role"><option value="viewer">مشاهدة</option><option value="editor">تحرير</option><option value="remove">إلغاء الوصول</option></select>
+        <button class="btn secondary">حفظ الصلاحية</button>
+      </form>
+      <p id="media-feedback" role="status"></p>
+    </div>
     <a class="btn secondary" href="?section=organization">العودة إلى الهيكل التنظيمي</a>
   </section>
 
@@ -738,7 +753,7 @@ const forumUpdates = [
     title: 'إضافة صفحة اللجنة الإعلامية والعلاقات العامة',
     status: 'نُشرت الصفحة',
     responsible: 'جعفر النشيط، رئيس اللجنة الإعلامية والعلاقات العامة',
-    description: 'أُضيفت صفحة اللجنة ضمن الهيكل التنظيمي للمنتدى، مع روابط لخطة اللجنة وجدول النشر والمهام للمخوّلين.',
+    description: 'أصبحت مساحة اللجنة متاحة عبر تسجيل الدخول للمخوّلين. تظهر الخطة وجدول النشر والمهام داخل الصفحة.',
     next: 'إضافة الهيكل وفرق العمل بعد اعتمادها.',
     url: '?section=media-committee',
     linkLabel: 'فتح صفحة اللجنة الإعلامية'
@@ -909,6 +924,102 @@ fetch('./organization-public.json',{cache:'no-store'})
 .then(r=>{if(!r.ok)throw new Error('load');return r.json()})
 .then(renderOrganization)
 .catch(()=>{document.getElementById('leadership-grid').append(createNode('div','empty org-empty','تعذر تحميل بيانات الهيكل التنظيمي.'));});
+</script>
+<script type="module">
+if (new URLSearchParams(location.search).get('section') === 'media-committee' || document.documentElement.dataset.section === 'media-committee') {
+  const el = id => document.getElementById('media-' + id);
+  const status = el('status');
+  const feedback = el('feedback');
+  try {
+    const sdk = 'https://www.gstatic.com/firebasejs/11.10.0/';
+    const [{initializeApp}, authSdk, dbSdk] = await Promise.all([
+      import(sdk + 'firebase-app.js'), import(sdk + 'firebase-auth.js'), import(sdk + 'firebase-firestore.js')
+    ]);
+    const app = initializeApp({"apiKey":"AIzaSyASssLjqgz-IViLCvPwDhjLayhLiDi2mGc","authDomain":"forum-committee-membership.firebaseapp.com","projectId":"forum-committee-membership","storageBucket":"forum-committee-membership.firebasestorage.app","messagingSenderId":"486503955171","appId":"1:486503955171:web:b930db260197d4614ea3d6"});
+    const auth = authSdk.getAuth(app);
+    await authSdk.setPersistence(auth, authSdk.browserSessionPersistence);
+    const db = dbSdk.getFirestore(app);
+    const workspace = dbSdk.doc(db, 'mediaCommittee', 'workspace');
+    const member = email => dbSdk.doc(db, 'mediaMembers', email);
+    let generation = 0;
+    function clearWorkspace(){
+      el('workspace').hidden = true;
+      el('members').hidden = true;
+      el('save').hidden = true;
+      el('plan').readOnly = true;
+      el('tasks').readOnly = true;
+      el('plan').value = '';
+      el('tasks').value = '';
+      feedback.textContent = '';
+    }
+    authSdk.onAuthStateChanged(auth, async user => {
+      const current = ++generation;
+      clearWorkspace();
+      el('login').hidden = Boolean(user);
+      el('logout').hidden = !user;
+      if (!user) {
+        status.textContent = 'سجّل الدخول بحسابك المعتمد لفتح محتوى اللجنة.';
+        return;
+      }
+      status.textContent = 'جارٍ التحقق من عضويتك…';
+      try {
+        const email = user.email;
+        const admin = email === 'jaffernasheet@gmail.com' && user.emailVerified;
+        const role = admin ? 'admin' : (await dbSdk.getDocFromServer(member(email))).data()?.role;
+        const data = (await dbSdk.getDocFromServer(workspace)).data();
+        if (current !== generation) return;
+        const editable = role === 'admin' || role === 'editor';
+        el('plan').value = data?.plan ?? '';
+        el('tasks').value = data?.tasks ?? '';
+        el('plan').readOnly = !editable;
+        el('tasks').readOnly = !editable;
+        el('save').hidden = !editable;
+        el('members').hidden = !admin;
+        el('workspace').hidden = false;
+        status.textContent = 'الدخول مؤكد · ' + ({admin:'مدير', editor:'محرّر', viewer:'مشاهد'}[role] ?? 'عضو');
+      } catch (error) {
+        if (current !== generation) return;
+        status.textContent = error.code === 'permission-denied'
+          ? 'ليس لديك إذن بفتح محتوى اللجنة. جرّب حسابك المخوّل.'
+          : 'تعذّر التحقق من العضوية. حدّث الصفحة وحاول مرة أخرى.';
+      }
+    });
+    el('login').onclick = async () => {
+      try { await authSdk.signInWithPopup(auth, new authSdk.GoogleAuthProvider()); }
+      catch { status.textContent = 'تعذّر تسجيل الدخول. تأكد من السماح بالنوافذ المنبثقة وحاول مجددًا.'; }
+    };
+    el('logout').onclick = async () => {
+      try { await authSdk.signOut(auth); }
+      catch { status.textContent = 'تعذّر تسجيل الخروج. حاول مجددًا.'; }
+    };
+    el('content').onsubmit = async event => {
+      event.preventDefault();
+      if (el('save').hidden || el('save').disabled) return;
+      el('save').disabled = true;
+      try {
+        await dbSdk.setDoc(workspace, {plan:el('plan').value, tasks:el('tasks').value});
+        feedback.textContent = 'حُفظت التغييرات.';
+      } catch { feedback.textContent = 'تعذّر الحفظ. تحقق من الاتصال والصلاحية.'; }
+      finally { el('save').disabled = false; }
+    };
+    el('members').onsubmit = async event => {
+      event.preventDefault();
+      const email = el('email').value.trim().toLowerCase();
+      if (email.includes('/') || email === 'jaffernasheet@gmail.com') {
+        feedback.textContent = 'أدخل بريد عضو آخر صالحًا.';
+        return;
+      }
+      const role = el('role').value;
+      try {
+        if (role === 'remove') await dbSdk.deleteDoc(member(email));
+        else await dbSdk.setDoc(member(email), {role});
+        feedback.textContent = 'حُفظت صلاحية العضو.';
+      } catch { feedback.textContent = 'تعذّر تحديث الصلاحية.'; }
+    };
+  } catch {
+    status.textContent = 'تعذّر تحميل خدمة العضوية. حدّث الصفحة وحاول مرة أخرى.';
+  }
+}
 </script>
 </body>
 </html>

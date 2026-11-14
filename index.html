@@ -156,6 +156,15 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 .followup li{margin-block:8px}
 .plan-grid .card{scroll-margin-top:16px}
 #meeting-01 .meeting-topics{grid-template-columns:1fr}
+#meeting-01 .meeting-topics > details {border-inline-start:4px solid var(--meeting-state-line,#64748b)}
+#meeting-01 [data-meeting-state="progress"] {--meeting-state-line:#a15b00;--meeting-state-bg:#fff0cf;--meeting-state-text:#754300}
+#meeting-01 [data-meeting-state="done"] {--meeting-state-line:#168049;--meeting-state-bg:#e1f6e8;--meeting-state-text:#145a35}
+.meeting-state {display:inline-block;margin-inline-start:.6rem;padding:.1rem .55rem;border-radius:1rem;background:var(--meeting-state-bg,#e9edf2);color:var(--meeting-state-text,#39465a);font-size:.8em}
+.meeting-proposal {display:grid;gap:.65rem;margin-block:1rem}
+.meeting-proposal label {display:grid;gap:.25rem}
+.meeting-proposal textarea {min-height:5rem}
+.meeting-proposal button {justify-self:start}
+.meeting-item-controls {border-block-start:1px solid var(--line);margin-block-start:1rem}
 #meeting-01 .meeting-outcomes details,#meeting-01 #attendance,#meeting-01 #topic-16{margin-block:10px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
 #meeting-01 summary{cursor:pointer;font-weight:700}
 #meeting-01 .meeting-outcomes a,#meeting-01 #topic-16 a{color:var(--link,#12669c);text-decoration:underline}
@@ -416,7 +425,11 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
     <p>لم تسجّل مسودة هذا المحضر بنودًا مؤجّلة بقرار.</p>
   </details>
 </section>
-<h2>بنود الاجتماع الأول</h2><p class="muted">اضغط على عنوان البند لعرض ملخص المناقشة وحالته والخطوة المقترحة إن وُجدت.</p><div class="grid meeting-topics"><details id="topic-1"><summary><bdi>001</bdi> الرؤية السنوية واستدامة المنتدى</summary><div class="detail"><p>نوقش تحويل المنتدى إلى برنامج مستمر طوال العام، مع مبادرات ومؤشرات يمكن تتبعها.</p><p class="muted">توافق مبدئي؛ لم تعتمد خطة تفصيلية.</p><p><strong>خطوة مقترحة</strong> · صياغة أهداف سنوية، تحديد نطاق البرنامج ومؤشرات الأداء وجدول الأنشطة.</p><div class="links"><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=plan#activity-follow-up" target="_blank" rel="noopener noreferrer">النشاط ذو الصلة في الخطة</a></div></div></details>
+<h2>بنود الاجتماع الأول</h2>
+<p id="meeting-first-status" role="status"></p>
+<button id="meeting-first-login" class="btn secondary" type="button" hidden>الدخول بحساب Google لمتابعة البنود</button>
+<button id="meeting-first-logout" class="btn secondary" type="button" hidden>تسجيل الخروج</button>
+<div id="meeting-first-register"></div><p class="muted">اضغط على عنوان البند لعرض ملخص المناقشة وحالته والخطوة المقترحة إن وُجدت.</p><div class="grid meeting-topics"><details id="topic-1"><summary><bdi>001</bdi> الرؤية السنوية واستدامة المنتدى</summary><div class="detail"><p>نوقش تحويل المنتدى إلى برنامج مستمر طوال العام، مع مبادرات ومؤشرات يمكن تتبعها.</p><p class="muted">توافق مبدئي؛ لم تعتمد خطة تفصيلية.</p><p><strong>خطوة مقترحة</strong> · صياغة أهداف سنوية، تحديد نطاق البرنامج ومؤشرات الأداء وجدول الأنشطة.</p><div class="links"><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=plan#activity-follow-up" target="_blank" rel="noopener noreferrer">النشاط ذو الصلة في الخطة</a></div></div></details>
 <details id="topic-2"><summary><bdi>002</bdi> مراحل إعداد القيادات التطوعية</summary><div class="detail"><p>طُرح مسار يبدأ بالتأسيس والتأهيل، ثم قيادة مشاريع فعلية بإشراف مختصين، وينتهي بالتقييم والتوثيق.</p><p class="muted">تصور أولي؛ معايير الاختيار وعدد المشاركين غير معتمدة.</p><p><strong>خطوة مقترحة</strong> · تحديد متطلبات القبول، المسارات التدريبية، قواعد الاختيار، ومخرجات كل مرحلة.</p><div class="links"><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=plan#activity-workshops" target="_blank" rel="noopener noreferrer">النشاط ذو الصلة في الخطة</a></div></div></details>
 <details id="topic-3"><summary><bdi>003</bdi> الرئاسة الدورية للمنتدى بين الجمعيات</summary><div class="detail"><p>طُرح تداول رئاسة المنتدى سنويًا بين الجمعيات المشاركة في اللجنة العليا، وفق معايير جاهزية تُحدّد لاحقًا.</p><p class="muted">مقترح لم يعتمد نهائيًا</p></div></details>
 <details id="topic-4"><summary><bdi>004</bdi> اللجنة العليا والحوكمة والصلاحيات</summary><div class="detail"><p>نوقشت مرجعية اللجنة العليا وصلاحيات اعتماد القرارات وتكليف الفرق.</p><p class="muted">توافق على الحاجة للحوكمة؛ تفاصيلها لم تقر.</p><p><strong>خطوة مقترحة</strong> · صياغة ميثاق الحوكمة، الصلاحيات، المحاضر، نصاب القرارات، آلية المساءلة والتقارير.</p></div></details>
@@ -1008,10 +1021,11 @@ fetch('./organization-public.json',{cache:'no-store'})
 .catch(()=>{document.getElementById('leadership-grid').append(createNode('div','empty org-empty','تعذر تحميل بيانات الهيكل التنظيمي.'));});
 </script>
 <script type="module">
-if (['media-committee','meeting-02'].includes(document.documentElement.dataset.section)) {
-  const meetingPage = document.documentElement.dataset.section === 'meeting-02';
+if (['media-committee','meeting-01','meeting-02'].includes(document.documentElement.dataset.section)) {
+  const firstMeeting = document.documentElement.dataset.section === 'meeting-01';
+  const meetingPage = firstMeeting || document.documentElement.dataset.section === 'meeting-02';
   const el = id => document.getElementById('media-' + id);
-  const status = meetingPage ? document.getElementById('meeting-status') : el('status');
+  const status = meetingPage ? document.getElementById(firstMeeting ? 'meeting-first-status' : 'meeting-status') : el('status');
   const feedback = el('feedback');
   try {
     const sdk = 'https://www.gstatic.com/firebasejs/11.10.0/';
@@ -1023,7 +1037,7 @@ if (['media-committee','meeting-02'].includes(document.documentElement.dataset.s
     await authSdk.setPersistence(auth, authSdk.browserSessionPersistence);
     const db = dbSdk.getFirestore(app);
     if (meetingPage) {
-      const {mountMeeting} = await import('./meeting-register.mjs?v=2');
+      const {mountMeeting} = await import('./meeting-register.mjs?v=3');
       mountMeeting(db, dbSdk, auth, authSdk);
     } else {
     const workspace = dbSdk.doc(db, 'mediaCommittee', 'workspace');

@@ -238,6 +238,9 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 .home-sections {padding-block:1rem}
 .forum-tree {max-width:48rem;margin:0;padding:0;list-style:none}
 .org-tree {max-width:none}
+.media-tree details li {margin-block:.35rem}
+.media-tree details li::before {inset-block-start:1.35rem}
+.media-tree summary[aria-current="page"] {color:var(--c-indigo)}
 .org-tree .org-branch {padding:0 1rem .9rem}
 .org-tree .org-branch > p:first-child {margin-block-start:0}
 .forum-tree > li {margin-block:.55rem}
@@ -1155,7 +1158,7 @@ if (['media-committee','meeting-01','meeting-02'].includes(document.documentElem
       }
       status.textContent = 'تم تسجيل الدخول بحساب ' + (user.email || 'Google') + '.';
       const operations = el('operations');
-      import('./media-operations.mjs?v=2').then(({mountOperations}) => {
+      import('./media-operations.mjs?v=3').then(({mountOperations}) => {
         if (current === generation) stopOperations = mountOperations(operations, db, dbSdk, user);
       }).catch(() => {
         if (current !== generation) return;

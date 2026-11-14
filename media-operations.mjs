@@ -246,6 +246,11 @@ export function mountOperations(root, db, sdk, user) {
         group('الفرق والمحتوى',moreTabs);
         group('إدارة اللجنة',adminTabs);
       }
+      const bylaws = document.getElementById('media-bylaws-branch')?.cloneNode(true);
+      if (bylaws) {
+        bylaws.removeAttribute('id');
+        tree.append(bylaws);
+      }
       const status = element('p', '', panel);
       status.setAttribute('role', 'status');
       function form(fields, values, onSave, label = 'حفظ', container = panel) {

@@ -4,13 +4,11 @@ const committee = 'media';
 const roles = {manager:'مسؤول اللجنة', deputy:'نائب المسؤول', lead:'قائد فريق', member:'عضو', observer:'اللجنة العليا'};
 const stages = {
   idea:'فكرة جديدة', preparation:'قيد الإعداد', production:'قيد الإنتاج', review:'قيد المراجعة',
-  changes:'مطلوب تعديل', approved:'معتمد للنشر', scheduled:'مجدول', published:'منشور',
+  changes:'مطلوب تعديل', completed:'معتمد الإنجاز', approved:'معتمد للنشر', scheduled:'مجدول', published:'منشور',
   archived:'مؤرشف', paused:'متوقف', cancelled:'ملغى'
 };
-const decisions = {
-  draft:'مسودة', submitted:'مُرسل', reviewing:'قيد المراجعة', information:'بحاجة إلى معلومات إضافية',
-  test:'مرشح لاختبار عملي', trial:'قيد التجربة', accepted:'معتمد', declined:'غير مقبول', deferred:'مؤجل'
-};
+const planStates = {proposed:'مقترحة', considering:'قيد الدراسة', deferred:'مؤجلة', accepted:'معتمدة'};
+const priorities = {normal:'عادية', high:'عالية', urgent:'عاجلة'};
 const areas = {
   editorial:'التحرير والمحتوى', visual:'الإنتاج المرئي', design:'التصميم والهوية',
   platforms:'النشر والمنصات', archive:'التوثيق والأرشفة', field:'التغطيات الميدانية'
@@ -109,7 +107,7 @@ function field(parent, name, label, type = 'text', required = false, value = '')
   if (name === 'uid') control.pattern = '[A-Za-z0-9_\\-]+';
   if (type === 'number') {
     control.min = 0;
-    control.max = 500;
+    control.max = name === 'progress' ? 100 : 500;
   }
   control.maxLength = name === 'title' ? 200 : name === 'uid' ? 128 : 2000;
   if (value !== '' || control.tagName !== 'SELECT' || Object.hasOwn(type, '')) control.value = value ?? '';
@@ -133,15 +131,6 @@ const definitions = {
       ['teamId','الفريق الأساسي'], ['primaryRole','الدور الأساسي'], ['supportRoles','الفرق والأدوار المساندة'],
       ['skills','المهارات ومستوياتها'], ['availability','التفرّغ'],
       ['state','الحالة',{active:'معتمد ونشط',inactive:'غير نشط',training:'متدرب'}]
-    ]
-  },
-  tasks: {
-    title:'المهام والإنتاج',
-    fields:[
-      ['title','عنوان المهمة','text',true], ['description','الوصف','textarea'], ['project','المشروع أو الحملة'],
-      ['teamId','الفريق'], ['assigneeId','المكلّف'], ['contributors','المساهمون'],
-      ['priority','الأولوية',{normal:'عادية',high:'عالية',urgent:'عاجلة'}], ['due','موعد الاستحقاق','date'],
-      ['state','مرحلة التنفيذ',stages], ['fileUrl','رابط ملف العمل','url'], ['note','الملاحظات أو سبب الإيقاف','textarea']
     ]
   },
   content: {
@@ -178,7 +167,7 @@ export function mountOperations(root, db, sdk, user) {
     return (await sdk.getDocsFromServer(query)).docs.map(record => ({id:record.id, ...record.data()}));
   };
 
-  async function save(group, record, values, audit = true) {
+  async function save(group, record, values, assigneeName) {
     const ref = record?.id ? path(group, record.id) : sdk.doc(collection(group));
     const log = sdk.doc(collection('audit'));
     await sdk.runTransaction(db, async transaction => {
@@ -187,38 +176,46 @@ export function mountOperations(root, db, sdk, user) {
           || (snapshot.exists() && !snapshot.data().updatedAt?.isEqual(record.updatedAt))) {
         throw new Error('stale-record');
       }
-      const payload = {...values, updatedAt:sdk.serverTimestamp()};
-      if (audit) {
-        payload.auditId = log.id;
-        transaction.set(log, {
-          actorId:uid, group, targetId:ref.id, operation:snapshot.exists() ? 'update' : 'create',
-          timestamp:sdk.serverTimestamp()
+      const payload = {...Object.fromEntries(Object.entries(values).filter(([,value]) => value !== undefined)), updatedAt:sdk.serverTimestamp()};
+      payload.auditId = log.id;
+      transaction.set(log, {
+        actorId:uid, group, targetId:ref.id, operation:snapshot.exists() ? 'update' : 'create',
+        timestamp:sdk.serverTimestamp()
+      });
+      transaction.set(ref, payload, {merge:snapshot.exists()});
+      const task = {...snapshot.data(), ...payload};
+      if (group === 'tasks' && task.planState === 'accepted') {
+        const {title, teamId, assigneeId, start, due, state, progress, updatedAt} = task;
+        transaction.set(path('taskSummaries', ref.id), {
+          title, teamId, assigneeId, assigneeName, start, due, state, progress, updatedAt
         });
       }
-      transaction.set(ref, payload, {merge:snapshot.exists()});
     });
   }
 
-  async function render(tab = 'home', taskPreset) {
+  async function render(tab = 'home') {
     if (stopped) return;
     const current = ++renderId;
     root.replaceChildren();
     const feedback = element('p', 'جارٍ تحميل مساحة اللجنة…', root);
     feedback.setAttribute('role', 'status');
     try {
-      const [membership, upper, application] = await Promise.all([
-        read('members', uid), read('oversight', uid), read('applications', uid)
-      ]);
+      const [membership, upper] = await Promise.all([read('members', uid), read('oversight', uid)]);
       if (stopped || current !== renderId) return;
       feedback.textContent = '';
       const role = membership?.state === 'active' ? membership.role : upper?.state === 'active' ? 'observer' : null;
       const manager = role === 'manager';
       const operator = manager || role === 'deputy';
       const lead = role === 'lead';
-      const tabs = {home:'الرئيسية', ...Object.fromEntries(Object.entries(definitions).map(([key, value]) => [key,value.title])),
-        applications:operator ? 'طلبات التطوع' : 'طلب التطوع'};
-      if (role) Object.assign(tabs, {workPlan:'خطة عمل اللجنة', coveragePlan:'خطة التغطية الإعلامية'});
-      if (!role) for (const key of Object.keys(definitions)) delete tabs[key];
+      const summaryCriteria = operator || role === 'observer' ? null : ['teamId','==',membership?.teamId ?? ''];
+      const tabs = {home:'الرئيسية'};
+      if (role) Object.assign(tabs, {
+        workPlan:'خطة عمل اللجنة', coveragePlan:'خطة التغطية الإعلامية',
+        tasks:'مهامي', allTasks:'مهام اللجنة', teamTasks:'مهام الفريق', committeeCalendar:'تقويم اللجنة',
+        ...Object.fromEntries(Object.entries(definitions).filter(([key]) => key !== 'tasks').map(([key, value]) => [key,value.title]))
+      });
+      if (!operator) delete tabs.allTasks;
+      if (operator || lead) tabs.review = 'بانتظار المراجعة';
       if (role && !operator && !lead) delete tabs.members;
       if (manager) tabs.audit = 'سجل العمليات';
       if (!tabs[tab]) tab = 'home';
@@ -234,8 +231,8 @@ export function mountOperations(root, db, sdk, user) {
       element('h3', tabs[tab], panel);
       const status = element('p', '', panel);
       status.setAttribute('role', 'status');
-      function form(fields, values, onSave, label = 'حفظ') {
-        const editor = element('form', '', panel);
+      function form(fields, values, onSave, label = 'حفظ', container = panel) {
+        const editor = element('form', '', container);
         for (const [name, caption, type, required] of fields) field(editor, name, caption, type, required, values?.[name]);
         const submit = element('button', label, editor);
         submit.className = 'btn primary';
@@ -252,7 +249,7 @@ export function mountOperations(root, db, sdk, user) {
             await render(tab);
             root.querySelector('[aria-current="page"]')?.focus();
           } catch (error) {
-            status.textContent = error.message === 'stale-record'
+            status.textContent = error.message === 'review-note' ? 'اكتب التعديل المطلوب قبل إرجاع المهمة.' : error.message === 'date-order' ? 'يجب أن يسبق تاريخ البدء تاريخ الانتهاء أو يوافقه.' : error.message === 'stale-record'
               ? 'تغيّر السجل بعد فتحه. انسخ تعديلاتك ثم أعد فتح السجل.'
               : 'تعذّر الحفظ. تحقق من المدخلات والصلاحية والاتصال.';
           } finally {
@@ -281,7 +278,7 @@ export function mountOperations(root, db, sdk, user) {
             element('strong', view[0], item);
             for (const detail of view.slice(1)) if (detail) element('p', detail, item);
             showLink(item, row.fileUrl ?? row.portfolio);
-            if (edit && (tab !== 'tasks' || canEditRow(row))) action(item, 'فتح السجل', () => edit(row));
+            if (edit) action(item, 'فتح السجل', () => edit(row));
           }
           if (!list.children.length) element('li', 'لا توجد سجلات مطابقة.', list);
         }
@@ -291,12 +288,12 @@ export function mountOperations(root, db, sdk, user) {
       }
 
       if (tab === 'home') {
-        element('p', role ? 'الصلاحية · ' + roles[role] : 'يمكنك تقديم طلب تطوع ومتابعة حالته.', panel);
+        element('p', role ? 'الصلاحية · ' + roles[role] : 'لم تُفعّل عضوية هذا الحساب. تواصل مع إدارة اللجنة للتحقق من معرّف الحساب أدناه.', panel);
         if (!role) element('p', 'معرّف حسابك (UID) · ' + uid, panel);
         if (membership) element('p', membership.title + ' · ' + (membership.primaryRole || 'الدور قيد التحديد'), panel);
         if (role) {
           const [teams, tasks, entries] = await Promise.all([
-            list('teams'), list('tasks', taskCriteria()), list('publications')
+            list('teams'), list('taskSummaries', summaryCriteria), list('publications')
           ]);
           if (stopped || current !== renderId) return;
           const today = new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Bahrain'}).format(new Date());
@@ -306,86 +303,164 @@ export function mountOperations(root, db, sdk, user) {
             ' · مواعيد النشر المجدولة ' + entries.filter(row => row.state === 'scheduled').length, panel);
           renderOperatingOverview(panel, teams, render);
         }
-        action(panel, 'طلب التطوع', () => render('applications'));
         return;
       }
 
       function taskCriteria() {
-        if (operator || role === 'observer') return null;
+        if (operator) return null;
         return lead ? ['teamId','==',membership.teamId] : ['assigneeId','==',uid];
       }
 
-      if (Object.hasOwn(plans, tab)) {
-        element('p', 'بنود تشغيلية يمكن تحويلها إلى مهام وتحديد الفريق والمكلّف والموعد قبل الحفظ.', panel);
-        action(panel, 'عرض لوحة المهام', () => render('tasks'));
-        const tasksList = element('ul', '', panel);
-        tasksList.className = 'media-overview';
-        for (const [title, description, teamId] of planTasks[tab]) {
-          const item = element('li', '', tasksList);
-          element('strong', title, item);
-          element('p', description, item);
-          element('p', 'الفريق المقترح · ' + areas[teamId], item);
-          if (operator) action(item, 'إعداد مهمة', () => render('tasks', {
-            title, description, teamId, project:tabs[tab], state:'idea'
-          }));
-        }
-        for (const [id, section] of Object.entries(plans[tab])) {
-          const details = element('details', '', panel);
-          details.id = id;
-          element('summary', section.title, details);
-          const body = element('div', '', details);
-          // Only repository-authored markup from the previous bylaws is rendered here.
-          body.innerHTML = section.body;
-          if (location.hash.slice(1) === id) details.open = true;
-        }
-        return;
-      }
+      const planView = Object.hasOwn(plans, tab);
+      const taskView = ['tasks','allTasks','review','teamTasks','committeeCalendar'].includes(tab);
+      if (planView || taskView) {
+        const summaries = await list('taskSummaries', summaryCriteria);
+        if (stopped || current !== renderId) return;
+        const teams = operator ? await list('teams') : [];
+        const members = operator ? (await list('members')).filter(member => member.state === 'active') : [];
+        const teamOptions = {'':'اختر الفريق', ...Object.fromEntries(teams.map(team => [team.id,team.title]))};
+        const memberOptions = {'':'اختر المسؤول', ...Object.fromEntries(members.map(member => [member.id,member.title]))};
+        const priorityField = ['priority','الأولوية',priorities,true];
+        const progressField = ['progress','نسبة الإنجاز','number',true];
 
-      if (tab === 'applications') {
-        if (application) element('p', 'حالة طلبك · ' + decisions[application.state], panel);
-        if (!application || ['draft','information'].includes(application.state)) {
-          const fields = [
-            ['title','اسمك','text',true], ['area','المجال الأساسي',areas], ['interests','مجالات إضافية'],
-            ['experience','الخبرات والمهارات','textarea',true], ['tools','البرامج والأدوات'],
-            ['portfolio','رابط نموذج عمل اختياري','url'], ['availability','التفرغ المتوقع','text',true],
-            ['learning','مجالات ترغب في تعلّمها'], ['specialty','التجربة التخصصية','textarea'],
-            ['consent','أوافق على استخدام البيانات لمراجعة طلب التطوع وإتاحتها للمخوّلين بهذه المراجعة',{'':'اختر',yes:'أوافق'},true]
-          ];
-          const editor = form(fields, {...application, title:application?.title ?? user.displayName}, (values, submitter) =>
-            save('applications', application ?? {id:uid}, {...values,state:submitter?.value === 'draft' ? 'draft' : 'submitted'}, false), 'إرسال الطلب');
-          if (!application || application.state === 'draft') {
-            const draft = element('button', 'حفظ مسودة', editor);
-            draft.className = 'btn secondary';
-            draft.value = 'draft';
-            draft.formNoValidate = true;
+        function taskEditor(container, row, preset = {}) {
+          const isAssigned = row?.planState === 'accepted';
+          const canReview = row?.state === 'review' && (operator || (lead && row.assigneeId !== uid));
+          const assigneeName = row?.assigneeId === uid ? membership?.title : summaries.find(item => item.id === row?.id)?.assigneeName;
+          if (canReview) {
+            form([
+              ['state','قرار المراجعة',{completed:'اعتماد الإنجاز',changes:'إعادة للتعديل'},true],
+              ['reviewNote','ملاحظة المراجعة','textarea']
+            ], {}, values => {
+              if (values.state === 'changes' && !values.reviewNote) throw new Error('review-note');
+              return save('tasks', row, {
+                ...values, progress:values.state === 'completed' ? 100 : row.progress
+              }, assigneeName);
+            }, 'حفظ قرار المراجعة', container);
+            return;
           }
-          const prompts = {editorial:'اذكر مثالًا على تحرير خبر.',visual:'صف دورك في تصوير أو مونتاج مادة.',
-            design:'صف عملًا تصميميًا أنجزته.',platforms:'اشرح كيف تجهّز منشورًا لمنصتين.',
-            archive:'كيف تفهرس مجموعة صور؟',field:'كيف تخطط لتغطية فعالية ميدانية؟'};
-          const specialty = editor.elements.specialty;
-          function prompt() { specialty.placeholder = prompts[editor.elements.area.value]; }
-          editor.elements.area.onchange = prompt;
-          prompt();
-        }
-        if (operator) {
-          element('h4', 'مراجعة طلبات المتطوعين', panel);
-          const rows = await list('applications', ['state','!=','draft']);
-          let reviewForms = [];
-          records(rows, row => [row.title, areas[row.area], decisions[row.state], row.experience, row.availability], async row => {
-            try {
-              const evaluation = await read('evaluations', row.id);
-              if (stopped || current !== renderId) return;
-              reviewForms.forEach(node => node.remove());
-              reviewForms = [
-                form([['state','قرار المراجعة البشرية',Object.fromEntries(Object.entries(decisions).filter(([key]) => key !== 'draft'))]], row, values => save('applications', row, values), 'حفظ حالة الطلب'),
-                form([['notes','ملاحظات المراجعة الخاصة','textarea',true], ['recommendedRole','الدور المقترح']], evaluation,
-                  values => save('evaluations', evaluation ?? {id:row.id}, values), 'حفظ التقييم الخاص')
-              ];
-              reviewForms[0].scrollIntoView({block:'nearest'});
-            } catch {
-              status.textContent = 'تعذّر فتح التقييم.';
+          if (!operator) {
+            if (!isAssigned || row.assigneeId !== uid || !['idea','preparation','production','changes'].includes(row.state)) return;
+            form([
+              progressField, ['note','ملاحظات التنفيذ','textarea'], ['fileUrl','رابط مخرجات العمل','url'],
+              ['state','الإجراء',{production:'حفظ التقدم',review:'إرسال للمراجعة'},true]
+            ], {...row,state:'production'}, values => save('tasks', row, values, assigneeName), 'حفظ التحديث', container);
+            return;
+          }
+          const base = {
+            title:'',description:'',project:'',teamId:'',assigneeId:'',contributors:'',
+            priority:'normal',due:'',start:'',progress:0,planState:'proposed',state:'idea',
+            fileUrl:'',note:'',reviewNote:'',...preset,...row
+          };
+          const fields = [
+            ['title','العنوان','text',true], ['description','الوصف والناتج المطلوب','textarea'],
+            priorityField, ['planState','حالة البند',isAssigned ? {accepted:planStates.accepted} : planStates,true]
+          ];
+          const assignment = [
+            ['teamId','الفريق',teamOptions,true], ['assigneeId','المسؤول',memberOptions,true],
+            ['contributors','المساهمون'], ['start','تاريخ البدء','date',true], ['due','تاريخ الانتهاء','date',true],
+            progressField, ['fileUrl','رابط مخرجات العمل','url'], ['note','ملاحظات التنفيذ','textarea']
+          ];
+          const execution = isAssigned && ['completed','approved','scheduled','published','archived'].includes(row.state)
+            ? Object.fromEntries(Object.entries(stages).filter(([key]) => [row.state,'approved','scheduled','published','archived'].includes(key)))
+            : {preparation:'قيد الإعداد',production:'قيد الإنتاج',review:'إرسال للمراجعة'};
+          const editor = form([...fields,...assignment,['state','مرحلة التنفيذ',execution,true]], {
+            ...base, state:Object.hasOwn(execution,base.state) ? base.state : 'preparation'
+          }, values => {
+            const accepted = values.planState === 'accepted';
+            if (accepted && values.start > values.due) throw new Error('date-order');
+            const selected = members.find(member => member.id === values.assigneeId);
+            return save('tasks', row ?? (preset.id ? {id:preset.id} : null), {
+              ...base,...values,...(accepted ? {} : {state:'idea',start:'',due:'',teamId:'',assigneeId:'',progress:0}),
+              ...(accepted && base.state === 'changes' && values.state !== 'review' ? {state:'production'} : {}),
+              id:undefined,updatedAt:undefined,auditId:undefined
+            }, selected?.title);
+          }, 'حفظ البند', container);
+          function updateAssignment() {
+            const accepted = editor.elements.planState.value === 'accepted';
+            for (const [name,, ,required] of [...assignment,['state','','',true]]) {
+              const input = editor.elements.namedItem(name);
+              input.disabled = !accepted;
+              input.required = accepted && Boolean(required);
+              input.parentElement.hidden = !accepted;
             }
-          });
+            const teamId = editor.elements.teamId.value;
+            for (const option of editor.elements.assigneeId.options) {
+              option.disabled = Boolean(option.value) && members.find(member => member.id === option.value)?.teamId !== teamId;
+            }
+            if (editor.elements.assigneeId.selectedOptions[0]?.disabled) editor.elements.assigneeId.value = '';
+          }
+          editor.elements.planState.onchange = editor.elements.teamId.onchange = updateAssignment;
+          updateAssignment();
+        }
+
+        if (planView) {
+          const privateRows = operator ? await list('tasks') : [];
+          for (const [index, [title,description,teamId]] of planTasks[tab].entries()) {
+            const id = tab + '-' + (index + 1);
+            const row = privateRows.find(item => item.id === id);
+            const summary = summaries.find(item => item.id === id);
+            const details = element('details', '', panel);
+            element('summary', (row?.title ?? summary?.title ?? title) + ' · ' +
+              planStates[row?.planState ?? (summary ? 'accepted' : 'proposed')] +
+              (row ? ' · ' + priorities[row.priority] : ''), details);
+            element('p', description, details);
+            if (operator) taskEditor(details, row, {id,title,description,teamId,project:tabs[tab]});
+          }
+          for (const [id, section] of Object.entries(plans[tab])) {
+            const details = element('details', '', panel);
+            details.id = id;
+            element('summary', section.title, details);
+            element('div', '', details).innerHTML = section.body;
+            details.open = location.hash.slice(1) === id;
+          }
+          return;
+        }
+        if (tab === 'committeeCalendar') {
+          const mode = field(panel,'period','العرض',{upcoming:'القادم',week:'أسبوع',month:'شهر'});
+          const day = field(panel,'date','بداية الفترة','date');
+          day.value = new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bahrain'}).format(new Date());
+          const publications = await list('publications');
+          const content = await list('content');
+          const calendar = element('div','',panel);
+          function draw() {
+            calendar.replaceChildren();
+            const start = day.value;
+            const end = mode.value === 'week' && start
+              ? new Date(Date.parse(start+'T00:00:00Z') + 6*86400000).toISOString().slice(0,10)
+              : mode.value === 'month' ? start.slice(0,7)+'-31' : '9999-12-31';
+            const from = mode.value === 'month' ? start.slice(0,7)+'-01' : start;
+            const rows = [
+              ...summaries.filter(row => row.due >= from && row.start <= end).map(row =>
+                [row.start,'مهمة · '+row.title,row.start+' — '+row.due+' · '+row.assigneeName+' · '+stages[row.state]+' · '+row.progress+'٪']),
+              ...publications.filter(row => row.state !== 'cancelled' && row.date.slice(0,10) >= from && row.date.slice(0,10) <= end)
+                .map(row => [row.date,'نشر · '+(content.find(item => item.id === row.contentId)?.title ?? 'مادة إعلامية'),row.date.replace('T',' · ')])
+            ].sort((a,b) => a[0].localeCompare(b[0]));
+            records(rows, row => row.slice(1), null, calendar);
+          }
+          mode.onchange = day.onchange = draw;
+          draw();
+          return;
+        }
+        if (tab === 'teamTasks') {
+          records(summaries.filter(row => operator || role === 'observer' || row.teamId === membership.teamId),
+            row => [row.title,row.assigneeName,row.due,stages[row.state],row.progress+'٪']);
+          return;
+        }
+        const rows = ['review','allTasks'].includes(tab) ? await list('tasks',taskCriteria()) : await list('tasks',['assigneeId','==',uid]);
+        if (operator && tab === 'allTasks') {
+          const newTask = element('details','',panel);
+          element('summary','إضافة بند أو مهمة',newTask);
+          taskEditor(newTask);
+        }
+        const visible = tab === 'review' ? rows.filter(row => row.state === 'review' && (operator || row.assigneeId !== uid)) : rows;
+        if (!visible.length) element('p','لا توجد مهام في هذه القائمة.',panel);
+        for (const row of visible) {
+          const details = element('details','',panel);
+          element('summary',row.title+' · '+stages[row.state]+' · '+(row.progress ?? 0)+'٪',details);
+          for (const value of [row.description,row.due,row.note,row.reviewNote]) if (value) element('p',value,details);
+          showLink(details,row.fileUrl);
+          taskEditor(details,row);
         }
         return;
       }
@@ -398,35 +473,31 @@ export function mountOperations(root, db, sdk, user) {
         return;
       }
 
-      const criteria = tab === 'tasks' ? taskCriteria() : tab === 'members' && lead ? ['teamId','==',membership.teamId] : null;
+      const criteria = tab === 'members' && lead ? ['teamId','==',membership.teamId] : null;
       const rows = await list(tab, criteria);
-      const teams = ['members','tasks'].includes(tab) ? await list('teams') : [];
-      const members = (tab === 'tasks' || tab === 'teams') && operator ? await list('members') :
-        tab === 'tasks' && lead ? await list('members', ['teamId','==',membership.teamId]) : [];
+      const teams = tab === 'members' ? await list('teams') : [];
+      const members = tab === 'teams' && operator ? await list('members') : [];
       const content = tab === 'publications' ? await list('content') : [];
-      const tasks = tab === 'content' ? await list('tasks', taskCriteria()) : [];
+      const tasks = tab === 'content' && operator ? await list('tasks') : [];
       if (stopped || current !== renderId) return;
       const definition = definitions[tab];
       const canCreate = tab === 'members' ? manager : operator;
-      const canEdit = canCreate || (tab === 'tasks' && (lead || role === 'member'));
-      const canEditRow = row => canEdit && (tab !== 'tasks' || operator || ['idea','preparation','production','review','changes'].includes(row.state));
+      const canEdit = canCreate;
       const options = (items, empty = 'اختر') => ({'':empty,...Object.fromEntries(items.map(row => [row.id,row.title]))});
       const linked = {
-        teamId:options(teams, 'غير محدد'), assigneeId:options(members, 'غير مسند'),
+        teamId:options(teams, 'غير محدد'),
         contentId:options(content), taskId:options(tasks, 'غير مرتبط')
       };
       let activeForm;
-      function edit(row, preset) {
+      function edit(row) {
         activeForm?.remove();
         const fields = definition.fields.filter(([name]) => {
           if (row && name === 'uid') return false;
-          return canCreate || name === 'state' || name === 'note' || (lead && name === 'assigneeId');
+          return canCreate;
         }).map(([name, title, type, required]) => [
-          name,title,name === 'state' && tab === 'tasks' && !operator
-            ? Object.fromEntries(Object.entries(stages).filter(([key]) => ['idea','preparation','production','review','changes'].includes(key)))
-            : linked[name] ?? type,required
+          name,title,linked[name] ?? type,required
         ]);
-        activeForm = form(fields, row ?? preset, values => {
+        activeForm = form(fields, row, values => {
           const id = values.uid;
           delete values.uid;
           return save(tab, row ?? (id ? {id} : null), values);
@@ -434,9 +505,6 @@ export function mountOperations(root, db, sdk, user) {
         activeForm.querySelector('input,select,textarea')?.focus();
       }
       if (canCreate) action(panel, 'إضافة سجل', () => edit());
-      if (tab === 'tasks' && canCreate && taskPreset) {
-        edit(null, {...taskPreset, teamId:teams.some(team => team.id === taskPreset.teamId) ? taskPreset.teamId : ''});
-      }
       if (tab === 'teams' && operator) {
         for (const [id, name] of Object.entries(areas)) {
           if (rows.some(row => row.id === id)) continue;
@@ -480,45 +548,6 @@ export function mountOperations(root, db, sdk, user) {
         drawCalendar();
         return;
       }
-      if (tab === 'tasks') {
-        action(panel, 'عرض جدول المهام', () => {
-          const existing = panel.querySelector('.media-task-table');
-          if (existing) { existing.remove(); return; }
-          const wrap = element('div', '', panel);
-          wrap.className = 'media-task-table';
-          wrap.tabIndex = 0;
-          wrap.setAttribute('aria-label','جدول المهام');
-          const table = element('table', '', wrap);
-          const heading = element('tr', '', element('thead', '', table));
-          for (const label of ['المهمة','المرحلة','الأولوية','موعد الاستحقاق']) {
-            element('th', label, heading).scope = 'col';
-          }
-          const body = element('tbody', '', table);
-          for (const row of rows) {
-            const tr = element('tr', '', body);
-            const title = element('td', '', tr);
-            if (canEditRow(row)) action(title, row.title, () => edit(row));
-            else title.textContent = row.title;
-            element('td', stages[row.state], tr);
-            element('td', {normal:'عادية',high:'عالية',urgent:'عاجلة'}[row.priority], tr);
-            element('td', row.due || 'غير محدد', tr);
-          }
-        });
-        action(panel, 'عرض مراحل الإنتاج', () => {
-          let board = panel.querySelector('.media-board');
-          if (board) { board.remove(); return; }
-          board = element('div', '', panel);
-          board.className = 'media-board';
-          for (const [key, label] of Object.entries(stages)) {
-            const column = element('section', '', board);
-            element('h4', label, column);
-            for (const row of rows.filter(item => item.state === key)) {
-              if (canEditRow(row)) action(column, row.title, () => edit(row));
-              else element('p', row.title, column);
-            }
-          }
-        });
-      }
       records(rows, row => {
         if (tab === 'teams') {
           const approved = members.filter(member => member.teamId === row.id && member.state === 'active').length;
@@ -526,8 +555,6 @@ export function mountOperations(root, db, sdk, user) {
             operator ? 'المعتمدون ' + approved + ' · الشواغر ' + Math.max(0,row.target-approved) : '',
             'الحد الأدنى ' + row.minimum + ' · المستهدف ' + row.target];
         }
-        if (tab === 'tasks') return [row.title, stages[row.state], row.description, row.due,
-          definitions.tasks.fields.find(([name]) => name === 'priority')[2][row.priority], row.note, row.fileUrl];
         if (tab === 'members') return [row.title, roles[row.role], row.primaryRole, row.supportRoles, row.skills, row.availability];
         return [row.title, row.description, row.fileUrl, tasks.find(task => task.id === row.taskId)?.title];
       }, canEdit ? edit : null);

@@ -238,6 +238,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 .home-sections {padding-block:1rem}
 .forum-tree {max-width:48rem;margin:0;padding:0;list-style:none}
 .org-tree {max-width:none}
+#media-committee:has(#media-operations:not([hidden]) .media-tree) #media-bylaws-tree {display:none}
 .media-tree details li {margin-block:.35rem}
 .media-tree details li::before {inset-block-start:1.35rem}
 .media-tree summary[aria-current="page"] {color:var(--c-indigo)}
@@ -365,7 +366,6 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
   <section id="media-committee">
     <header class="media-header">
       <h2>اللجنة الإعلامية والعلاقات العامة</h2>
-      <a href="./media-bylaws.html">اللائحة الداخلية</a>
       <div class="media-account">
       <p id="media-status" role="status">جارٍ التحقق من تسجيل الدخول…</p>
       <button class="btn primary" id="media-login" type="button" hidden>الدخول بحساب Google</button>
@@ -373,6 +373,12 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
       </div>
     </header>
     <div id="media-operations" hidden></div>
+    <ul id="media-bylaws-tree" class="forum-tree org-tree media-tree" aria-label="مراجع اللجنة">
+      <li id="media-bylaws-branch"><details>
+        <summary>اللائحة الداخلية</summary>
+        <div class="org-branch"><a href="./media-bylaws.html">فتح اللائحة الداخلية</a></div>
+      </details></li>
+    </ul>
     <div id="media-workspace" hidden>
       <details class="card"><summary>السجلات السابقة</summary>
       <form id="media-content">
@@ -1158,7 +1164,7 @@ if (['media-committee','meeting-01','meeting-02'].includes(document.documentElem
       }
       status.textContent = 'تم تسجيل الدخول بحساب ' + (user.email || 'Google') + '.';
       const operations = el('operations');
-      import('./media-operations.mjs?v=3').then(({mountOperations}) => {
+      import('./media-operations.mjs?v=4').then(({mountOperations}) => {
         if (current === generation) stopOperations = mountOperations(operations, db, dbSdk, user);
       }).catch(() => {
         if (current !== generation) return;

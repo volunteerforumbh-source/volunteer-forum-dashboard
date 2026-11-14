@@ -319,14 +319,15 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
     </div>
     <div id="media-operations" hidden></div>
     <div id="media-workspace" hidden>
-      <form id="media-content" class="card">
-        <h3>الخطة والمهام المسجلة سابقًا</h3>
+      <details class="card"><summary>السجلات السابقة</summary>
+      <form id="media-content">
         <label for="media-plan">خطة اللجنة</label>
         <textarea id="media-plan" rows="9" maxlength="30000" readonly></textarea>
         <label for="media-tasks">جدول النشر والمهام</label>
         <textarea id="media-tasks" rows="9" maxlength="30000" readonly></textarea>
         <button class="btn primary" id="media-save" hidden>حفظ التغييرات</button>
       </form>
+      </details>
       <form id="media-members" class="card" hidden>
         <h3>إدارة العضوية</h3>
         <label for="media-email">بريد العضو</label>

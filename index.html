@@ -1005,7 +1005,7 @@ if (new URLSearchParams(location.search).get('section') === 'media-committee' ||
       }
       status.textContent = 'تم تسجيل الدخول بحساب ' + (user.email || 'Google') + '.';
       const operations = el('operations');
-      import('./media-operations.mjs').then(({mountOperations}) => {
+      import('./media-operations.mjs?v=2').then(({mountOperations}) => {
         if (current === generation) stopOperations = mountOperations(operations, db, dbSdk, user);
       }).catch(() => {
         if (current !== generation) return;

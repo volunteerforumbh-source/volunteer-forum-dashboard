@@ -168,12 +168,6 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 .updates-filter select{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px 12px}
 #updates-feed{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(max-width:640px){#updates-feed{grid-template-columns:1fr}}
-.home-updates{margin-block-end:24px}
-#home-updates-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;list-style:none;padding:0;margin:0}
-#home-updates-list a{display:block;height:100%;padding:12px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
-#home-updates-list a:hover{text-decoration:underline}
-#home-updates-list time{display:block;color:var(--muted);font-size:13px}
-@media(max-width:640px){#home-updates-list{grid-template-columns:1fr}}
 .recommendations-grid{margin-block:18px 26px}
 .recommendations-priorities{padding-inline-start:42px}
 .recommendations-priorities li{margin-block:8px}
@@ -218,6 +212,24 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 #media-committee .card{margin-block:12px}
 #media-committee label{display:block;margin-block:10px 4px}
 #media-committee textarea,#media-committee input,#media-committee select{display:block;width:100%;font:inherit;padding:8px;border:1px solid #aaa;border-radius:8px;margin-block-end:12px}
+
+.home-updates {padding-block:1rem 1.5rem}
+.home-updates h2,.home-sections h2 {margin:0 0 .8rem;font-size:1.35rem}
+#home-updates-list {display:block;margin:0 0 .8rem;padding:0;list-style:none;border:1px solid var(--line);border-radius:16px;background:white;overflow:hidden}
+#home-updates-list li + li {border-top:1px solid var(--line)}
+#home-updates-list summary,.home-more summary {cursor:pointer;padding:.8rem 1rem}
+#home-updates-list summary time {display:inline-block;margin-inline-start:.8rem}
+.home-update-body {padding:0 1rem 1rem}
+.home-update-body p {margin:0 0 .6rem}
+.home-sections {padding-block:1rem}
+.home-section-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,235px),1fr));gap:.8rem}
+.home-section-grid > section {display:block;margin:0;background:white;border:1px solid var(--line);border-radius:14px;padding:1rem}
+.home-section-grid h3 {margin:0 0 .5rem;font-size:1rem}
+.home-section-grid a,.home-more a {display:block;width:fit-content;padding-block:.25rem}
+.home-more {margin-block:1rem}
+.home-more summary {padding-inline:0}
+.home-about {border-top:1px solid var(--line);padding-top:.75rem;color:var(--muted)}
+.home-about p {margin:0 0 .25rem}
 </style>
 </head>
 <body>
@@ -231,61 +243,48 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
           <span>شراكات .. لأثر مستدام</span>
         </div>
       </div>
-      <div class="tag">نسخة عامة للاطلاع</div>
+      <a class="btn secondary home-only" href="?section=media-committee">مساحة أعضاء اللجنة</a>
     </div>
 
     <div class="home-only home-updates" aria-labelledby="home-updates-heading">
-      <div class="section-head">
-        <h2 id="home-updates-heading">آخر المستجدات</h2>
-        <a class="btn secondary" href="?section=updates">عرض جميع المستجدات</a>
-      </div>
+      <h2 id="home-updates-heading">آخر المستجدات</h2>
       <ul id="home-updates-list"></ul>
-    </div>
-    <div class="hero-card home-only">
-      <div class="hero-main">
-        <span class="kicker"><i></i> بوابة متابعة المنتدى</span>
-        <h1>واجهة موحّدة لعرض الاجتماعات والمبادرات والتقارير بأسلوب منسجم مع هوية المنتدى</h1>
-        <p>تعرض هذه البوابة المواد العامة القابلة للنشر والمشاركة مع أعضاء القروب والمهتمين، مع الحفاظ على بساطة الوصول وإمكانية تطويرها تدريجيًا لاحقًا.</p>
-        <div class="hero-actions">
-          <a class="btn primary" href="?section=meetings">الاطلاع على الاجتماعات</a>
-          <a class="btn secondary" href="?section=reports">استعراض التقارير</a>
-        </div>
-      </div>
-      <div class="hero-side">
-        <div class="mini-grid">
-          <div class="metric"><b id="meetings-count">0</b><span>اجتماعات منشورة</span></div>
-          <div class="metric"><b id="initiatives-count">0</b><span>مبادرات ومشاريع</span></div>
-          <div class="metric"><b id="reports-count">0</b><span>تقارير وروابط</span></div>
-          <div class="metric"><b>عام</b><span>الوصول للقراءة فقط</span></div>
-        </div>
-        <div class="notice-inline">يتم تحديث هذه الصفحة من خلال حساب المنتدى على GitHub فقط، بينما يقتصر دور الزائر على الاطلاع.</div>
-      </div>
+      <a class="btn secondary" href="?section=updates">شاهد الكل</a>
     </div>
   </header>
 </div>
 
 <main class="container">
-  <div class="summary home-only">
-    <div>
-      <strong>بوابة المتابعة العامة</strong>
-      <small>البيانات الظاهرة هنا مخصصة للنشر العام فقط ولا تتضمن السجلات الداخلية أو بيانات الحضور.</small>
+  <div class="home-only home-sections">
+    <h2>أقسام المنتدى</h2>
+    <div class="home-section-grid">
+      <section><h3>الاجتماعات والمحاضر</h3>
+        <a href="?section=meetings">عرض الاجتماعات والمحاضر</a>
+        <a href="?section=calendar">تقويم الاجتماعات</a>
+      </section>
+      <section><h3>الخطة والمبادرات</h3>
+        <a href="?section=plan">الخطة السنوية</a>
+        <a href="?section=initiatives">المبادرات</a>
+      </section>
+      <section><h3>التوصيات والتقارير</h3>
+        <a href="?section=recommendations">التوصيات</a>
+        <a href="?section=reports">التقارير</a>
+      </section>
+      <section><h3>اللجان والجمعيات</h3>
+        <a href="?section=organization">الهيكل التنظيمي واللجان</a>
+        <a href="?section=associations">الجمعيات المشاركة</a>
+      </section>
     </div>
-    <div id="updated">آخر تحديث: —</div>
+    <details class="home-more">
+      <summary>المزيد</summary>
+      <a href="?section=news">المركز الإخباري</a>
+      <a href="?section=notice">تنويه</a>
+    </details>
+    <div class="home-about">
+      <p>تابع اجتماعات المنتدى ومبادراته وتقاريره المنشورة.</p>
+      <small id="updated">آخر تحديث: —</small>
+    </div>
   </div>
-
-  <nav class="home-only" aria-label="أقسام الصفحة">
-    <a href="?section=organization">الهيكل التنظيمي</a>
-    <a href="?section=meetings">الاجتماعات والمحاضر</a>
-    <a href="?section=calendar">تقويم الاجتماعات</a>
-    <a href="?section=updates">آخر المستجدات</a>
-    <a href="?section=news">المركز الإخباري</a>
-    <a href="?section=associations">الجمعيات المشاركة</a>
-    <a href="?section=recommendations">التوصيات</a>
-    <a href="?section=plan">الخطة السنوية</a>
-    <a href="?section=initiatives">المبادرات</a>
-    <a href="?section=reports">التقارير</a>
-    <a href="?section=notice">تنويه</a>
-  </nav>
 
   <a class="btn secondary section-home" href="./">العودة إلى الرئيسية</a>
 
@@ -862,12 +861,16 @@ function formatUpdateDate(value){
 
 if (!document.documentElement.dataset.section){
   const preview = document.getElementById('home-updates-list');
-  for (const item of latestForumUpdates.slice(0,3)){
+  for (const item of latestForumUpdates.filter(item => item.kind === 'update').slice(0,3)){
     const row = createNode('li');
-    const link = planningLink(item.title,'?section=updates#' + item.id);
-    link.append(formatUpdateDate(item.date));
-    if (item.responsible) link.append(createNode('span','hint','المسؤول · ' + item.responsible));
-    row.append(link);
+    const details = createNode('details');
+    const summary = createNode('summary');
+    summary.append(createNode('strong','',item.title),formatUpdateDate(item.date));
+    const body = createNode('div','home-update-body');
+    body.append(createNode('p','',item.description),
+      planningLink(item.linkLabel || 'عرض الصفحة المرتبطة',item.url || '?section=updates#' + item.id));
+    details.append(summary,body);
+    row.append(details);
     preview.append(row);
   }
 }
@@ -909,9 +912,6 @@ fetch('./public-data.json', {cache:'no-store'})
     const meetings = Array.isArray(data.meetings) ? data.meetings : [];
     const initiatives = Array.isArray(data.initiatives) ? data.initiatives : [];
     const reports = Array.isArray(data.reports) ? data.reports : [];
-    document.getElementById('meetings-count').textContent = meetings.length;
-    document.getElementById('initiatives-count').textContent = initiatives.length + 1;
-    document.getElementById('reports-count').textContent = reports.length;
     const activities = Array.isArray(data.activities) ? data.activities : draftActivities;
     renderPlan(activities);
     renderCalendar(meetings);

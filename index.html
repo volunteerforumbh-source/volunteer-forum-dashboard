@@ -367,6 +367,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
     <details class="event-editor">
       <summary>إضافة مسودة نشاط</summary>
       <form id="event-form">
+        <p>سنة الفعالية: <output id="event-editor-year"></output></p>
         <p>تُحفظ المسودات في هذا المتصفح. لإتاحتها للفريق، تُضاف إلى سجل البرنامج المنشور.</p>
         <label>عنوان النشاط <input name="title" required maxlength="200"></label>
         <label>الشهر <select name="month" required></select></label>
@@ -939,6 +940,7 @@ function renderEventProgram(published){
   const monthNames = Array.from({length:12},(_,i)=>new Intl.DateTimeFormat('ar-BH',{month:'long',timeZone:'UTC'}).format(new Date(Date.UTC(2026,i,1))));
   let drafts = [];
   let editing = null;
+  let formYear;
   try {
     const saved = JSON.parse(localStorage.getItem(key) || '[]');
     if (Array.isArray(saved)) drafts = saved;
@@ -946,6 +948,8 @@ function renderEventProgram(published){
   const linkedEvent = published.find(item=>'#event-'+encodeURIComponent(item.id)===location.hash);
   yearField.value = linkedEvent?.year ?? defaultYear;
   function updateMonthOptions(year) {
+    formYear = year;
+    document.getElementById('event-editor-year').textContent = year;
     form.elements.month.replaceChildren();
     monthNames.forEach((label,i)=>{
       if (i+1 < startMonth(year)) return;
@@ -957,10 +961,11 @@ function renderEventProgram(published){
   }
   updateMonthOptions(Number(yearField.value));
 
-  function draw(openMonth){
-    const year = Number(yearField.value);
+  function draw(openMonth, openYear = Number(yearField.value)){
+    const selectedYear = Number(yearField.value);
+    const years = selectedYear === firstYear ? [firstYear,firstYear+1] : [selectedYear];
     host.replaceChildren();
-    monthNames.forEach((label,i)=>{
+    for (const year of years) monthNames.forEach((label,i)=>{
       const month = i+1;
       if (month < startMonth(year)) return;
       const items = [...published.filter(item=>!drafts.some(draft=>draft.id===item.id)),...drafts]
@@ -968,8 +973,8 @@ function renderEventProgram(published){
       items.sort((a,b)=>(a.date || '9999').localeCompare(b.date || '9999') || a.title.localeCompare(b.title,'ar'));
       const row = createNode('li');
       const branch = createNode('details');
-      branch.open = month === openMonth;
-      branch.append(createNode('summary','',label + ' · ' + items.length));
+      branch.open = month === openMonth && year === openYear;
+      branch.append(createNode('summary','',label + ' ' + year + ' · ' + items.length));
       const controls = createNode('div','org-branch');
       const addEvent = createNode('button','btn secondary','إدراج فعالية');
       addEvent.type = 'button';
@@ -977,6 +982,7 @@ function renderEventProgram(published){
       addEvent.onclick = () => {
         editing = null;
         form.reset();
+        updateMonthOptions(year);
         form.elements.month.value = month;
         editor.open = true;
         form.elements.title.focus();
@@ -1016,6 +1022,7 @@ function renderEventProgram(published){
         edit.type = 'button';
         edit.onclick = () => {
           editing = item.id;
+          updateMonthOptions(year);
           for (const name of ['title','month','date','type','description','goal','location','owner']) form.elements[name].value = item[name] ?? '';
           editor.open = true;
           form.elements.title.focus();
@@ -1042,7 +1049,7 @@ function renderEventProgram(published){
     event.preventDefault();
     if (!yearField.reportValidity()) return;
     const data = Object.fromEntries([...new FormData(form)].map(([name,value])=>[name,value.trim()]));
-    const year = Number(yearField.value);
+    const year = formYear;
     const month = Number(data.month);
     if (!data.title) { feedback.textContent = 'أدخل عنوان النشاط.'; return; }
     if (data.date && !data.date.startsWith(year + '-' + String(month).padStart(2,'0') + '-')) {
@@ -1059,7 +1066,7 @@ function renderEventProgram(published){
     form.elements.month.value = month;
     editor.open = false;
     feedback.textContent = 'حُفظت المسودة في هذا المتصفح.';
-    draw(month);
+    draw(month,year);
   };
   draw(linkedEvent?.month ?? defaultMonth(defaultYear));
   if (linkedEvent) {

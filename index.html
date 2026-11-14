@@ -237,6 +237,9 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 .update-list .home-update-body a {color:#0969a5;text-decoration:underline;text-underline-offset:.18em}
 .home-sections {padding-block:1rem}
 .forum-tree {max-width:48rem;margin:0;padding:0;list-style:none}
+.org-tree {max-width:none}
+.org-tree .org-branch {padding:0 1rem .9rem}
+.org-tree .org-branch > p:first-child {margin-block-start:0}
 .forum-tree > li {margin-block:.55rem}
 .forum-tree details {background:var(--surface);border:1px solid var(--line);border-radius:14px}
 .forum-tree summary {cursor:pointer;padding:.75rem 1rem;font-weight:700}
@@ -337,28 +340,23 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
       <p>تُنشر الصفة والنبذة والصورة بعد اعتمادها والحصول على الموافقة</p>
     </div>
     <div class="org-intro"><strong>اللجنة العليا واللجان التنفيذية</strong><span>يجري استكمال بيانات المسؤولين والأعضاء. هذه الصفحة لا تنشر أسماء غير معتمدة.</span></div>
-    <div class="org-subheading"><h3>اللجنة العليا</h3><p>البطاقات المعتمدة للنشر</p></div>
-    <div id="leadership-grid" class="grid"></div>
-    <div class="org-subheading"><h3>اللجان وفرق العمل</h3><p>اختَر اللجنة لعرض بياناتها وعضويتها المنشورة</p></div>
-    <div id="committees-grid" class="grid"></div>
-    <h3 id="committee-plans">تصورات وخطط اللجان</h3>
-    <div class="grid">
-      <article class="card" id="recommendations-committee">
-        <span class="pill">مقترح للتشكيل</span>
-        <h4>لجنة دراسة التوصيات ومتابعة تنفيذها</h4>
+    <ul class="forum-tree org-tree">
+      <li><details><summary>اللجنة العليا</summary><div class="org-branch"><p>البطاقات المعتمدة للنشر</p><div id="leadership-grid" class="grid"></div></div></details></li>
+      <li><details><summary>اللجان وفرق العمل</summary><div class="org-branch"><p>اختَر اللجنة لعرض بياناتها وعضويتها المنشورة</p><div id="committees-grid" class="grid"></div></div></details></li>
+      <li><details id="committee-plans"><summary>تصورات وخطط اللجان</summary>
+        <ul>
+          <li><details id="recommendations-committee"><summary>لجنة دراسة التوصيات ومتابعة تنفيذها</summary><div class="org-branch"><span class="pill">مقترح للتشكيل</span>
         <p>تراجع التوصيات والأولويات، وتقترح على اللجنة العليا ما يدخل في الخطة السنوية وما يمكن عرضه على الجمعيات المشاركة وغير المشاركة. بعد اعتماد الأولويات وتحديد الجهة المنفّذة، تتابع التقدم والعوائق والنتائج.</p>
         <p>تُوثّق لكل أولوية معتمدة الجهة المنفّذة، واسم المسؤول، والحالة، والخطوة التالية.</p>
         <a class="btn secondary" href="?section=recommendations">عرض التوصيات</a>
-      </article>
-      <article class="card" id="media-committee-plan">
-        <span class="pill">الخطة قيد الإعداد</span>
-        <h4>اللجنة الإعلامية والعلاقات العامة</h4>
+          </div></details></li>
+          <li><details id="media-committee-plan"><summary>اللجنة الإعلامية والعلاقات العامة</summary><div class="org-branch"><span class="pill">الخطة قيد الإعداد</span>
         <p>يُضاف تصور اللجنة وخطتها هنا عند جاهزيتهما للنشر.</p>
         <a class="btn secondary" href="?section=media-committee">صفحة اللجنة الإعلامية</a>
-      </article>
-    </div>
-
-    <div class="note" style="margin-top:16px"><strong>إكمال البيانات:</strong> إن لم يظهر اسمك أو كانت بياناتك غير مكتملة، ستُتاح لاحقًا استمارة مرتبطة بالملف المركزي لاستكمال البيانات ومراجعتها قبل النشر. لا توجد استمارة فعالة في هذه النسخة.</div>
+          </div></details></li>
+        </ul></details></li>
+      <li><details><summary>إكمال البيانات</summary><div class="org-branch"><p>إن لم يظهر اسمك أو كانت بياناتك غير مكتملة، ستُتاح لاحقًا استمارة مرتبطة بالملف المركزي لاستكمال البيانات ومراجعتها قبل النشر. لا توجد استمارة فعالة في هذه النسخة.</p></div></details></li>
+    </ul>
   </section>
 
   <section id="media-committee">
@@ -1040,6 +1038,15 @@ function renderOrganization(data){
    details.append(members);c.append(details);committees.append(c)
  });
 }
+function openOrganizationBranch() {
+ if (document.documentElement.dataset.section !== 'organization') return;
+ const target=document.getElementById(location.hash.slice(1));
+ if (!target?.closest('.org-tree')) return;
+ for (let branch=target.closest('details');branch;branch=branch.parentElement.closest('details')) branch.open=true;
+ target.scrollIntoView();
+}
+window.addEventListener('hashchange',openOrganizationBranch);
+openOrganizationBranch();
 fetch('./organization-public.json',{cache:'no-store'})
 .then(r=>{if(!r.ok)throw new Error('load');return r.json()})
 .then(renderOrganization)

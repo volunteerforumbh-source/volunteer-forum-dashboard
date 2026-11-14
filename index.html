@@ -948,7 +948,8 @@ function renderEventProgram(published){
     monthNames.forEach((label,i)=>{
       const month = i+1;
       if (month < startMonth(year)) return;
-      const items = [...published,...drafts].filter(item=>item.year===year && item.month===month);
+      const items = [...published.filter(item=>!drafts.some(draft=>draft.id===item.id)),...drafts]
+        .filter(item=>item.year===year && item.month===month);
       items.sort((a,b)=>(a.date || '9999').localeCompare(b.date || '9999') || a.title.localeCompare(b.title,'ar'));
       const row = createNode('li');
       const branch = createNode('details');
@@ -979,17 +980,15 @@ function renderEventProgram(published){
         for (const [label,value] of [['النوع',item.type],['التفاصيل',item.description],['الأهداف',item.goal],['الوقت والمكان',item.location],['التنفيذ',item.owner]]) {
           if (value) body.append(createNode('p','',label + ' · ' + value));
         }
-        if (local) {
-          const edit = createNode('button','btn secondary','تعديل المسودة أو تثبيت التاريخ');
-          edit.type = 'button';
-          edit.onclick = () => {
-            editing = item.id;
-            for (const name of ['title','month','date','type','description','goal','location','owner']) form.elements[name].value = item[name] ?? '';
-            editor.open = true;
-            form.elements.title.focus();
-          };
-          body.append(edit);
-        }
+        const edit = createNode('button','btn secondary','تعديل الفعالية واستكمال البيانات');
+        edit.type = 'button';
+        edit.onclick = () => {
+          editing = item.id;
+          for (const name of ['title','month','date','type','description','goal','location','owner']) form.elements[name].value = item[name] ?? '';
+          editor.open = true;
+          form.elements.title.focus();
+        };
+        body.append(edit);
         details.append(body);
         entry.append(details);
         list.append(entry);

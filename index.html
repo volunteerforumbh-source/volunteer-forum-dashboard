@@ -155,6 +155,10 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 .followup summary{cursor:pointer;color:var(--c-indigo);font-weight:700}
 .followup li{margin-block:8px}
 .plan-grid .card{scroll-margin-top:16px}
+#meeting-01 .meeting-topics{grid-template-columns:1fr}
+#meeting-01 .meeting-outcomes details,#meeting-01 #attendance,#meeting-01 #topic-16{margin-block:10px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+#meeting-01 summary{cursor:pointer;font-weight:700}
+#meeting-01 .meeting-outcomes a,#meeting-01 #topic-16 a{color:var(--link,#12669c);text-decoration:underline}
 .meeting-topics{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
 .meeting-topics details{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:12px}
 .meeting-topics summary{cursor:pointer;font-weight:700}
@@ -379,6 +383,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
   <section id="meeting-01">
     <a class="btn secondary" href="?section=meeting-02">الاجتماع التالي · 02</a>
     <div class="section-head"><h2>الاجتماع 01 | ما بعد المنتدى</h2></div>
+    <p class="muted"><bdi>MTG-2026-001</bdi></p>
     <p>الأربعاء <time datetime="2026-11-11">11 نوفمبر 2026</time> · جمعية السنابس الخيرية · 7:15–8:40 مساءً بتوقيت البحرين · 9 مشاركين</p>
     <a class="btn secondary" href="?section=meetings">العودة إلى الاجتماعات والمحاضر</a>
     <article class="card vision-feature">
@@ -390,7 +395,49 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
     </article>
     <article class="note">
 <h2>ملخص الاجتماع</h2><p>راجع الاجتماع تجربة المنتدى الثاني وبحث تحويله إلى برنامج مستمر طوال العام. تناول النقاش إعداد قيادات تطوعية، وتشكيل لجان للتدريب والتنسيق، وتوسيع الشراكات، وقياس أثر المبادرات، والتحضير للمنتدى الثالث.</p>
-<h2 id="attendance">الحضور</h2>
+<section class="meeting-outcomes" aria-labelledby="meeting-01-outcomes">
+  <h2 id="meeting-01-outcomes">مخرجات الاجتماع الأول</h2>
+  <details>
+    <summary>ما تم إقراره</summary>
+    <p>لم توثّق مسودة هذا المحضر قرارات معتمدة أو تكليفات ملزمة.</p>
+  </details>
+  <details open>
+    <summary>ما يحتاج متابعة في الاجتماع الثاني</summary>
+    <ul>
+      <li><a href="#topic-1">البند 001 · الرؤية السنوية واستدامة المنتدى</a> — تحديد أولويات البرنامج ومؤشراته.</li>
+      <li><a href="#topic-3">البند 003 · الرئاسة الدورية بين الجمعيات</a> — مراجعة المقترح.</li>
+      <li><a href="#topic-5">البند 005 · اللجنة الأكاديمية وبرامج التدريب</a> — حصر الردود على الدعوات وتنسيق اللقاء التأسيسي.</li>
+      <li><a href="#topic-6">البند 006 · اللجنة التنسيقية والتواصل مع الجمعيات</a> — مراجعة التصور الأولي للجان والورش.</li>
+    </ul>
+    <a href="?section=meeting-02">فتح محضر الاجتماع الثاني ومتابعة البنود</a>
+  </details>
+  <details>
+    <summary>ما تم تأجيله</summary>
+    <p>لم تسجّل مسودة هذا المحضر بنودًا مؤجّلة بقرار.</p>
+  </details>
+</section>
+<h2>بنود الاجتماع الأول</h2><p class="muted">اضغط على عنوان البند لعرض ملخص المناقشة وحالته والخطوة المقترحة إن وُجدت.</p><div class="grid meeting-topics"><details id="topic-1"><summary><bdi>001</bdi> الرؤية السنوية واستدامة المنتدى</summary><div class="detail"><p>نوقش تحويل المنتدى إلى برنامج مستمر طوال العام، مع مبادرات ومؤشرات يمكن تتبعها.</p><p class="muted">توافق مبدئي؛ لم تعتمد خطة تفصيلية.</p><p><strong>خطوة مقترحة</strong> · صياغة أهداف سنوية، تحديد نطاق البرنامج ومؤشرات الأداء وجدول الأنشطة.</p><div class="links"><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=plan#activity-follow-up" target="_blank" rel="noopener noreferrer">النشاط ذو الصلة في الخطة</a></div></div></details>
+<details id="topic-2"><summary><bdi>002</bdi> مراحل إعداد القيادات التطوعية</summary><div class="detail"><p>طُرح مسار يبدأ بالتأسيس والتأهيل، ثم قيادة مشاريع فعلية بإشراف مختصين، وينتهي بالتقييم والتوثيق.</p><p class="muted">تصور أولي؛ معايير الاختيار وعدد المشاركين غير معتمدة.</p><p><strong>خطوة مقترحة</strong> · تحديد متطلبات القبول، المسارات التدريبية، قواعد الاختيار، ومخرجات كل مرحلة.</p><div class="links"><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=plan#activity-workshops" target="_blank" rel="noopener noreferrer">النشاط ذو الصلة في الخطة</a></div></div></details>
+<details id="topic-3"><summary><bdi>003</bdi> الرئاسة الدورية للمنتدى بين الجمعيات</summary><div class="detail"><p>طُرح تداول رئاسة المنتدى سنويًا بين الجمعيات المشاركة في اللجنة العليا، وفق معايير جاهزية تُحدّد لاحقًا.</p><p class="muted">مقترح لم يعتمد نهائيًا</p></div></details>
+<details id="topic-4"><summary><bdi>004</bdi> اللجنة العليا والحوكمة والصلاحيات</summary><div class="detail"><p>نوقشت مرجعية اللجنة العليا وصلاحيات اعتماد القرارات وتكليف الفرق.</p><p class="muted">توافق على الحاجة للحوكمة؛ تفاصيلها لم تقر.</p><p><strong>خطوة مقترحة</strong> · صياغة ميثاق الحوكمة، الصلاحيات، المحاضر، نصاب القرارات، آلية المساءلة والتقارير.</p></div></details>
+<details id="topic-5"><summary><bdi>005</bdi> اللجنة الأكاديمية وبرامج التدريب</summary><div class="detail"><p>طُرح تشكيل لجنة أكاديمية وتحويل أوراق المتحدثين إلى ورش تستعين بمدربين وخبراء.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · تحديد الأعضاء والمدربين والمحاور ورزنامة التدريب والتقييم.</p><div class="links"><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=plan#activity-workshops" target="_blank" rel="noopener noreferrer">النشاط ذو الصلة في الخطة</a></div></div></details>
+<details id="topic-6"><summary><bdi>006</bdi> اللجنة التنسيقية والتواصل مع الجمعيات</summary><div class="detail"><p>نوقش تنسيق المراسلات مع الجمعيات وعقد لقاء تعريفي بالبرنامج.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · تدقيق جهات الاتصال وتطوير خطاب رسمي ونظام ترشيحات.</p><div class="links"><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=plan#activity-partnerships" target="_blank" rel="noopener noreferrer">النشاط ذو الصلة في الخطة</a></div></div></details>
+<details id="topic-7"><summary><bdi>007</bdi> توسيع المشاركة واستقطاب المتطوعين</summary><div class="detail"><p>طُرح توسيع مشاركة الجمعيات واستقطاب المتطوعين عبر آلية ترشيح واضحة.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · تحديد معايير الانضمام والتطوع وآليات الترشيح ومساهمة كل جمعية.</p></div></details>
+<details id="topic-8"><summary><bdi>008</bdi> الشراكات مع الجامعات والجهات الداعمة</summary><div class="detail"><p>نوقش إعداد اتفاقيات تعاون مبكرة مع الجامعات والجهات الداعمة وتحديد فرص الاستضافة.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · حصر الجهات والتحقق من بياناتها وتعيين مسؤول شراكات.</p><div class="links"><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=plan#activity-partnerships" target="_blank" rel="noopener noreferrer">النشاط ذو الصلة في الخطة</a></div></div></details>
+<details id="topic-9"><summary><bdi>009</bdi> التراخيص والغطاء الرسمي وموافقات الوزارة</summary><div class="detail"><p>نوقشت الموافقات الرسمية والمظلة الجمعياتية اللازمة للبرنامج والورش.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · التحقق من المتطلبات الرسمية وإعداد البرنامج للعرض على الجهة المختصة.</p></div></details>
+<details id="topic-10"><summary><bdi>010</bdi> تصميم المنتدى الثالث ومشاركة الخبراء والمتطوعين</summary><div class="detail"><p>طُرحت صيغ تجمع الخبراء والمتطوعين والورش، وتتيح عرض نتائج العمل خلال العام.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · صياغة بدائل عملية للبرنامج ومقارنة الموارد والقدرة التنظيمية.</p><div class="links"><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=plan#activity-forum" target="_blank" rel="noopener noreferrer">النشاط ذو الصلة في الخطة</a></div></div></details>
+<details id="topic-11"><summary><bdi>011</bdi> الإعلام والنشر والتوثيق والهوية الرقمية</summary><div class="detail"><p>نوقشت سلسلة معرفية لأوراق المتحدثين وتوثيق تجارب المتطوعين والجمعيات.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · إنشاء تقويم تحرير مرتبط بتقدم البرنامج وأرشفة الملفات والروابط.</p></div></details>
+<details id="topic-12"><summary><bdi>012</bdi> الأنظمة الرقمية وقواعد البيانات وإدارة المتطوعين</summary><div class="detail"><p>نوقشت إدارة بيانات الجمعيات والمتطوعين والمشاريع والتقييمات وتدريب الفرق على إدارتها.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · وضع نموذج بيانات مركزي وحوكمة الوصول والتحديث وسجل مشاريع ومؤشرات.</p></div></details>
+<details id="topic-13"><summary><bdi>013</bdi> التمويل والرعايات والميزانية</summary><div class="detail"><p>نوقشت الرعايات المالية والعينية وإعداد تقدير للتكاليف ومخرجات الأنشطة.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · تجهيز ميزانية تقديرية وباقات الرعاية وتحديد جهة إدارة التمويل.</p></div></details>
+<details id="topic-14"><summary><bdi>014</bdi> تقييم المنتدى الثاني والدروس التشغيلية</summary><div class="detail"><p>نوقشت إجراءات تحسين تسليم العروض ومراجعتها وتنسيق الاستقبال والتجهيز.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · إعداد سياسة تسليم المواد ومواعيد نهائية ومراجعات وبروفات وخطط بديلة.</p></div></details>
+<details id="topic-15"><summary><bdi>015</bdi> قياس الأثر والتقييم والمتابعة</summary><div class="detail"><p>نوقش تحويل التوصيات إلى مبادرات وقياس أثر التدريب والمشاريع بأدلة قابلة للمتابعة.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · تعريف مؤشرات المتطوعين والمشاريع والتقارير الدورية والأدلة.</p><div class="links"><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=plan#activity-follow-up" target="_blank" rel="noopener noreferrer">النشاط ذو الصلة في الخطة</a></div></div></details>
+</div>
+<details id="topic-16">
+  <summary>إجراءات الاجتماع القادم</summary>
+  <p>تُراجع البنود المفتوحة في الاجتماع الثاني وتُحدّد أولويات متابعتها. موعد الاجتماع الثاني يُحدّد لاحقًا.</p>
+  <a href="?section=meeting-02">فتح جدول أعمال الاجتماع الثاني</a>
+</details>
+<details id="attendance"><summary>الحضور · 9 مشاركين</summary>
 <ul>
   <li>الأستاذة ابتهاج – رئيسة اللجنة العليا</li>
   <li>مهدي الكليتي</li>
@@ -402,23 +449,8 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
   <li>السيد محمود خلف</li>
   <li>سعيد مكي العصفور</li>
 </ul>
-<h2>فهرس المحاور الستة عشر</h2><p class="muted">افتح المحور لقراءة ملخص المناقشة والخطوات المقترحة.</p><div class="grid meeting-topics"><details id="topic-1"><summary><bdi>01</bdi> الرؤية السنوية واستدامة المنتدى</summary><div class="detail"><p>نوقش تحويل المنتدى إلى برنامج مستمر طوال العام، مع مبادرات ومؤشرات يمكن تتبعها.</p><p class="muted">توافق مبدئي؛ لم تعتمد خطة تفصيلية.</p><p><strong>خطوة مقترحة</strong> · صياغة أهداف سنوية، تحديد نطاق البرنامج ومؤشرات الأداء وجدول الأنشطة.</p><div class="links"><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=plan#activity-follow-up" target="_blank" rel="noopener noreferrer">النشاط ذو الصلة في الخطة</a></div></div></details>
-<details id="topic-2"><summary><bdi>02</bdi> مراحل إعداد القيادات التطوعية</summary><div class="detail"><p>طُرح مسار يبدأ بالتأسيس والتأهيل، ثم قيادة مشاريع فعلية بإشراف مختصين، وينتهي بالتقييم والتوثيق.</p><p class="muted">تصور أولي؛ معايير الاختيار وعدد المشاركين غير معتمدة.</p><p><strong>خطوة مقترحة</strong> · تحديد متطلبات القبول، المسارات التدريبية، قواعد الاختيار، ومخرجات كل مرحلة.</p><div class="links"><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=plan#activity-workshops" target="_blank" rel="noopener noreferrer">النشاط ذو الصلة في الخطة</a></div></div></details>
-<details id="topic-3"><summary><bdi>03</bdi> الرئاسة الدورية للمنتدى بين الجمعيات</summary><div class="detail"><p>طُرح تداول رئاسة المنتدى سنويًا بين الجمعيات المشاركة في اللجنة العليا، وفق معايير جاهزية تُحدّد لاحقًا.</p><p class="muted">مقترح لم يعتمد نهائيًا</p></div></details>
-<details id="topic-4"><summary><bdi>04</bdi> اللجنة العليا والحوكمة والصلاحيات</summary><div class="detail"><p>نوقشت مرجعية اللجنة العليا وصلاحيات اعتماد القرارات وتكليف الفرق.</p><p class="muted">توافق على الحاجة للحوكمة؛ تفاصيلها لم تقر.</p><p><strong>خطوة مقترحة</strong> · صياغة ميثاق الحوكمة، الصلاحيات، المحاضر، نصاب القرارات، آلية المساءلة والتقارير.</p></div></details>
-<details id="topic-5"><summary><bdi>05</bdi> اللجنة الأكاديمية وبرامج التدريب</summary><div class="detail"><p>طُرح تشكيل لجنة أكاديمية وتحويل أوراق المتحدثين إلى ورش تستعين بمدربين وخبراء.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · تحديد الأعضاء والمدربين والمحاور ورزنامة التدريب والتقييم.</p><div class="links"><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=plan#activity-workshops" target="_blank" rel="noopener noreferrer">النشاط ذو الصلة في الخطة</a></div></div></details>
-<details id="topic-6"><summary><bdi>06</bdi> اللجنة التنسيقية والتواصل مع الجمعيات</summary><div class="detail"><p>نوقش تنسيق المراسلات مع الجمعيات وعقد لقاء تعريفي بالبرنامج.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · تدقيق جهات الاتصال وتطوير خطاب رسمي ونظام ترشيحات.</p><div class="links"><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=plan#activity-partnerships" target="_blank" rel="noopener noreferrer">النشاط ذو الصلة في الخطة</a></div></div></details>
-<details id="topic-7"><summary><bdi>07</bdi> توسيع المشاركة واستقطاب المتطوعين</summary><div class="detail"><p>طُرح توسيع مشاركة الجمعيات واستقطاب المتطوعين عبر آلية ترشيح واضحة.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · تحديد معايير الانضمام والتطوع وآليات الترشيح ومساهمة كل جمعية.</p></div></details>
-<details id="topic-8"><summary><bdi>08</bdi> الشراكات مع الجامعات والجهات الداعمة</summary><div class="detail"><p>نوقش إعداد اتفاقيات تعاون مبكرة مع الجامعات والجهات الداعمة وتحديد فرص الاستضافة.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · حصر الجهات والتحقق من بياناتها وتعيين مسؤول شراكات.</p><div class="links"><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=plan#activity-partnerships" target="_blank" rel="noopener noreferrer">النشاط ذو الصلة في الخطة</a></div></div></details>
-<details id="topic-9"><summary><bdi>09</bdi> التراخيص والغطاء الرسمي وموافقات الوزارة</summary><div class="detail"><p>نوقشت الموافقات الرسمية والمظلة الجمعياتية اللازمة للبرنامج والورش.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · التحقق من المتطلبات الرسمية وإعداد البرنامج للعرض على الجهة المختصة.</p></div></details>
-<details id="topic-10"><summary><bdi>10</bdi> تصميم المنتدى الثالث ومشاركة الخبراء والمتطوعين</summary><div class="detail"><p>طُرحت صيغ تجمع الخبراء والمتطوعين والورش، وتتيح عرض نتائج العمل خلال العام.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · صياغة بدائل عملية للبرنامج ومقارنة الموارد والقدرة التنظيمية.</p><div class="links"><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=plan#activity-forum" target="_blank" rel="noopener noreferrer">النشاط ذو الصلة في الخطة</a></div></div></details>
-<details id="topic-11"><summary><bdi>11</bdi> الإعلام والنشر والتوثيق والهوية الرقمية</summary><div class="detail"><p>نوقشت سلسلة معرفية لأوراق المتحدثين وتوثيق تجارب المتطوعين والجمعيات.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · إنشاء تقويم تحرير مرتبط بتقدم البرنامج وأرشفة الملفات والروابط.</p></div></details>
-<details id="topic-12"><summary><bdi>12</bdi> الأنظمة الرقمية وقواعد البيانات وإدارة المتطوعين</summary><div class="detail"><p>نوقشت إدارة بيانات الجمعيات والمتطوعين والمشاريع والتقييمات وتدريب الفرق على إدارتها.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · وضع نموذج بيانات مركزي وحوكمة الوصول والتحديث وسجل مشاريع ومؤشرات.</p></div></details>
-<details id="topic-13"><summary><bdi>13</bdi> التمويل والرعايات والميزانية</summary><div class="detail"><p>نوقشت الرعايات المالية والعينية وإعداد تقدير للتكاليف ومخرجات الأنشطة.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · تجهيز ميزانية تقديرية وباقات الرعاية وتحديد جهة إدارة التمويل.</p></div></details>
-<details id="topic-14"><summary><bdi>14</bdi> تقييم المنتدى الثاني والدروس التشغيلية</summary><div class="detail"><p>نوقشت إجراءات تحسين تسليم العروض ومراجعتها وتنسيق الاستقبال والتجهيز.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · إعداد سياسة تسليم المواد ومواعيد نهائية ومراجعات وبروفات وخطط بديلة.</p></div></details>
-<details id="topic-15"><summary><bdi>15</bdi> قياس الأثر والتقييم والمتابعة</summary><div class="detail"><p>نوقش تحويل التوصيات إلى مبادرات وقياس أثر التدريب والمشاريع بأدلة قابلة للمتابعة.</p><p class="muted">مقترح للنقاش، وليس قرارًا معتمدًا.</p><p><strong>خطوة مقترحة</strong> · تعريف مؤشرات المتطوعين والمشاريع والتقارير الدورية والأدلة.</p><div class="links"><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=plan#activity-follow-up" target="_blank" rel="noopener noreferrer">النشاط ذو الصلة في الخطة</a></div></div></details>
-<details id="topic-16"><summary><bdi>16</bdi> إجراءات الاجتماع القادم والقرارات المفتوحة</summary><div class="detail"><p>تُراجع البنود المفتوحة وتُحدّد أولويات المتابعة عند إعداد جدول الاجتماع التالي. موعد الاجتماع المقبل غير مثبت في مسودة المحضر.</p><p class="muted">للمراجعة</p></div></details></div>
-<h2>القرارات والمتابعة</h2><p><a class="btn secondary" href="?section=updates">آخر مستجدات التنفيذ</a></p><p>تسجّل مسودة المحضر مخرجات أولية. لم تثبت فيها قرارات ملزمة أو تكليفات أو مواعيد تنفيذ معتمدة.</p><h3>بنود مقترحة للمراجعة</h3><ul><li>إعداد تصور البرنامج السنوي ومؤشراته <a href="#topic-1">المحور 01</a></li><li>مراجعة مقترح الرئاسة الدورية <a href="#topic-3">المحور 03</a></li><li>مراجعة التصور الأولي للجان والورش <a href="#topic-5">المحور 05</a> و<a href="#topic-6">المحور 06</a></li></ul><p class="muted">تُضاف الجهة المسؤولة والموعد المستهدف والحالة وآخر مراجعة عند اعتماد كل تكليف. يظهر الاجتماع المقبل في التقويم بعد تأكيد موعده.</p><div class="links"><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=plan" target="_blank" rel="noopener noreferrer">الخطة السنوية</a><a href="https://volunteerforumbh-source.github.io/volunteer-forum-dashboard/?section=calendar" target="_blank" rel="noopener noreferrer">تقويم الاجتماعات</a></div>
+</details>
+<div class="links"><a href="?section=plan">الخطة السنوية</a><a href="?section=calendar">تقويم الاجتماعات</a><a href="?section=updates">آخر المستجدات</a></div>
 
     </article>
   </section>

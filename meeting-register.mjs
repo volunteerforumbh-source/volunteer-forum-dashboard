@@ -29,28 +29,55 @@ function button(parent, label, run) {
 }
 
 export function mountMeeting(db, sdk, auth, authSdk) {
-  const root = document.getElementById('meeting-register');
-  const status = document.getElementById('meeting-status');
-  const login = document.getElementById('meeting-login');
-  const logout = document.getElementById('meeting-logout');
+  const first = document.documentElement.dataset.section === 'meeting-01';
+  const prefix = first ? 'meeting-first-' : 'meeting-';
+  const root = document.getElementById(prefix + 'register');
+  const status = document.getElementById(prefix + 'status');
+  const login = document.getElementById(prefix + 'login');
+  const logout = document.getElementById(prefix + 'logout');
   const col = name => sdk.collection(db,name);
   const doc = (name,id) => sdk.doc(db,name,id);
   const showError = () => {status.textContent = 'تعذّر إتمام العملية. تحقق من الاتصال والصلاحية.';};
-  const titles = new Map([...document.querySelectorAll('#meeting-01 details[id^="topic-"]')]
-    .filter(item => item.id !== 'topic-16').map(item => [
-      item.id.split('-')[1].padStart(3,'0'),item.querySelector('summary').lastChild.textContent.trim()
-    ]));
+  const topics = new Map([...document.querySelectorAll('#meeting-01 .meeting-topics > details')]
+    .map(item => [item.id.split('-')[1].padStart(3,'0'),item]));
+  const titles = new Map([...topics].map(([id,item]) => [
+    id,item.querySelector('summary').lastChild.textContent.trim()
+  ]));
+  const badges = new Map();
+  const controls = new Map();
+  if (first) {
+    for (const [id,topic] of topics) {
+      badges.set(id,add(topic.querySelector('summary'),'span'));
+      badges.get(id).className = 'meeting-state';
+      controls.set(id,add(topic.querySelector('.detail'),'div'));
+    }
+  }
+
+  function setStatus(id,state) {
+    if (!first) return;
+    topics.get(id).dataset.meetingState = state;
+    badges.get(id).textContent = {
+      none:'لم يُسجّل إجراء',progress:'قيد الإنجاز',done:'منجز'
+    }[state];
+  }
+
   let generation = 0;
 
   async function render(user) {
     const current = ++generation;
     root.replaceChildren();
     status.textContent = '';
+    for (const [id,container] of controls) {
+      container.replaceChildren();
+      container.className = '';
+      setStatus(id,id === '005' ? 'progress' : 'none');
+    }
     login.hidden = Boolean(user);
     logout.hidden = !user;
     const approver = user?.emailVerified && user.email === approverEmail;
     const buckets = {};
     for (const [key,label] of Object.entries(groups)) {
+      if (first) continue;
       const details = add(root,'details');
       details.className = 'card';
       add(details,'summary',label);
@@ -72,10 +99,10 @@ export function mountMeeting(db, sdk, auth, authSdk) {
           '?section=meeting-01#topic-' + Number(id);
       }
     };
-    initial.forEach(([id,description,group]) => append(group,id,description));
+    if (!first) initial.forEach(([id,description,group]) => append(group,id,description));
     try {
       if (!user?.emailVerified) {
-        status.textContent = 'سجّل الدخول للاطلاع على سجل المتابعة.';
+        status.textContent = 'سجّل الدخول للاطلاع على التحديثات المعتمدة.';
         return;
       }
       const scope = await sdk.getDoc(doc('forumMeetingChairs',user.uid));
@@ -84,17 +111,31 @@ export function mountMeeting(db, sdk, auth, authSdk) {
       ]);
       if (current !== generation) return;
       const itemTitles = new Map(titles);
-      const newItems = add(root,'ul');
+      const newItems = first ? null : add(root,'ul');
       for (const item of entries.docs.sort((a,b)=>Number(a.id)-Number(b.id))) {
         itemTitles.set(item.id,item.data().title);
+        if (first) continue;
         const row = add(newItems,'li','البند ' + item.id + ' · ' + item.data().title);
         row.id = 'item-' + item.id;
       }
-      for (const item of updates.docs) {
+      const states = {assign:'progress',decision:'progress',done:'done'};
+      const orderedUpdates = [...updates.docs].sort((a,b) =>
+        (a.data().reviewedAt?.seconds ?? 0) - (b.data().reviewedAt?.seconds ?? 0)
+        || (a.data().reviewedAt?.nanoseconds ?? 0) - (b.data().reviewedAt?.nanoseconds ?? 0)
+        || a.id.localeCompare(b.id));
+      for (const item of orderedUpdates) {
         const row = item.data();
+        if (first) {
+          const container = controls.get(row.itemId);
+          if (!container) continue;
+          if (states[row.action]) setStatus(row.itemId,states[row.action]);
+          container.className = 'meeting-item-controls';
+          add(container,'p',['معتمد',actions[row.action],row.note,row.owner,row.due].filter(Boolean).join(' · '));
+          continue;
+        }
         append(row.action === 'reschedule' ? 'assign' : row.action,row.itemId,row.note,row.owner,row.due,itemTitles.get(row.itemId));
       }
-      for (const key of Object.keys(groups)) {
+      for (const key of Object.keys(buckets)) {
         if (!buckets[key].children.length) add(buckets[key],'li','لا توجد بنود مسجّلة.');
       }
       if (!approver && !scope?.exists()) return;
@@ -117,7 +158,7 @@ export function mountMeeting(db, sdk, auth, authSdk) {
             status.textContent = 'حُفظت البنود المخصصة لرئيس اللجنة.';
           } catch {showError();}
         });
-        button(root,'إضافة بند جديد',async () => {
+        if (!first) button(root,'إضافة بند جديد',async () => {
           const title = prompt('عنوان البند الجديد')?.trim();
           if (!title) return;
           try {
@@ -132,65 +173,85 @@ export function mountMeeting(db, sdk, auth, authSdk) {
           } catch {showError();}
         });
       }
-      const form = add(root,'form');
-      const choices = add(add(form,'label','البند '),'select');
-      for (const [id,title] of itemTitles) {
-        if (!approver && !scope.data().itemIds.includes(id)) continue;
-        add(choices,'option',id+' · '+title).value = id;
+      const eligible = [...itemTitles].filter(([id]) => approver || scope.data().itemIds.includes(id));
+      const forms = new Map();
+      function proposalForm(parent, fixedId) {
+        const form = add(parent,'form');
+        form.className = 'meeting-proposal';
+        const choices = fixedId ? null : add(add(form,'label','البند '),'select');
+        if (choices) for (const [id,title] of eligible) add(choices,'option',id+' · '+title).value = id;
+        const kind = add(add(form,'label','الإجراء '),'select');
+        for (const [key,label] of Object.entries(actions)) add(kind,'option',label).value = key;
+        const note = add(add(form,'label','التعليق والملاحظات أو مرجع القرار '),'textarea');
+        note.required = true;
+        note.maxLength = 2000;
+        const owner = add(add(form,'label','المسؤول '),'input');
+        owner.maxLength = 200;
+        const due = add(add(form,'label','الموعد '),'input');
+        due.type = 'date';
+        kind.onchange = () => {owner.required = kind.value === 'assign'; due.required = kind.value === 'reschedule';};
+        kind.onchange();
+        const submit = add(form,'button','إرسال للاعتماد');
+        submit.className = 'btn secondary';
+        submit.disabled = !fixedId && !eligible.length;
+        form.onsubmit = async event => {
+          event.preventDefault();
+          submit.disabled = true;
+          try {
+            await sdk.addDoc(col('forumMeetingProposals'),{
+              itemId:fixedId ?? choices.value,action:kind.value,note:note.value.trim(),owner:owner.value.trim(),due:due.value,
+              author:user.uid,state:'pending',createdAt:sdk.serverTimestamp()
+            });
+            await render(user);
+            status.textContent = 'أُرسل المقترح للاعتماد.';
+          } catch {showError(); submit.disabled = false;}
+        };
+        return row => {
+          if (choices) choices.value = row.itemId;
+          kind.value = row.action;
+          note.value = row.note;
+          owner.value = row.owner;
+          due.value = row.due;
+          kind.onchange();
+          if (fixedId) topics.get(fixedId).open = true;
+          note.focus();
+        };
       }
-      const kind = add(add(form,'label','الإجراء '),'select');
-      for (const [key,label] of Object.entries(actions)) add(kind,'option',label).value = key;
-      const note = add(add(form,'label','التفاصيل أو مرجع القرار '),'textarea');
-      note.required = true;
-      note.maxLength = 2000;
-      const owner = add(add(form,'label','المسؤول '),'input');
-      owner.maxLength = 200;
-      const due = add(add(form,'label','الموعد '),'input');
-      due.type = 'date';
-      kind.onchange = () => {owner.required = kind.value === 'assign'; due.required = kind.value === 'reschedule';};
-      kind.onchange();
-      const submit = add(form,'button','إرسال للاعتماد');
-      submit.disabled = !choices.options.length;
-      form.onsubmit = async event => {
-        event.preventDefault();
-        submit.disabled = true;
-        try {
-          await sdk.addDoc(col('forumMeetingProposals'),{
-            itemId:choices.value,action:kind.value,note:note.value.trim(),owner:owner.value.trim(),due:due.value,
-            author:user.uid,state:'pending',createdAt:sdk.serverTimestamp()
-          });
-          await render(user);
-          status.textContent = 'أُرسل المقترح للاعتماد.';
-        } catch {showError(); submit.disabled = false;}
-      };
+      if (first) {
+        for (const [id] of eligible) {
+          const container = controls.get(id);
+          if (!container) continue;
+          container.className = 'meeting-item-controls';
+          forms.set(id,proposalForm(container,id));
+        }
+      } else {
+        const refill = proposalForm(root);
+        for (const [id] of eligible) forms.set(id,refill);
+      }
       if (!approver) {
         const own = await sdk.getDocs(sdk.query(col('forumMeetingProposals'),sdk.where('author','==',user.uid)));
         if (current !== generation) return;
-        add(root,'h3','مقترحاتي');
+        if (!first) add(root,'h3','مقترحاتي');
         for (const item of own.docs) {
           const row = item.data();
-          const line = add(root,'p',[row.itemId,row.note,{pending:'بانتظار الاعتماد',approved:'معتمد',returned:'أُعيد للتعديل'}[row.state],row.reason].filter(Boolean).join(' · '));
-          if (row.state === 'returned' && [...choices.options].some(option=>option.value === row.itemId)) {
-            button(line,'تعديل وإعادة الإرسال',()=>{
-              choices.value = row.itemId;
-              kind.value = row.action;
-              note.value = row.note;
-              owner.value = row.owner;
-              due.value = row.due;
-              kind.onchange();
-              note.focus();
-            });
+          const parent = first ? controls.get(row.itemId) : root;
+          if (!parent) continue;
+          const line = add(parent,'p',[row.itemId,row.note,{pending:'بانتظار الاعتماد',approved:'معتمد',returned:'أُعيد للتعديل'}[row.state],row.reason].filter(Boolean).join(' · '));
+          if (row.state === 'returned' && forms.has(row.itemId)) {
+            button(line,'تعديل وإعادة الإرسال',()=>forms.get(row.itemId)(row));
           }
         }
         return;
       }
       const pending = await sdk.getDocs(sdk.query(col('forumMeetingProposals'),sdk.where('state','==','pending')));
       if (current !== generation) return;
-      add(root,'h3','بانتظار الاعتماد');
+      if (!first) add(root,'h3','بانتظار الاعتماد');
       for (const item of pending.docs) {
         const row = item.data();
-        const card = add(root,'article');
-        add(card,'p',[row.itemId,actions[row.action],row.note,row.owner,row.due].filter(Boolean).join(' · '));
+        const parent = first ? controls.get(row.itemId) : root;
+        if (!parent) continue;
+        const card = add(parent,'article');
+        add(card,'p',['بانتظار الاعتماد',row.itemId,actions[row.action],row.note,row.owner,row.due].filter(Boolean).join(' · '));
         async function resolve(state) {
           const reason = state === 'returned' ? prompt('ملاحظة الإعادة للتعديل')?.trim() : '';
           if (state === 'returned' && !reason) return;

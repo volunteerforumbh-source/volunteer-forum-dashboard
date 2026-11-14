@@ -917,6 +917,11 @@ function renderEventProgram(published){
   const key = 'forum-event-drafts-v1';
   const current = new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Bahrain',year:'numeric',month:'2-digit'}).format(new Date());
   const [thisYear,thisMonth] = current.split('-').map(Number);
+  const firstYear = 2026;
+  const firstMonth = 12;
+  const defaultYear = Math.max(firstYear,thisYear);
+  const startMonth = year => year === firstYear ? firstMonth : 1;
+  const defaultMonth = year => Math.max(startMonth(year),year === thisYear ? thisMonth : 1);
   const monthNames = Array.from({length:12},(_,i)=>new Intl.DateTimeFormat('ar-BH',{month:'long',timeZone:'UTC'}).format(new Date(Date.UTC(2026,i,1))));
   let drafts = [];
   let editing = null;
@@ -924,19 +929,25 @@ function renderEventProgram(published){
     const saved = JSON.parse(localStorage.getItem(key) || '[]');
     if (Array.isArray(saved)) drafts = saved;
   } catch { feedback.textContent = 'تعذّر استرداد المسودات المحفوظة.'; }
-  yearField.value = thisYear;
-  monthNames.forEach((label,i)=>{
-    const option = createNode('option','',label);
-    option.value = i+1;
-    form.elements.month.append(option);
-  });
-  form.elements.month.value = thisMonth;
+  yearField.value = defaultYear;
+  function updateMonthOptions(year) {
+    form.elements.month.replaceChildren();
+    monthNames.forEach((label,i)=>{
+      if (i+1 < startMonth(year)) return;
+      const option = createNode('option','',label);
+      option.value = i+1;
+      form.elements.month.append(option);
+    });
+    form.elements.month.value = defaultMonth(year);
+  }
+  updateMonthOptions(defaultYear);
 
   function draw(openMonth){
     const year = Number(yearField.value);
     host.replaceChildren();
     monthNames.forEach((label,i)=>{
       const month = i+1;
+      if (month < startMonth(year)) return;
       const items = [...published,...drafts].filter(item=>item.year===year && item.month===month);
       items.sort((a,b)=>(a.date || '9999').localeCompare(b.date || '9999') || a.title.localeCompare(b.title,'ar'));
       const row = createNode('li');
@@ -991,8 +1002,10 @@ function renderEventProgram(published){
   yearField.onchange = () => {
     editing = null;
     form.reset();
-    form.elements.month.value = Number(yearField.value) === thisYear ? thisMonth : 1;
-    draw(Number(yearField.value) === thisYear ? thisMonth : 1);
+    const year = Number(yearField.value);
+    if (!yearField.reportValidity()) return;
+    updateMonthOptions(year);
+    draw(defaultMonth(year));
   };
   form.onsubmit = event => {
     event.preventDefault();
@@ -1017,7 +1030,7 @@ function renderEventProgram(published){
     feedback.textContent = 'حُفظت المسودة في هذا المتصفح.';
     draw(month);
   };
-  draw(thisMonth);
+  draw(defaultMonth(defaultYear));
 }
 
 function renderCalendar(meetings){

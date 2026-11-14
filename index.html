@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#524791">
 <title>بوابة متابعة المنتدى | المنتدى الثاني للعمل التطوعي</title>
 <script>
-  const sections = ["organization","membership-committee","volunteer-space","media-committee","meetings","initiatives","reports","calendar","recommendations","plan","event-program","meeting-01","meeting-02","forum-vision","updates","news","associations","notice"];
+  const sections = ["organization","academic-committee","membership-committee","volunteer-space","media-committee","meetings","initiatives","reports","calendar","recommendations","plan","event-program","meeting-01","meeting-02","forum-vision","updates","news","associations","notice"];
   const params = new URLSearchParams(location.search);
   const section = params.get('section') || location.hash.slice(1);
   if (sections.includes(section)) document.documentElement.dataset.section = section;
@@ -21,6 +21,7 @@ html[data-section="organization"] #organization,
 html[data-section="media-committee"] #media-committee,
 html[data-section="volunteer-space"] #volunteer-space,
 html[data-section="membership-committee"] #membership-committee,
+html[data-section="academic-committee"] #academic-committee,
 html[data-section="meetings"] #meetings,
 html[data-section="initiatives"] #initiatives,
 html[data-section="reports"] #reports,
@@ -90,7 +91,7 @@ header{padding:28px 0 48px;position:relative}
 #forum-question,.forum-question-examples{display:flex;flex-wrap:wrap;gap:.5rem;margin-block-start:.5rem}
 #forum-question label{flex-basis:100%;font-weight:700}
 #forum-question input{flex:1;min-inline-size:min(100%,13rem);padding:.6rem;border:1px solid var(--line);border-radius:8px;font:inherit}
-#membership-workspace label,#volunteer-workspace label{display:grid;gap:.25rem;margin-block:.5rem}
+#academic-workspace label,#membership-workspace label,#volunteer-workspace label{display:grid;gap:.25rem;margin-block:.5rem}
 #membership-workspace button,#volunteer-workspace button{margin-inline-end:.4rem;margin-block:.25rem}
 #membership-workspace .org-branch>details,#volunteer-workspace .org-branch>details{margin-block:.5rem}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:24px}
@@ -365,6 +366,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
       <li><details>
         <summary>اللجان والجمعيات</summary>
         <ul>
+          <li><a href="?section=academic-committee">لجنة مشروع «أثَر» الأكاديمي</a></li>
           <li><a href="?section=membership-committee">لجنة العضويات</a></li>
           <li><a href="?section=organization">الهيكل التنظيمي واللجان</a></li>
           <li><a href="?section=media-committee">اللجنة الإعلامية والعلاقات العامة</a></li>
@@ -421,7 +423,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
     <div class="org-intro"><strong>اللجنة العليا واللجان التنفيذية</strong><span>يجري استكمال بيانات المسؤولين والأعضاء. هذه الصفحة لا تنشر أسماء غير معتمدة.</span></div>
     <ul class="forum-tree org-tree">
       <li><details><summary>اللجنة العليا</summary><div class="org-branch"><p>البطاقات المعتمدة للنشر</p><div id="leadership-grid" class="grid"></div></div></details></li>
-      <li><details><summary>اللجان وفرق العمل</summary><div class="org-branch"><p><a href="?section=membership-committee">لجنة العضويات</a></p><p>اختَر اللجنة لعرض بياناتها وعضويتها المنشورة</p><div id="committees-grid" class="grid"></div></div></details></li>
+      <li><details><summary>اللجان وفرق العمل</summary><div class="org-branch"><p><a href="?section=membership-committee">لجنة العضويات</a></p><p><a href="?section=academic-committee">لجنة مشروع «أثَر» الأكاديمي</a></p><p>اختَر اللجنة لعرض بياناتها وعضويتها المنشورة</p><div id="committees-grid" class="grid"></div></div></details></li>
       <li><details id="committee-plans"><summary>تصورات وخطط اللجان</summary>
         <ul>
           <li><details id="recommendations-committee"><summary>لجنة دراسة التوصيات ومتابعة تنفيذها</summary><div class="org-branch"><span class="pill">مقترح للتشكيل</span>
@@ -438,6 +440,16 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
     </ul>
   </section>
 
+  <section id="academic-committee">
+    <div class="section-head"><h2>لجنة مشروع «أثَر» الأكاديمي</h2></div>
+    <ul class="forum-tree org-tree">
+      <li><details><summary>اختصاص اللجنة ومسار التأهيل</summary><div class="org-branch">
+        <p>تترأس اللجنة الأستاذة ابتهاج خليفة، وتضم خبراء واستشاريين يصممون برامج تدريبية وتطبيقية لنحو 100 متطوع.</p>
+        <p>يُختار ستة متطوعين وفق معايير معلنة لتشكيل أول مجلس تطوعي، وعرض تجربتهم ونتائج مشاريعهم على منصة المنتدى الثالث في 2027.</p>
+      </div></details></li>
+    </ul>
+    <div id="academic-workspace"><p role="status">جارٍ التحقق من تسجيل الدخول…</p></div>
+  </section>
   <section id="membership-committee">
     <div class="section-head"><h2>لجنة العضويات</h2></div>
     <p>مراجعة طلبات التطوع وتفعيل العضويات وتوزيع المتطوعين على الفرق.</p>
@@ -1477,7 +1489,103 @@ fetch('./organization-public.json',{cache:'no-store'})
 </script>
 <script type="module">
 const volunteerStates = {pending:'بانتظار المراجعة',offered:'بانتظار تأكيدك',confirmed:'مشاركة مؤكدة',declined:'لم يُقبل الترشيح',withdrawn:'اعتُذر عن المشاركة'};
-function mountVolunteer(root, auth, authSdk, db, sdk, membershipPage = false) {
+const programFields = [
+  ['title','اسم البرنامج',200],['goal','الأهداف',2000],['audience','الفئة المستهدفة',1000],
+  ['sessions','الدورات والورش والدروس والجلسات',4000],['schedule','المواعيد وأوقات الجلسات',2000],
+  ['duration','المدة',200],['commitment','الالتزام المطلوب',2000],['practice','التطبيق العملي والمخرجات',2000],
+  ['criteria','معايير التقييم والاختيار',3000]
+];
+const programStates = {draft:'مسودة',review:'بانتظار الاعتماد',returned:'أعيد للاستكمال',published:'معتمد ومنشور'};
+const participationStates = {requested:'بانتظار المراجعة',accepted:'مقبول',waitlisted:'قائمة انتظار',declined:'لم يُقبل'};
+function showAcademicPrograms({root,adminPage,manager,expert,approver,user,programs,participations,add,branch,field,button,collection,sdk,db,reload,status}) {
+  const tree=add(root,'ul');tree.className='forum-tree org-tree';
+  const fields=programFields.map(([key,label])=>[key,label]);
+  function saveExisting(group,row,data){
+    const ref=sdk.doc(collection(group),row.id);
+    return sdk.runTransaction(db,async tx=>{
+      const snapshot=await tx.get(ref);
+      if(!snapshot.exists()||!snapshot.data().updatedAt.isEqual(row.updatedAt)) throw Error('stale');
+      tx.update(ref,{...data,updatedAt:sdk.serverTimestamp()});
+    });
+  }
+  function showDetails(node,program){
+    for(const [key,label] of fields.slice(1)) if(program[key]) add(node,'p',label+' · '+program[key]);
+  }
+  function editProgram(node,program){
+    const editor=add(node,'details');add(editor,'summary',program?'تعديل البرنامج':'إعداد برنامج تدريبي');
+    const inputs=programFields.map(([key,label,max])=>{
+      const input=field(editor,label,key==='title'||key==='duration'?'input':'textarea',program?.[key]||'');input.maxLength=max;return [key,input];
+    });
+    const message=add(editor,'p');message.setAttribute('role','status');
+    async function save(state){
+      const data=Object.fromEntries(inputs.map(([key,input])=>[key,input.value.trim()]));
+      if(!data.title){message.textContent='أدخل اسم البرنامج.';return;}
+      const missing=fields.filter(([key])=>!data[key]).map(([,label])=>label);
+      if(state==='review'&&missing.length){message.textContent='أكمل قبل الإرسال: '+missing.join('، ');return;}
+      if(program) await saveExisting('academicPrograms',program,{...data,state,reviewNote:''});
+      else await sdk.addDoc(collection('academicPrograms'),{...data,state,reviewNote:'',author:user.uid,updatedAt:sdk.serverTimestamp()});
+      await reload();
+    }
+    button(editor,'حفظ المسودة',()=>save('draft'),message);
+    button(editor,'إرسال للاعتماد',()=>save('review'),message);
+  }
+  if(adminPage && (manager||expert||approver)) editProgram(root);
+  if(!programs.length) add(root,'p',adminPage?'لا توجد برامج مسجلة في قائمتك.':'لا توجد برامج تدريبية معتمدة ومنشورة حاليًا.');
+  for(const program of programs){
+    const body=branch(tree,program.title+(adminPage?' · '+programStates[program.state]:''));
+    showDetails(body,program);
+    const message=add(body,'p');message.setAttribute('role','status');
+    if(adminPage){
+      if(program.reviewNote) add(body,'p','ملاحظات المراجعة · '+program.reviewNote);
+      if(program.author===user.uid&&['draft','returned'].includes(program.state)) editProgram(body,program);
+      if(approver&&program.state==='review'){
+        const note=field(body,'ملاحظات المراجعة','textarea');note.maxLength=2000;
+        button(body,'اعتماد ونشر في مساحة المتطوع',async()=>{
+          await saveExisting('academicPrograms',program,{state:'published',reviewNote:''});await reload();
+        },message);
+        button(body,'إعادة للاستكمال',async()=>{
+          if(!note.value.trim()){message.textContent='اكتب ملاحظات الاستكمال.';return;}
+          await saveExisting('academicPrograms',program,{state:'returned',reviewNote:note.value.trim()});await reload();
+        },message);
+      }
+      if(approver&&program.state==='published'){
+        const requests=add(body,'details');
+        const rows=participations.filter(item=>item.programId===program.id);
+        add(requests,'summary','طلبات المشاركة والتقييم · '+rows.length);
+        for(const row of rows){
+          const person=add(requests,'details');add(person,'summary',row.name+' · '+participationStates[row.state]);
+          const state=field(person,'حالة الطلب','select');
+          for(const [value,label] of Object.entries(participationStates)) add(state,'option',label).value=value;
+          state.value=row.state;
+          const evaluation=[['attendance','الحضور'],['outputs','المخرجات العملية'],['leadership','القيادة'],['teamwork','العمل الجماعي']].map(([key,label])=>{
+            const value=field(person,label,'textarea',row[key]||'');value.maxLength=1000;return [key,value];
+          });
+          const personStatus=add(person,'p');personStatus.setAttribute('role','status');
+          button(person,'حفظ حالة المشاركة والتقييم',async()=>{
+            await saveExisting('academicParticipation',row,{state:state.value,...Object.fromEntries(evaluation.map(([key,input])=>[key,input.value.trim()]))});
+            await reload();
+          },personStatus);
+        }
+      }
+    } else {
+      const own=participations.find(row=>row.programId===program.id);
+      if(own) {
+        add(body,'p','حالة طلبك · '+participationStates[own.state]);
+        for(const [key,label] of [['attendance','الحضور'],['outputs','المخرجات العملية'],['leadership','القيادة'],['teamwork','العمل الجماعي']])
+          if(own[key]) add(body,'p',label+' · '+own[key]);
+      } else {
+        button(body,'أرغب بالمشاركة',async()=>{
+          await sdk.setDoc(sdk.doc(collection('academicParticipation'),user.uid+'_'+program.id),{
+            uid:user.uid,programId:program.id,name:user.memberName,state:'requested',attendance:'',outputs:'',leadership:'',teamwork:'',updatedAt:sdk.serverTimestamp()
+          });
+          await reload();
+        },message);
+      }
+    }
+  }
+}
+
+function mountVolunteer(root, auth, authSdk, db, sdk, membershipPage = false, academicPage = false) {
   const collection = name => sdk.collection(db,'forumCommittees','media',name);
   const read = (name,id) => sdk.getDoc(sdk.doc(collection(name),id)).then(s=>s.data());
   const list = (name,...filters) => sdk.getDocs(sdk.query(collection(name),...filters.map(f=>sdk.where(...f))))
@@ -1547,6 +1655,36 @@ function mountVolunteer(root, auth, authSdk, db, sdk, membershipPage = false) {
         return;
       }
       const manager=['manager','deputy'].includes(member.role);
+      if (academicPage) {
+        const [delegation,settings]=await Promise.all([read('academicPublishers',user.uid),read('academicSettings','approval')]);
+        if(current!==revision) return;
+        const expert=delegation?.enabled===true;
+        const approver=settings?.approverUid===user.uid;
+        if(!expert&&!approver&&!manager){status.textContent='إدارة البرامج متاحة للمخوّلين. تظهر البرامج المعتمدة في مساحة المتطوع.';link(root,'مساحة المتطوع','?section=volunteer-space');return;}
+        const [programs,participations]=await Promise.all([
+          list('academicPrograms',...(approver?[]:[['author','==',user.uid]])),
+          list('academicParticipation',...(approver?[]:[['uid','==',user.uid]]))
+        ]);
+        if(current!==revision) return;
+        status.textContent='';
+        if(member.role==='manager'){
+          const members=await list('members');
+          if(current!==revision) return;
+          const config=add(root,'details');add(config,'summary','ربط حساب رئيسة اللجنة للاعتماد');
+          const select=field(config,'حساب الأستاذة ابتهاج خليفة','select');
+          add(select,'option','اختر حسابها المفعّل').value='';
+          for(const person of members.filter(person=>person.state==='active')) add(select,'option',person.title).value=person.id;
+          select.value=settings?.approverUid||'';
+          const message=add(config,'p');message.setAttribute('role','status');
+          button(config,'حفظ حساب الاعتماد',async()=>{
+            if(!select.value){message.textContent='اختر حساب الأستاذة ابتهاج خليفة.';return;}
+            await sdk.setDoc(sdk.doc(collection('academicSettings'),'approval'),{approverUid:select.value,updatedAt:sdk.serverTimestamp()});
+            await render(user);
+          },message);
+        }
+        showAcademicPrograms({root,adminPage:true,manager,expert,approver,user,programs,participations,add,branch,field,button,collection,sdk,db,reload:()=>render(user),status});
+        return;
+      }
       if (membershipPage) {
         if (!manager) { status.textContent='هذه الصفحة متاحة لمسؤولي العضويات المخوّلين.'; return; }
         const [applications,members,teams,invites]=await Promise.all([
@@ -1740,32 +1878,16 @@ function mountVolunteer(root, auth, authSdk, db, sdk, membershipPage = false) {
         add(appointments,'p',[event?.title||n.eventId,n.assignedRole,event?.status==='معتمد'&&event.date ? event.date : 'الموعد قيد التثبيت',event?.location].filter(Boolean).join(' · '));
       }
       const learning=section('دورات وورش ودروس مشروع أثَر');
-      const academic=await read('academicPublishers',user.uid);
+      link(learning,'صفحة لجنة مشروع «أثَر» الأكاديمي','?section=academic-committee');
+      const [programs,participations]=await Promise.all([list('academicPrograms',['state','==','published']),list('academicParticipation',['uid','==',user.uid])]);
       if(current!==revision) return;
-      if(!courses.length) add(learning,'p','لا توجد مواد تدريبية منشورة بعد.');
-      const lessons=add(learning,'ul');
-      for(const course of [...courses].sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999'))){
-        const lesson=branch(lessons,[course.title,course.kind,course.date||'الموعد قيد التحديد'].join(' · '));
-        if(course.description) add(lesson,'p',course.description);
-        if(/^https:\/\//i.test(course.url||'')) link(lesson,'فتح المادة أو التسجيل',course.url);
-      }
-      if(manager||academic?.enabled){
-        const editor=add(learning,'details');add(editor,'summary','نشر تدريب للمتطوعين');
-        const kind=field(editor,'النوع','select');
-        for(const label of ['دورة','ورشة عمل','درس']) add(kind,'option',label).value=label;
-        const title=field(editor,'العنوان','input');title.maxLength=200;
-        const date=field(editor,'التاريخ','input');date.type='date';
-        const url=field(editor,'رابط HTTPS','input');url.type='url';url.maxLength=2000;
-        const description=field(editor,'التفاصيل والأهداف','textarea');description.maxLength=2000;
-        const message=add(editor,'p');message.setAttribute('role','status');
-        button(editor,'نشر في مساحة المتطوع',async()=>{
-          if(!title.value.trim()||(url.value&&!/^https:\/\/[^\s]+$/i.test(url.value))){
-            message.textContent='أدخل عنوانًا ورابط HTTPS صالحًا إن وُجد.';return;
-          }
-          await sdk.addDoc(collection('volunteerTraining'),{title:title.value.trim(),kind:kind.value,date:date.value,url:url.value.trim(),
-            description:description.value.trim(),updatedAt:sdk.serverTimestamp()});
-          await render(user,'دورات وورش ودروس مشروع أثَر');
-        },message);
+      showAcademicPrograms({root:learning,user:{uid:user.uid,memberName:member.title},programs,participations,add,branch,field,button,collection,sdk,db,reload:()=>render(user,'دورات وورش ودروس مشروع أثَر'),status});
+      if(courses.length){
+        const archive=add(learning,'details');add(archive,'summary','مواد منشورة سابقًا');
+        for(const course of courses){
+          add(archive,'p',course.title+' · '+course.kind);
+          if(/^https:\/\//i.test(course.url||'')) link(archive,'فتح المادة',course.url);
+        }
       }
       const opportunities=section('الفعاليات وفرص التطوع');
       const eventTree=add(opportunities,'ul');
@@ -1887,10 +2009,11 @@ function mountVolunteer(root, auth, authSdk, db, sdk, membershipPage = false) {
   },()=>{root.textContent='تعذّر التحقق من تسجيل الدخول.';});
 }
 
-if (['media-committee','meeting-01','meeting-02','volunteer-space','membership-committee'].includes(document.documentElement.dataset.section)) {
+if (['media-committee','meeting-01','meeting-02','volunteer-space','membership-committee','academic-committee'].includes(document.documentElement.dataset.section)) {
   const membershipPage = document.documentElement.dataset.section === 'membership-committee';
-  const volunteerPage = membershipPage || document.documentElement.dataset.section === 'volunteer-space';
-  const volunteerRoot = document.getElementById(membershipPage?'membership-workspace':'volunteer-workspace');
+  const academicPage = document.documentElement.dataset.section === 'academic-committee';
+  const volunteerPage = academicPage || membershipPage || document.documentElement.dataset.section === 'volunteer-space';
+  const volunteerRoot = document.getElementById(academicPage?'academic-workspace':membershipPage?'membership-workspace':'volunteer-workspace');
   const firstMeeting = document.documentElement.dataset.section === 'meeting-01';
   const meetingPage = firstMeeting || document.documentElement.dataset.section === 'meeting-02';
   const el = id => document.getElementById('media-' + id);
@@ -1906,7 +2029,7 @@ if (['media-committee','meeting-01','meeting-02','volunteer-space','membership-c
     await authSdk.setPersistence(auth, authSdk.browserSessionPersistence);
     const db = dbSdk.getFirestore(app);
     if (volunteerPage) {
-      mountVolunteer(volunteerRoot, auth, authSdk, db, dbSdk,membershipPage);
+      mountVolunteer(volunteerRoot, auth, authSdk, db, dbSdk,membershipPage,academicPage);
     } else if (meetingPage) {
       const {mountMeeting} = await import('./meeting-register.mjs?v=3');
       mountMeeting(db, dbSdk, auth, authSdk);

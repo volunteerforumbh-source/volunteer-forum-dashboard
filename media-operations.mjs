@@ -210,38 +210,42 @@ export function mountOperations(root, db, sdk, user) {
       } : {})};
       if (!Object.hasOwn(tabs,tab)) tab = 'home';
       const nav = element('nav', '', root);
-      nav.className = 'media-tabs media-primary-nav';
       nav.setAttribute('aria-label', 'أقسام اللجنة');
-      function navButton(container, label, key, active) {
-        const button = action(container,label,() => render(key));
-        if (active) button.setAttribute('aria-current','page');
+      const tree = element('ul','',nav);
+      tree.className = 'forum-tree org-tree media-tree';
+      const panel = element('div','');
+      panel.className = 'org-branch media-panel';
+      function leaf(list,key,label) {
+        const branch = element('details','',element('li','',list));
+        const summary = element('summary',label,branch);
+        if (key === tab) {
+          branch.open = true;
+          summary.setAttribute('aria-current','page');
+          branch.append(panel);
+        } else {
+          summary.onclick = async event => {
+            event.preventDefault();
+            await render(key);
+            root.querySelector('[aria-current="page"]')?.focus();
+          };
+        }
       }
-      function menu(label, items) {
+      function group(label,items) {
         if (!Object.keys(items).length) return;
-        const menu = element('details','',nav);
-        const summary = element('summary',label,menu);
-        if (Object.hasOwn(items,tab)) summary.classList.add('media-selected');
-        const links = element('div','',menu);
-        for (const [key,label] of Object.entries(items)) navButton(links,label,key,key === tab);
+        const branch = element('details','',element('li','',tree));
+        element('summary',label,branch);
+        branch.open = Object.hasOwn(items,tab);
+        const children = element('ul','',branch);
+        for (const [key,title] of Object.entries(items)) leaf(children,key,title);
       }
-      navButton(nav,tabs.home,'home',tab === 'home');
+      leaf(tree,'home',tabs.home);
       if (role) {
-        navButton(nav,'المهام',Object.keys(tasksTabs)[0],Object.hasOwn(tasksTabs,tab));
-        navButton(nav,'الخطط','workPlan',Object.hasOwn(planTabs,tab));
-        navButton(nav,'التقويم','committeeCalendar',tab === 'committeeCalendar');
-        menu('المزيد',moreTabs);
-        menu('إدارة اللجنة',adminTabs);
+        group('المهام',tasksTabs);
+        group('الخطط',planTabs);
+        leaf(tree,'committeeCalendar',tabs.committeeCalendar);
+        group('الفرق والمحتوى',moreTabs);
+        group('إدارة اللجنة',adminTabs);
       }
-      const subTabs = [tasksTabs,planTabs].find(group => Object.hasOwn(group,tab));
-      if (subTabs && Object.keys(subTabs).length > 1) {
-        const sub = element('nav','',root);
-        sub.className = 'media-tabs media-subnav';
-        sub.setAttribute('aria-label','التنقل داخل القسم');
-        for (const [key,label] of Object.entries(subTabs)) navButton(sub,label,key,key === tab);
-      }
-      const panel = element('div', '', root);
-      panel.className = 'card media-panel';
-      element('h3', tabs[tab], panel);
       const status = element('p', '', panel);
       status.setAttribute('role', 'status');
       function form(fields, values, onSave, label = 'حفظ', container = panel) {

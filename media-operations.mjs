@@ -22,38 +22,6 @@ const teamScopes = {
   archive:'حفظ المواد، تنظيم الملفات، الفهرسة',
   field:'تغطية الفعاليات، المقابلات الميدانية، التنسيق'
 };
-const productionSteps = [
-  [stages.idea,'تسجيل الفكرة وتحديد الأولوية'],
-  [stages.preparation,'كتابة النص وتجميع المواد'],
-  [stages.production,'التصميم أو التصوير أو المونتاج'],
-  [stages.review,'فحص المحتوى وإجراء التعديلات'],
-  [stages.approved,'الموافقة وتحديد موعد النشر'],
-  ['منشور ومؤرشف','حفظ الروابط والملفات والنتائج']
-];
-
-function renderOperatingOverview(panel, teams, render) {
-  element('h4', 'إدارة اللجنة الإعلامية', panel);
-  element('p', 'التخطيط والتنسيق والاعتماد ومتابعة الفرق', panel);
-  const structure = element('ul', '', panel);
-  structure.className = 'media-overview';
-  for (const [id, name] of Object.entries(areas)) {
-    const team = teams.find(record => record.id === id);
-    const item = element('li', '', structure);
-    element('strong', team?.title ?? name, item);
-    element('p', team?.units || teamScopes[id], item);
-    if (!team) element('small', 'مقترح للتأسيس', item);
-  }
-  action(panel, 'عرض ملفات الفرق', () => render('teams'));
-  element('h4', 'دورة العمل الإعلامي', panel);
-  const flow = element('ol', '', panel);
-  flow.className = 'media-overview media-flow';
-  for (const [label, description] of productionSteps) {
-    const item = element('li', '', flow);
-    element('strong', label, item);
-    element('p', description, item);
-  }
-  action(panel, 'عرض لوحة المهام', () => render('tasks'));
-}
 
 const planTasks = {
   workPlan: [
@@ -225,23 +193,51 @@ export function mountOperations(root, db, sdk, user) {
       const operator = manager || role === 'deputy';
       const lead = role === 'lead';
       const summaryCriteria = operator || role === 'observer' ? null : ['teamId','==',membership?.teamId ?? ''];
-      const tabs = {home:'الرئيسية'};
-      if (role) Object.assign(tabs, {
-        workPlan:'خطة عمل اللجنة', coveragePlan:'خطة التغطية الإعلامية',
-        tasks:'مهامي', allTasks:'مهام اللجنة', teamTasks:'مهام الفريق', committeeCalendar:'تقويم اللجنة',
-        ...Object.fromEntries(Object.entries(definitions).filter(([key]) => key !== 'tasks').map(([key, value]) => [key,value.title]))
-      });
-      if (!operator) delete tabs.allTasks;
-      if (operator || lead) tabs.review = 'بانتظار المراجعة';
-      if (role && !operator && !lead) delete tabs.members;
-      if (manager) tabs.audit = 'سجل العمليات';
-      if (!tabs[tab]) tab = 'home';
+      const tasksTabs = role === 'observer' ? {teamTasks:'مهام اللجنة'} : {
+        tasks:'مهامي', teamTasks:'مهام الفريق',
+        ...(operator ? {allTasks:'مهام اللجنة'} : {}),
+        ...(operator || lead ? {review:'بانتظار المراجعة'} : {})
+      };
+      const planTabs = {workPlan:'خطة عمل اللجنة', coveragePlan:'خطة التغطية الإعلامية'};
+      const moreTabs = {teams:'الفرق', content:'المحتوى والأرشيف'};
+      const adminTabs = {
+        ...(operator || lead ? {members:definitions.members.title} : {}),
+        ...(operator ? {publications:'إدارة مواعيد النشر'} : {}),
+        ...(manager ? {audit:'سجل العمليات'} : {})
+      };
+      const tabs = {home:'نظرة عامة', ...(role ? {
+        ...tasksTabs,...planTabs,committeeCalendar:'التقويم',...moreTabs,...adminTabs
+      } : {})};
+      if (!Object.hasOwn(tabs,tab)) tab = 'home';
       const nav = element('nav', '', root);
-      nav.className = 'media-tabs';
-      nav.setAttribute('aria-label', 'صفحات اللجنة');
-      for (const [key, label] of Object.entries(tabs)) {
-        const button = action(nav, label, () => render(key));
-        if (key === tab) button.setAttribute('aria-current', 'page');
+      nav.className = 'media-tabs media-primary-nav';
+      nav.setAttribute('aria-label', 'أقسام اللجنة');
+      function navButton(container, label, key, active) {
+        const button = action(container,label,() => render(key));
+        if (active) button.setAttribute('aria-current','page');
+      }
+      function menu(label, items) {
+        if (!Object.keys(items).length) return;
+        const menu = element('details','',nav);
+        const summary = element('summary',label,menu);
+        if (Object.hasOwn(items,tab)) summary.classList.add('media-selected');
+        const links = element('div','',menu);
+        for (const [key,label] of Object.entries(items)) navButton(links,label,key,key === tab);
+      }
+      navButton(nav,tabs.home,'home',tab === 'home');
+      if (role) {
+        navButton(nav,'المهام',Object.keys(tasksTabs)[0],Object.hasOwn(tasksTabs,tab));
+        navButton(nav,'الخطط','workPlan',Object.hasOwn(planTabs,tab));
+        navButton(nav,'التقويم','committeeCalendar',tab === 'committeeCalendar');
+        menu('المزيد',moreTabs);
+        menu('إدارة اللجنة',adminTabs);
+      }
+      const subTabs = [tasksTabs,planTabs].find(group => Object.hasOwn(group,tab));
+      if (subTabs && Object.keys(subTabs).length > 1) {
+        const sub = element('nav','',root);
+        sub.className = 'media-tabs media-subnav';
+        sub.setAttribute('aria-label','التنقل داخل القسم');
+        for (const [key,label] of Object.entries(subTabs)) navButton(sub,label,key,key === tab);
       }
       const panel = element('div', '', root);
       panel.className = 'card media-panel';
@@ -309,16 +305,34 @@ export function mountOperations(root, db, sdk, user) {
         if (!role && user.email) element('p', user.email, panel);
         if (membership) element('p', membership.title + ' · ' + (membership.primaryRole || 'الدور قيد التحديد'), panel);
         if (role) {
-          const [teams, tasks, entries] = await Promise.all([
-            list('teams'), list('taskSummaries', summaryCriteria), list('publications')
+          const [tasks, entries, content] = await Promise.all([
+            list('taskSummaries', summaryCriteria), list('publications'), list('content')
           ]);
           if (stopped || current !== renderId) return;
           const today = new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Bahrain'}).format(new Date());
-          const open = tasks.filter(row => !['published','archived','cancelled'].includes(row.state));
-          element('p', 'الفرق ' + teams.length + ' · المهام المفتوحة ' + open.length +
-            ' · المتأخرة ' + open.filter(row => row.due && row.due < today).length +
-            ' · مواعيد النشر المجدولة ' + entries.filter(row => row.state === 'scheduled').length, panel);
-          renderOperatingOverview(panel, teams, render);
+          const open = tasks.filter(row => !['completed','published','archived','cancelled'].includes(row.state));
+          const reviewing = operator || lead;
+          const items = (reviewing ? open.filter(row => row.state === 'review' && (operator || row.assigneeId !== uid))
+            : role === 'observer' ? open : open.filter(row => row.assigneeId === uid))
+            .sort((a,b) => a.due.localeCompare(b.due)).slice(0,3);
+          const upcoming = entries.filter(row => row.state === 'scheduled' && row.date.slice(0,10) >= today)
+            .sort((a,b) => a.date.localeCompare(b.date)).slice(0,3);
+          const overview = element('div','',panel);
+          overview.className = 'media-home-grid';
+          const work = element('section','',overview);
+          element('h4',reviewing ? 'بانتظار المراجعة' : role === 'observer' ? 'العمل الجاري' : 'مهامي القادمة',work);
+          if (items.length) {
+            const list = element('ul','',work);
+            for (const row of items) element('li',row.title+' · '+row.due,list);
+          } else element('p',reviewing ? 'لا توجد مهام بانتظار المراجعة.' : 'لا توجد مهام مفتوحة.',work);
+          action(work,'عرض المهام',() => render(reviewing ? 'review' : Object.keys(tasksTabs)[0]));
+          const calendar = element('section','',overview);
+          element('h4','مواعيد النشر القادمة',calendar);
+          if (upcoming.length) {
+            const list = element('ul','',calendar);
+            for (const row of upcoming) element('li',(content.find(item => item.id === row.contentId)?.title ?? 'مادة إعلامية')+' · '+row.date.replace('T',' '),list);
+          } else element('p','لا توجد مواعيد نشر قادمة.',calendar);
+          action(calendar,'فتح التقويم',() => render('committeeCalendar'));
         }
         return;
       }
@@ -434,6 +448,7 @@ export function mountOperations(root, db, sdk, user) {
           return;
         }
         if (tab === 'committeeCalendar') {
+          const type = field(panel,'calendarType','نوع الموعد',{all:'جميع المواعيد',tasks:'تسليم المهام',publications:'النشر'});
           const mode = field(panel,'period','العرض',{upcoming:'القادم',week:'أسبوع',month:'شهر'});
           const day = field(panel,'date','بداية الفترة','date');
           day.value = new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bahrain'}).format(new Date());
@@ -448,14 +463,14 @@ export function mountOperations(root, db, sdk, user) {
               : mode.value === 'month' ? start.slice(0,7)+'-31' : '9999-12-31';
             const from = mode.value === 'month' ? start.slice(0,7)+'-01' : start;
             const rows = [
-              ...summaries.filter(row => row.due >= from && row.start <= end).map(row =>
-                [row.start,'مهمة · '+row.title,row.start+' — '+row.due+' · '+row.assigneeName+' · '+stages[row.state]+' · '+row.progress+'٪']),
-              ...publications.filter(row => row.state !== 'cancelled' && row.date.slice(0,10) >= from && row.date.slice(0,10) <= end)
+              ...summaries.filter(row => type.value !== 'publications' && row.due >= from && row.due <= end && row.state !== 'cancelled').map(row =>
+                [row.due,'تسليم · '+row.title,row.start+' — '+row.due+' · '+row.assigneeName+' · '+stages[row.state]+' · '+row.progress+'٪']),
+              ...publications.filter(row => type.value !== 'tasks' && row.state !== 'cancelled' && row.date.slice(0,10) >= from && row.date.slice(0,10) <= end)
                 .map(row => [row.date,'نشر · '+(content.find(item => item.id === row.contentId)?.title ?? 'مادة إعلامية'),row.date.replace('T',' · ')])
             ].sort((a,b) => a[0].localeCompare(b[0]));
             records(rows, row => row.slice(1), null, calendar);
           }
-          mode.onchange = day.onchange = draw;
+          mode.onchange = day.onchange = type.onchange = draw;
           draw();
           return;
         }
@@ -603,7 +618,7 @@ export function mountOperations(root, db, sdk, user) {
   }
 
   const initialView = new URLSearchParams(location.search).get('view');
-  render(Object.hasOwn(plans, initialView) ? initialView : 'home');
+  render(initialView ?? 'home');
   return () => {
     stopped = true;
     root.replaceChildren();

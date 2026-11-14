@@ -244,6 +244,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 #event-form {display:grid;gap:.65rem;margin-block-start:.8rem}
 #event-form label {display:grid;gap:.25rem}
 #event-form button {justify-self:start}
+.event-completion-bar {inline-size:7rem;max-inline-size:100%;block-size:.65rem;margin-inline-start:.65rem;vertical-align:middle;accent-color:var(--c-indigo)}
 #event-months ul > li {margin-block:.4rem}
 #event-months ul > li::before {inset-block-start:1.3rem}
 #media-committee:has(#media-operations:not([hidden]) .media-tree) #media-bylaws-tree {display:none}
@@ -983,13 +984,15 @@ function renderEventProgram(published){
         const hasValue = value => typeof value === 'string' && value.trim() !== '';
         const missing = fields.filter(([,value])=>!hasValue(value)).map(([label])=>label);
         const completion = Math.round(100*(fields.length-missing.length)/fields.length);
-        details.append(createNode('summary','',[item.title,date,local ? 'مسودة محلية' : item.status || 'مقترح','اكتمال البيانات ' + completion + '%'].join(' · ')));
+        const summary = createNode('summary','',[item.title,date,local ? 'مسودة محلية' : item.status || 'مقترح','اكتمال البيانات ' + completion + '%'].join(' · '));
+        details.append(summary);
         const body = createNode('div','org-branch');
         const progress = createNode('progress');
         progress.max = 100;
         progress.value = completion;
         progress.setAttribute('aria-label','اكتمال بيانات ' + item.title);
-        body.append(progress);
+        progress.className = 'event-completion-bar';
+        summary.append(progress);
         body.append(createNode('p','',missing.length ? 'البيانات الناقصة · ' + missing.join('، ') : 'اكتملت جميع البيانات.'));
         for (const [label,value] of fields.slice(1)) {
           if (hasValue(value)) body.append(createNode('p','',label + ' · ' + value));

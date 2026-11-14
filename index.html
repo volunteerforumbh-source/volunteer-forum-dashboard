@@ -975,10 +975,24 @@ function renderEventProgram(published){
         const details = createNode('details');
         const local = drafts.includes(item);
         const date = item.date || 'الموعد قيد التحديد';
-        details.append(createNode('summary','',[item.title,date,local ? 'مسودة محلية' : item.status || 'مقترح'].join(' · ')));
+        const fields = [
+          ['العنوان',item.title], ['النوع',item.type], ['التاريخ',item.date],
+          ['التفاصيل والفئة المستهدفة',item.description], ['الأهداف والمخرجات',item.goal],
+          ['الوقت والمكان أو رابط اللقاء',item.location], ['المسؤول ومهام التجهيز',item.owner]
+        ];
+        const hasValue = value => typeof value === 'string' && value.trim() !== '';
+        const missing = fields.filter(([,value])=>!hasValue(value)).map(([label])=>label);
+        const completion = Math.round(100*(fields.length-missing.length)/fields.length);
+        details.append(createNode('summary','',[item.title,date,local ? 'مسودة محلية' : item.status || 'مقترح','اكتمال البيانات ' + completion + '%'].join(' · ')));
         const body = createNode('div','org-branch');
-        for (const [label,value] of [['النوع',item.type],['التفاصيل',item.description],['الأهداف',item.goal],['الوقت والمكان',item.location],['التنفيذ',item.owner]]) {
-          if (value) body.append(createNode('p','',label + ' · ' + value));
+        const progress = createNode('progress');
+        progress.max = 100;
+        progress.value = completion;
+        progress.setAttribute('aria-label','اكتمال بيانات ' + item.title);
+        body.append(progress);
+        body.append(createNode('p','',missing.length ? 'البيانات الناقصة · ' + missing.join('، ') : 'اكتملت جميع البيانات.'));
+        for (const [label,value] of fields.slice(1)) {
+          if (hasValue(value)) body.append(createNode('p','',label + ' · ' + value));
         }
         const edit = createNode('button','btn secondary','تعديل الفعالية واستكمال البيانات');
         edit.type = 'button';

@@ -1,3 +1,19 @@
+const prSections = {
+  prScope:'الدور والتنسيق بين اللجان',
+  prPartners:'الجمعيات والشركاء',
+  prInvitations:'الدعوات والتأكيدات',
+  prRequests:'طلبات التنسيق من اللجان',
+  prFollowup:'متابعة ما بعد الفعاليات'
+};
+const prStates = {new:'جديد',contacted:'تم التواصل',waiting:'بانتظار الرد',confirmed:'مؤكد',closed:'مغلق'};
+const prCoordination = [
+  ['اللجنة العليا','ترفع العلاقات العامة فرص الشراكة والدعوات الرسمية للاعتماد، وتعرض الالتزامات التي تحتاج قرارًا.'],
+  ['لجنة مشروع «أثَر» الأكاديمي','تحدد اللجنة الأكاديمية احتياج البرنامج والمدرب المناسب. تنسق العلاقات العامة الدعوة وتأكيد المشاركة والاستضافة.'],
+  ['لجنة العضويات','تنسق العلاقات العامة ترشيحات الجمعيات وتحيل طلبات التطوع إلى لجنة العضويات للمراجعة والتفعيل والإسناد.'],
+  ['فريق الفعالية','يحدد فريق الفعالية الموعد والمكان والعدد، وتتابع العلاقات العامة تأكيد الحضور وتسلّمه القائمة للاستقبال.'],
+  ['فريق الإعلام والتوثيق','تزوّده العلاقات العامة بالأسماء والصفات والجهات والتفاصيل المعتمدة لإعداد الإعلان والتغطية.']
+];
+
 import {plans} from './media-plans.mjs';
 
 const committee = 'media';
@@ -205,8 +221,9 @@ export function mountOperations(root, db, sdk, user) {
         ...(operator ? {publications:'إدارة مواعيد النشر'} : {}),
         ...(manager ? {audit:'سجل العمليات'} : {})
       };
+      const relationsTabs = operator ? prSections : {prScope:prSections.prScope};
       const tabs = {home:'نظرة عامة', ...(role ? {
-        ...tasksTabs,...planTabs,committeeCalendar:'التقويم',...moreTabs,...adminTabs
+        ...tasksTabs,...planTabs,committeeCalendar:'التقويم',...moreTabs,...relationsTabs,...adminTabs
       } : {})};
       if (!Object.hasOwn(tabs,tab)) tab = 'home';
       const nav = element('nav', '', root);
@@ -244,6 +261,7 @@ export function mountOperations(root, db, sdk, user) {
         group('الخطط',planTabs);
         leaf(tree,'committeeCalendar',tabs.committeeCalendar);
         group('الفرق والمحتوى',moreTabs);
+        group('العلاقات العامة',relationsTabs);
         group('إدارة اللجنة',adminTabs);
       }
       const bylaws = document.getElementById('media-bylaws-branch')?.cloneNode(true);
@@ -307,6 +325,38 @@ export function mountOperations(root, db, sdk, user) {
         search.oninput = draw;
         draw();
         return list;
+      }
+
+      if (tab === 'prScope') {
+        element('p','تنسق العلاقات العامة بين لجان المنتدى والجمعيات والشركاء والضيوف، وتتابع الردود والالتزامات وتحيلها إلى الجهة المعنية.',panel);
+        for (const [label,text] of prCoordination) {
+          const details=element('details','',panel);
+          element('summary',label,details);
+          element('p',text,details);
+        }
+        const example=element('details','',panel);
+        element('summary','مثال: اللقاء التنسيقي مع الجمعيات',example);
+        element('p','تطلب العلاقات العامة من كل جمعية تسمية ممثل، وتتابع تأكيده، ثم تسلّم قائمة الحضور لفريق الفعالية والبيانات المعتمدة لفريق الإعلام. وبعد اللقاء تتابع الالتزامات وتحيل الردود إلى اللجنة المختصة.',example);
+        return;
+      }
+      if (operator && Object.hasOwn(prSections,tab)) {
+        const rows=await list('publicRelations',['kind','==',tab]);
+        if (stopped || current !== renderId) return;
+        const fields = [
+          ['title','عنوان السجل','text',true],['organization','الجمعية أو الشريك','text',true],
+          ['activity','الفعالية أو اللجنة المعنية','text',false],['owner','المسؤول عن المتابعة','text',false],
+          ['due','موعد المتابعة','date',false],['state','الحالة',prStates,true],
+          ['notes','الرد أو الخطوة التالية','textarea',false]
+        ];
+        const editor=element('div','',panel);
+        function editRelation(row) {
+          editor.replaceChildren();
+          const control=form(fields,row??{state:'new'},values=>save('publicRelations',row??null,{...values,kind:tab}),'حفظ السجل',editor);
+          control.querySelector('input')?.focus();
+        }
+        action(panel,'إضافة سجل',()=>editRelation());
+        records(rows,row=>[row.title,row.organization,row.activity,row.owner,row.due,prStates[row.state],row.notes],editRelation);
+        return;
       }
 
       if (tab === 'home') {

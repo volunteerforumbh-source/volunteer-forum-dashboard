@@ -943,6 +943,19 @@ function renderEventProgram(published){
       const branch = createNode('details');
       branch.open = month === openMonth;
       branch.append(createNode('summary','',label + ' · ' + items.length));
+      const controls = createNode('div','org-branch');
+      const addEvent = createNode('button','btn secondary','إدراج فعالية');
+      addEvent.type = 'button';
+      addEvent.setAttribute('aria-label','إدراج فعالية في ' + label);
+      addEvent.onclick = () => {
+        editing = null;
+        form.reset();
+        form.elements.month.value = month;
+        editor.open = true;
+        form.elements.title.focus();
+      };
+      controls.append(addEvent);
+      branch.append(controls);
       const list = createNode('ul');
       if (!items.length) list.append(createNode('li','','لا توجد أنشطة في هذا الشهر.'));
       for (const item of items) {

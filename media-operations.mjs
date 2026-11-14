@@ -126,7 +126,7 @@ const definitions = {
   members: {
     title:'الأعضاء والأدوار',
     fields:[
-      ['uid','معرّف الحساب UID','text',true], ['title','اسم العرض','text',true],
+      ['email','البريد الإلكتروني لحساب Google','email',true], ['title','اسم العرض','text',true],
       ['role','صلاحية النظام',{manager:roles.manager,deputy:roles.deputy,lead:roles.lead,member:roles.member}],
       ['teamId','الفريق الأساسي'], ['primaryRole','الدور الأساسي'], ['supportRoles','الفرق والأدوار المساندة'],
       ['skills','المهارات ومستوياتها'], ['availability','التفرّغ'],
@@ -172,8 +172,8 @@ export function mountOperations(root, db, sdk, user) {
     const log = sdk.doc(collection('audit'));
     await sdk.runTransaction(db, async transaction => {
       const snapshot = await transaction.get(ref);
-      if (snapshot.exists() !== Boolean(record?.updatedAt)
-          || (snapshot.exists() && !snapshot.data().updatedAt?.isEqual(record.updatedAt))) {
+      if (snapshot.exists() !== Boolean(record?.existing || record?.updatedAt)
+          || (snapshot.exists() && (snapshot.data().updatedAt ? !snapshot.data().updatedAt.isEqual(record.updatedAt) : Boolean(record.updatedAt)))) {
         throw new Error('stale-record');
       }
       const payload = {...Object.fromEntries(Object.entries(values).filter(([,value]) => value !== undefined)), updatedAt:sdk.serverTimestamp()};
@@ -193,6 +193,23 @@ export function mountOperations(root, db, sdk, user) {
     });
   }
 
+  async function activateMembership() {
+    const membership = await read('members', uid);
+    if (membership || !user.emailVerified || !user.email) return membership;
+    const invitation = path('memberInvites', user.email);
+    const member = path('members', uid);
+    await sdk.runTransaction(db, async transaction => {
+      const [existing, pending] = await Promise.all([transaction.get(member), transaction.get(invitation)]);
+      if (existing.exists() || !pending.exists() || pending.data().claimedUid) return;
+      const updatedAt = sdk.serverTimestamp();
+      transaction.set(member, {...pending.data().profile, updatedAt, auditId:''});
+      transaction.update(invitation, {claimedUid:uid, updatedAt});
+    });
+    return read('members', uid);
+  }
+
+  let membershipReady;
+
   async function render(tab = 'home') {
     if (stopped) return;
     const current = ++renderId;
@@ -200,7 +217,7 @@ export function mountOperations(root, db, sdk, user) {
     const feedback = element('p', 'جارٍ تحميل مساحة اللجنة…', root);
     feedback.setAttribute('role', 'status');
     try {
-      const [membership, upper] = await Promise.all([read('members', uid), read('oversight', uid)]);
+      const [membership, upper] = await Promise.all([membershipReady ??= activateMembership(), read('oversight', uid)]);
       if (stopped || current !== renderId) return;
       feedback.textContent = '';
       const role = membership?.state === 'active' ? membership.role : upper?.state === 'active' ? 'observer' : null;
@@ -288,8 +305,8 @@ export function mountOperations(root, db, sdk, user) {
       }
 
       if (tab === 'home') {
-        element('p', role ? 'الصلاحية · ' + roles[role] : 'لم تُفعّل عضوية هذا الحساب. تواصل مع إدارة اللجنة للتحقق من معرّف الحساب أدناه.', panel);
-        if (!role) element('p', 'معرّف حسابك (UID) · ' + uid, panel);
+        element('p', role ? 'الصلاحية · ' + roles[role] : 'لم تُفعّل عضوية هذا الحساب. تواصل مع إدارة اللجنة لاعتماد بريد حساب Google أدناه.', panel);
+        if (!role && user.email) element('p', user.email, panel);
         if (membership) element('p', membership.title + ' · ' + (membership.primaryRole || 'الدور قيد التحديد'), panel);
         if (role) {
           const [teams, tasks, entries] = await Promise.all([
@@ -481,6 +498,8 @@ export function mountOperations(root, db, sdk, user) {
       const tasks = tab === 'content' && operator ? await list('tasks') : [];
       if (stopped || current !== renderId) return;
       const definition = definitions[tab];
+      const invitations = tab === 'members' && manager ? await list('memberInvites') : [];
+      if (stopped || current !== renderId) return;
       const canCreate = tab === 'members' ? manager : operator;
       const canEdit = canCreate;
       const options = (items, empty = 'اختر') => ({'':empty,...Object.fromEntries(items.map(row => [row.id,row.title]))});
@@ -489,22 +508,37 @@ export function mountOperations(root, db, sdk, user) {
         contentId:options(content), taskId:options(tasks, 'غير مرتبط')
       };
       let activeForm;
-      function edit(row) {
+      function edit(row, pending = false) {
         activeForm?.remove();
         const fields = definition.fields.filter(([name]) => {
-          if (row && name === 'uid') return false;
+          if (row && name === 'email') return false;
           return canCreate;
         }).map(([name, title, type, required]) => [
           name,title,linked[name] ?? type,required
         ]);
-        activeForm = form(fields, row, values => {
-          const id = values.uid;
-          delete values.uid;
-          return save(tab, row ?? (id ? {id} : null), values);
+        const initial = pending ? row.profile : row ?? (tab === 'members' ? {role:'member',state:'active'} : null);
+        activeForm = form(fields, initial, async values => {
+          if (tab !== 'members' || (row && !pending)) {
+            return save(tab, row ? {...row,existing:true} : null, values);
+          }
+          const email = row?.id ?? values.email.trim().toLowerCase();
+          delete values.email;
+          const ref = path('memberInvites', email);
+          await sdk.runTransaction(db, async transaction => {
+            const currentInvite = await transaction.get(ref);
+            if (currentInvite.exists() !== pending ||
+                (pending && !currentInvite.data().updatedAt.isEqual(row.updatedAt))) throw new Error('stale-record');
+            transaction.set(ref, {profile:values,claimedUid:'',updatedAt:sdk.serverTimestamp()});
+          });
         });
         activeForm.querySelector('input,select,textarea')?.focus();
       }
-      if (canCreate) action(panel, 'إضافة سجل', () => edit());
+      if (canCreate) action(panel, tab === 'members' ? 'إضافة عضو بالبريد' : 'إضافة سجل', () => edit());
+      if (invitations.some(invite => !invite.claimedUid)) {
+        element('h4','بانتظار أول دخول',panel);
+        records(invitations.filter(invite => !invite.claimedUid),
+          invite => [invite.profile.title,invite.id,roles[invite.profile.role]], invite => edit(invite,true));
+      }
       if (tab === 'teams' && operator) {
         for (const [id, name] of Object.entries(areas)) {
           if (rows.some(row => row.id === id)) continue;
@@ -560,6 +594,7 @@ export function mountOperations(root, db, sdk, user) {
       }, canEdit ? edit : null);
     } catch (error) {
       if (stopped || current !== renderId) return;
+      membershipReady = undefined;
       feedback.textContent = error.code === 'permission-denied'
         ? 'تعذّر فتح هذه البيانات بالصلاحيات الحالية.'
         : 'تعذّر تحميل البيانات. تحقق من الاتصال وأعد المحاولة.';

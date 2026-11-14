@@ -398,7 +398,13 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
       <h2>الاجتماعات والمناقشات</h2>
       <p>ملخصات مناسبة للمشاركة العامة</p>
     </div>
-    <div id="meetings-grid" class="grid"></div>
+    <ul class="forum-tree org-tree" aria-label="شجرة الاجتماعات">
+      <li><details open><summary>الاجتماعات القادمة</summary>
+        <div class="org-branch"><p>تظهر أربعة مواعيد للتخطيط. تُقترح المواعيد أسبوعيًا عند عدم تحديد موعد رسمي. افتح الاجتماع لعرض جدول أعماله والمهام المنشورة.</p></div>
+        <ul id="meetings-upcoming"></ul>
+      </details></li>
+      <li><details open><summary>المحاضر السابقة</summary><ul id="meetings-grid"></ul></details></li>
+    </ul>
   </section>
 
   <section id="meeting-02">
@@ -808,6 +814,60 @@ function renderPlan(activities){
   if(section === 'plan' && location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView();
 }
 
+function renderMeetingTree(meetings, activities){
+  const upcoming = document.getElementById('meetings-upcoming');
+  const archive = document.getElementById('meetings-grid');
+  const today = new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Bahrain',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const formatDate = new Intl.DateTimeFormat('ar-BH',{dateStyle:'long',timeZone:'UTC',numberingSystem:'latn'});
+  const dateText = date => date ? formatDate.format(new Date(date + 'T00:00:00Z')) : 'الموعد يُحدّد لاحقًا';
+  const first = meetings.find(item => item.title === 'مناقشة تطوير المنتدى إلى مشروع مستمر');
+  const published = meetings.filter(item => item !== first && Number.isInteger(item.number) && item.number >= 2);
+  const byNumber = new Map(published.map(item => [item.number,item]));
+  const second = {number:2,title:'متابعة مخرجات الاجتماع الأول',url:'?section=meeting-02',...byNumber.get(2)};
+  byNumber.set(2,second);
+  const addMeeting = (parent,item) => {
+    const row = createNode('li');
+    const detail = createNode('details');
+    detail.id = 'meeting-entry-' + item.number;
+    detail.append(createNode('summary','','الاجتماع ' + String(item.number).padStart(2,'0') + ' · ' + dateText(item.date)));
+    const body = createNode('div','org-branch');
+    if(item.title) body.append(createNode('p','',item.title));
+    if(item.status) body.append(createNode('span','pill',item.status));
+    if(item.description) body.append(createNode('p','',item.description));
+    if(item.url) body.append(planningLink(item.number === 1 ? 'فتح محضر الاجتماع الأول' : 'فتح جدول الأعمال',item.url));
+    renderMeetingFollowup(body,item,activities);
+    detail.append(body);
+    row.append(detail);
+    parent.append(row);
+  };
+  addMeeting(archive,{...first,number:1,date:'2026-11-11',url:'?section=meeting-01',activityIds:first?.activityIds || ['follow-up','workshops','partnerships']});
+  const start = Date.UTC(2026,10,21);
+  const week = 7 * 86400000;
+  const firstSlot = Math.max(0,Math.ceil((Date.parse(today) - start) / week));
+  const candidate = new Map([...byNumber].filter(([,item]) => item.date >= today && /^\d{4}-\d{2}-\d{2}$/.test(item.date)));
+  for(let slot=firstSlot; candidate.size<4 || slot<firstSlot+4; slot++){
+    const number=slot+2;
+    const existing=byNumber.get(number);
+    if(existing?.date) continue;
+    const date=new Date(start+slot*week).toISOString().slice(0,10);
+    candidate.set(number,{title:'جدول أعمال قيد الإعداد',activityIds:['follow-up'],...existing,number,date,status:'موعد مقترح للتخطيط'});
+  }
+  const next = [...candidate.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.number-b.number).slice(0,4);
+  next.forEach(item=>addMeeting(upcoming,item));
+  const upcomingNumbers=new Set(next.map(item=>item.number));
+  const other=[...byNumber.values()].filter(item=>!upcomingNumbers.has(item.number));
+  if(other.length){
+    const branch=createNode('details');
+    branch.append(createNode('summary','','اجتماعات أخرى'));
+    const list=createNode('ul');
+    other.forEach(item=>addMeeting(list,item));
+    branch.append(list);
+    const row=createNode('li');
+    row.append(branch);
+    archive.parentElement.parentElement.after(row);
+  }
+}
+
 function renderCalendar(meetings){
   const today = new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Bahrain',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   const [year,month] = today.split('-').map(Number);
@@ -998,15 +1058,7 @@ fetch('./public-data.json', {cache:'no-store'})
     const activities = Array.isArray(data.activities) ? data.activities : draftActivities;
     renderPlan(activities);
     renderCalendar(meetings);
-    renderSection(meetings, 'meetings-grid', 'meetings');
-    const meetingCards = document.querySelectorAll('#meetings-grid article');
-    meetings.forEach((meeting,index) => {
-      const starterIds = meeting.title === 'مناقشة تطوير المنتدى إلى مشروع مستمر' ? ['follow-up','workshops','partnerships'] : [];
-      if (starterIds.length) {
-        meetingCards[index].append(planningLink('فتح صفحة الاجتماع الأول','?section=meeting-01'), planningLink('جدول أعمال الاجتماع 02','?section=meeting-02'));
-      }
-      renderMeetingFollowup(meetingCards[index],{...meeting, activityIds:meeting.activityIds || starterIds},activities);
-    });
+    renderMeetingTree(meetings,activities);
     renderSection(initiatives, 'initiatives-grid', 'initiatives');
     renderSection(reports, 'reports-grid', 'reports');
   })

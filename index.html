@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#524791">
 <title>بوابة متابعة المنتدى | المنتدى الثاني للعمل التطوعي</title>
 <script>
-  const sections = ["organization","media-committee","meetings","initiatives","reports","calendar","recommendations","plan","meeting-01","forum-vision","updates","news","associations","notice"];
+  const sections = ["organization","media-committee","meetings","initiatives","reports","calendar","recommendations","plan","meeting-01","meeting-02","forum-vision","updates","news","associations","notice"];
   const params = new URLSearchParams(location.search);
   const section = params.get('section') || location.hash.slice(1);
   if (sections.includes(section)) document.documentElement.dataset.section = section;
@@ -26,6 +26,7 @@ html[data-section="calendar"] #calendar,
 html[data-section="recommendations"] #recommendations,
 html[data-section="plan"] #plan,
 html[data-section="meeting-01"] #meeting-01,
+html[data-section="meeting-02"] #meeting-02,
 html[data-section="forum-vision"] #forum-vision,
 html[data-section="updates"] #updates,
 html[data-section="news"] #news,
@@ -360,7 +361,18 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
     <div id="meetings-grid" class="grid"></div>
   </section>
 
+  <section id="meeting-02">
+    <div class="section-head"><h2>الاجتماع 02 | متابعة مخرجات الاجتماع الأول</h2></div>
+    <p>مسودة جدول أعمال · الموعد يُحدّد لاحقًا</p>
+    <a class="btn secondary" href="?section=meeting-01">الاجتماع السابق · 01</a>
+    <div id="meeting-register"></div>
+    <p id="meeting-status" role="status"></p>
+    <button id="meeting-login" class="btn secondary" type="button" hidden>الدخول بحساب Google</button>
+    <button id="meeting-logout" class="btn secondary" type="button" hidden>تسجيل الخروج</button>
+  </section>
+
   <section id="meeting-01">
+    <a class="btn secondary" href="?section=meeting-02">الاجتماع التالي · 02</a>
     <div class="section-head"><h2>الاجتماع 01 | ما بعد المنتدى</h2></div>
     <p>الأربعاء <time datetime="2026-11-11">11 نوفمبر 2026</time> · جمعية السنابس الخيرية · 7:15–8:40 مساءً بتوقيت البحرين · 9 مشاركين</p>
     <a class="btn secondary" href="?section=meetings">العودة إلى الاجتماعات والمحاضر</a>
@@ -918,7 +930,7 @@ fetch('./public-data.json', {cache:'no-store'})
     meetings.forEach((meeting,index) => {
       const starterIds = meeting.title === 'مناقشة تطوير المنتدى إلى مشروع مستمر' ? ['follow-up','workshops','partnerships'] : [];
       if (starterIds.length) {
-        meetingCards[index].append(planningLink('فتح صفحة الاجتماع الأول','?section=meeting-01'));
+        meetingCards[index].append(planningLink('فتح صفحة الاجتماع الأول','?section=meeting-01'), planningLink('جدول أعمال الاجتماع 02','?section=meeting-02'));
       }
       renderMeetingFollowup(meetingCards[index],{...meeting, activityIds:meeting.activityIds || starterIds},activities);
     });
@@ -959,9 +971,10 @@ fetch('./organization-public.json',{cache:'no-store'})
 .catch(()=>{document.getElementById('leadership-grid').append(createNode('div','empty org-empty','تعذر تحميل بيانات الهيكل التنظيمي.'));});
 </script>
 <script type="module">
-if (new URLSearchParams(location.search).get('section') === 'media-committee' || document.documentElement.dataset.section === 'media-committee') {
+if (['media-committee','meeting-02'].includes(document.documentElement.dataset.section)) {
+  const meetingPage = document.documentElement.dataset.section === 'meeting-02';
   const el = id => document.getElementById('media-' + id);
-  const status = el('status');
+  const status = meetingPage ? document.getElementById('meeting-status') : el('status');
   const feedback = el('feedback');
   try {
     const sdk = 'https://www.gstatic.com/firebasejs/11.10.0/';
@@ -972,6 +985,10 @@ if (new URLSearchParams(location.search).get('section') === 'media-committee' ||
     const auth = authSdk.getAuth(app);
     await authSdk.setPersistence(auth, authSdk.browserSessionPersistence);
     const db = dbSdk.getFirestore(app);
+    if (meetingPage) {
+      const {mountMeeting} = await import('./meeting-register.mjs');
+      mountMeeting(db, dbSdk, auth, authSdk);
+    } else {
     const workspace = dbSdk.doc(db, 'mediaCommittee', 'workspace');
     const member = email => dbSdk.doc(db, 'mediaMembers', email);
 
@@ -1082,6 +1099,7 @@ if (new URLSearchParams(location.search).get('section') === 'media-committee' ||
         feedback.textContent = 'حُفظت صلاحية العضو.';
       } catch { feedback.textContent = 'تعذّر تحديث الصلاحية.'; }
     };
+    }
   } catch {
     status.textContent = 'تعذّر تحميل خدمة العضوية. حدّث الصفحة وحاول مرة أخرى.';
   }

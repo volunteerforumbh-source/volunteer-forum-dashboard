@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#524791">
 <title>بوابة متابعة المنتدى | المنتدى الثاني للعمل التطوعي</title>
 <script>
-  const sections = ["organization","volunteer-space","media-committee","meetings","initiatives","reports","calendar","recommendations","plan","event-program","meeting-01","meeting-02","forum-vision","updates","news","associations","notice"];
+  const sections = ["organization","membership-committee","volunteer-space","media-committee","meetings","initiatives","reports","calendar","recommendations","plan","event-program","meeting-01","meeting-02","forum-vision","updates","news","associations","notice"];
   const params = new URLSearchParams(location.search);
   const section = params.get('section') || location.hash.slice(1);
   if (sections.includes(section)) document.documentElement.dataset.section = section;
@@ -20,6 +20,7 @@ html[data-section] main > section{display:none}
 html[data-section="organization"] #organization,
 html[data-section="media-committee"] #media-committee,
 html[data-section="volunteer-space"] #volunteer-space,
+html[data-section="membership-committee"] #membership-committee,
 html[data-section="meetings"] #meetings,
 html[data-section="initiatives"] #initiatives,
 html[data-section="reports"] #reports,
@@ -89,6 +90,9 @@ header{padding:28px 0 48px;position:relative}
 #forum-question,.forum-question-examples{display:flex;flex-wrap:wrap;gap:.5rem;margin-block-start:.5rem}
 #forum-question label{flex-basis:100%;font-weight:700}
 #forum-question input{flex:1;min-inline-size:min(100%,13rem);padding:.6rem;border:1px solid var(--line);border-radius:8px;font:inherit}
+#membership-workspace label,#volunteer-workspace label{display:grid;gap:.25rem;margin-block:.5rem}
+#membership-workspace button,#volunteer-workspace button{margin-inline-end:.4rem;margin-block:.25rem}
+#membership-workspace .org-branch>details,#volunteer-workspace .org-branch>details{margin-block:.5rem}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:24px}
 .brand{display:flex;align-items:center;gap:15px}
 .brand-logo{width:64px;height:64px;border-radius:20px;background:#fff;box-shadow:var(--shadow);display:grid;place-items:center;padding:10px;border:1px solid rgba(82,71,145,.08)}
@@ -361,6 +365,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
       <li><details>
         <summary>اللجان والجمعيات</summary>
         <ul>
+          <li><a href="?section=membership-committee">لجنة العضويات</a></li>
           <li><a href="?section=organization">الهيكل التنظيمي واللجان</a></li>
           <li><a href="?section=media-committee">اللجنة الإعلامية والعلاقات العامة</a></li>
           <li><a href="?section=associations">الجمعيات المشاركة</a></li>
@@ -416,7 +421,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
     <div class="org-intro"><strong>اللجنة العليا واللجان التنفيذية</strong><span>يجري استكمال بيانات المسؤولين والأعضاء. هذه الصفحة لا تنشر أسماء غير معتمدة.</span></div>
     <ul class="forum-tree org-tree">
       <li><details><summary>اللجنة العليا</summary><div class="org-branch"><p>البطاقات المعتمدة للنشر</p><div id="leadership-grid" class="grid"></div></div></details></li>
-      <li><details><summary>اللجان وفرق العمل</summary><div class="org-branch"><p>اختَر اللجنة لعرض بياناتها وعضويتها المنشورة</p><div id="committees-grid" class="grid"></div></div></details></li>
+      <li><details><summary>اللجان وفرق العمل</summary><div class="org-branch"><p><a href="?section=membership-committee">لجنة العضويات</a></p><p>اختَر اللجنة لعرض بياناتها وعضويتها المنشورة</p><div id="committees-grid" class="grid"></div></div></details></li>
       <li><details id="committee-plans"><summary>تصورات وخطط اللجان</summary>
         <ul>
           <li><details id="recommendations-committee"><summary>لجنة دراسة التوصيات ومتابعة تنفيذها</summary><div class="org-branch"><span class="pill">مقترح للتشكيل</span>
@@ -433,6 +438,11 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
     </ul>
   </section>
 
+  <section id="membership-committee">
+    <div class="section-head"><h2>لجنة العضويات</h2></div>
+    <p>مراجعة طلبات التطوع وتفعيل العضويات وتوزيع المتطوعين على الفرق.</p>
+    <div id="membership-workspace"><p role="status">جارٍ التحقق من تسجيل الدخول…</p></div>
+  </section>
   <section id="volunteer-space">
     <div class="section-head"><h2>مساحة المتطوع</h2></div>
     <div id="volunteer-workspace"><p role="status">جارٍ التحقق من تسجيل الدخول…</p></div>
@@ -1046,6 +1056,7 @@ function renderEventProgram(published){
         for (const [label,value] of fields.slice(1)) {
           if (hasValue(value)) body.append(createNode('p','',label + ' · ' + value));
         }
+        if (!local) body.append(planningLink('احتياج الفعالية والترشيح للتطوع','?section=volunteer-space&event='+encodeURIComponent(item.id)));
         const edit = createNode('button','btn secondary','تعديل الفعالية واستكمال البيانات');
         edit.type = 'button';
         edit.onclick = () => {
@@ -1460,7 +1471,7 @@ fetch('./organization-public.json',{cache:'no-store'})
 </script>
 <script type="module">
 const volunteerStates = {pending:'بانتظار المراجعة',offered:'بانتظار تأكيدك',confirmed:'مشاركة مؤكدة',declined:'لم يُقبل الترشيح',withdrawn:'اعتُذر عن المشاركة'};
-function mountVolunteer(root, auth, authSdk, db, sdk) {
+function mountVolunteer(root, auth, authSdk, db, sdk, membershipPage = false) {
   const collection = name => sdk.collection(db,'forumCommittees','media',name);
   const read = (name,id) => sdk.getDoc(sdk.doc(collection(name),id)).then(s=>s.data());
   const list = (name,...filters) => sdk.getDocs(sdk.query(collection(name),...filters.map(f=>sdk.where(...f))))
@@ -1496,7 +1507,7 @@ function mountVolunteer(root, auth, authSdk, db, sdk) {
     return el;
   }
   let revision=0;
-  async function render(user,open='الرئيسية'){
+  async function render(user,open='الرئيسية',eventToOpen=''){
     const current=++revision;
     root.replaceChildren();
     const status=add(root,'p'); status.setAttribute('role','status');
@@ -1530,13 +1541,169 @@ function mountVolunteer(root, auth, authSdk, db, sdk) {
         return;
       }
       const manager=['manager','deputy'].includes(member.role);
+      if (membershipPage) {
+        if (!manager) { status.textContent='هذه الصفحة متاحة لمسؤولي العضويات المخوّلين.'; return; }
+        const [applications,members,teams,invites]=await Promise.all([
+          list('applications',['state','!=','draft']),list('members'),list('teams'),
+          member.role==='manager'?list('memberInvites'):Promise.resolve([])
+        ]);
+        if(current!==revision) return;
+        status.textContent='';
+        const tree=add(root,'ul');tree.className='forum-tree org-tree';
+        const pane=label=>branch(tree,label,open===label);
+        const pending=applications.filter(a=>['submitted','reviewing','information','test','trial'].includes(a.state));
+        const active=members.filter(m=>m.state==='active');
+        const unassigned=active.filter(m=>!m.teamId);
+        const waiting=invites.filter(i=>!i.claimedUid);
+        const stages={submitted:'جديد',reviewing:'قيد المراجعة',information:'يحتاج استكمالًا',test:'اختبار',trial:'تجربة',accepted:'مقبول',declined:'اعتذار',deferred:'مؤجل'};
+        function countLink(parent,label,count,target) {
+          button(parent,label+' · '+count,()=>render(user,target),status);
+        }
+        async function auditedEdit(group,row,fields) {
+          const ref=sdk.doc(collection(group),row.id);
+          const audit=sdk.doc(collection('audit'));
+          await sdk.runTransaction(db,async tx=>{
+            const old=await tx.get(ref);
+            if(!old.exists()||!old.data().updatedAt?.isEqual(row.updatedAt)) throw Error('stale');
+            const timestamp=sdk.serverTimestamp();
+            tx.set(audit,{actorId:user.uid,group,targetId:row.id,operation:'update',timestamp});
+            tx.update(ref,{...fields,auditId:audit.id,updatedAt:timestamp});
+          });
+        }
+        const overview=pane('الرئيسية');
+        countLink(overview,'طلبات تحتاج متابعة',pending.length,'طلبات التطوع');
+        countLink(overview,'طلبات مقبولة',applications.filter(a=>a.state==='accepted').length,'طلبات التطوع');
+        if(member.role==='manager') countLink(overview,'دعوات بانتظار أول دخول',waiting.length,'تفعيل العضويات');
+        countLink(overview,'متطوعون بانتظار فريق',unassigned.length,'التوزيع على الفرق');
+        const requests=pane('طلبات التطوع');
+        if(!applications.length) add(requests,'p','لا توجد طلبات مرسلة.');
+        for(const a of applications) {
+          const row=add(requests,'details');
+          add(row,'summary',a.title+' · '+(stages[a.state]||a.state));
+          for(const [label,value] of [['الاهتمامات',a.interests],['الخبرة',a.experience],['الأدوات',a.tools],['التفرّغ',a.availability]]) if(value) add(row,'p',label+' · '+value);
+          if(a.id===user.uid) continue;
+          const state=field(row,'حالة الطلب','select');
+          for(const [value,label] of Object.entries(stages)) add(state,'option',label).value=value;
+          state.value=a.state;
+          const message=add(row,'p');message.setAttribute('role','status');
+          button(row,'حفظ حالة الطلب',async()=>{await auditedEdit('applications',a,{state:state.value});await render(user,'طلبات التطوع');},message);
+          button(row,'فتح ملاحظات التقييم',async()=>{
+            const prior=await read('evaluations',a.id);
+            const editor=add(row,'div');
+            const notes=field(editor,'ملاحظات التقييم','textarea',prior?.notes||'');notes.maxLength=2000;
+            const role=field(editor,'الدور المقترح','input',prior?.recommendedRole||'');role.maxLength=2000;
+            button(editor,'حفظ التقييم',async()=>{
+              const ref=sdk.doc(collection('evaluations'),a.id);
+              const audit=sdk.doc(collection('audit'));
+              await sdk.runTransaction(db,async tx=>{
+                const record=await tx.get(ref);
+                if(record.exists()!==Boolean(prior)||(prior&&!record.data().updatedAt.isEqual(prior.updatedAt))) throw Error('stale');
+                const timestamp=sdk.serverTimestamp();
+                tx.set(audit,{actorId:user.uid,group:'evaluations',targetId:a.id,operation:record.exists()?'update':'create',timestamp});
+                tx.set(ref,{notes:notes.value.trim(),recommendedRole:role.value.trim(),auditId:audit.id,updatedAt:timestamp});
+              });
+              await render(user,'طلبات التطوع');
+            },message);
+          },message);
+        }
+        const activation=pane('تفعيل العضويات');
+        if(member.role==='manager'){
+          link(activation,'تجهيز دعوة بالبريد وإدارة الدعوات','?section=media-committee&view=members');
+          const invitation=add(activation,'details');add(invitation,'summary','تجهيز دعوة من هذه الصفحة');
+          const name=field(invitation,'اسم المتطوع','input');name.maxLength=200;
+          const email=field(invitation,'بريد حساب Google','input');email.type='email';
+          const message=add(invitation,'p');message.setAttribute('role','status');
+          button(invitation,'حفظ دعوة العضوية',async()=>{
+            if(!name.value.trim()||!email.value.trim()||!email.checkValidity()||!/^\S+@\S+\.\S+$/.test(email.value.trim())){
+              message.textContent='أدخل الاسم وبريد Google الصحيح.';return;
+            }
+            const ref=sdk.doc(collection('memberInvites'),email.value.trim().toLowerCase());
+            await sdk.runTransaction(db,async tx=>{
+              const current=await tx.get(ref);
+              if(current.exists()) throw Error('existing');
+              tx.set(ref,{profile:{title:name.value.trim(),role:'member',teamId:'',primaryRole:'',supportRoles:'',skills:'',availability:'',state:'active'},
+                claimedUid:'',updatedAt:sdk.serverTimestamp()});
+            });
+            await render(user,'تفعيل العضويات');
+          },message);
+          for(const i of invites) add(activation,'p',[i.profile.title,i.id,i.claimedUid?'تم أول دخول':'بانتظار أول دخول'].join(' · '));
+        } else add(activation,'p','يتولى مدير العضويات تجهيز الدعوات.');
+        if(member.role==='manager'){
+          const academicAccess=pane('صلاحية نشر تدريب أثَر');
+          const select=field(academicAccess,'عضو الفريق الأكاديمي','select');
+          add(select,'option','اختر عضوًا').value='';
+          for(const candidate of active) add(select,'option',candidate.title).value=candidate.id;
+          const message=add(academicAccess,'p');message.setAttribute('role','status');
+          for(const [label,enabled] of [['منح صلاحية النشر',true],['إيقاف صلاحية النشر',false]]){
+            button(academicAccess,label,async()=>{
+              if(!select.value){message.textContent='اختر عضوًا أولًا.';return;}
+              await sdk.setDoc(sdk.doc(collection('academicPublishers'),select.value),{enabled,updatedAt:sdk.serverTimestamp()});
+              message.textContent=enabled?'تم منح صلاحية النشر.':'تم إيقاف صلاحية النشر.';
+            },message);
+          }
+        }
+        const directory=pane('دليل المتطوعين');
+        const filter=field(directory,'ابحث بالاسم أو المهارة أو الفريق أو التفرغ أو الحالة','input');
+        filter.type='search';
+        const directoryRows=add(directory,'ul');
+        const teamName=id=>teams.find(t=>t.id===id)?.title||'بانتظار فريق';
+        function displayDirectory(){
+          directoryRows.replaceChildren();
+          const term=normalizeSearch(filter.value);
+          for(const m of members){
+            const state={active:'نشط',inactive:'غير نشط',training:'في التدريب'}[m.state]||m.state;
+            const text=[m.title,teamName(m.teamId),state,m.skills,m.availability,m.primaryRole].filter(Boolean).join(' · ');
+            if(normalizeSearch(text).includes(term)) {
+              const row=add(directoryRows,'li');
+              const details=add(row,'details');add(details,'summary',m.title);
+              add(details,'p',text);
+              button(details,'عرض الملف التطوعي',async()=>{
+                const profile=await read('volunteerProfiles',m.id);
+                const prior=details.querySelector('[data-volunteer-profile]');
+                if(prior) prior.remove();
+                const body=add(details,'div');body.dataset.volunteerProfile='';
+                for(const [label,value] of [['المهارات',profile?.skills],['الاهتمامات',profile?.interests],['التفرغ',profile?.availability]])
+                  if(value) add(body,'p',label+' · '+value);
+                if(!body.children.length) add(body,'p','لم تُستكمل بيانات الملف التطوعي.');
+              },status);
+            }
+          }
+          if(!directoryRows.children.length) add(directoryRows,'li','لا توجد سجلات مطابقة.');
+        }
+        filter.oninput=displayDirectory;displayDirectory();
+        const distribution=pane('التوزيع على الفرق');
+        if(!unassigned.length) add(distribution,'p','لا يوجد أعضاء نشطون بانتظار فريق.');
+        for(const t of teams) add(distribution,'p',t.title+' · '+active.filter(m=>m.teamId===t.id).length+' أعضاء'+(t.target?' من '+t.target+' مستهدف':''));
+        for(const m of unassigned){
+          const row=add(distribution,'div');add(row,'p',m.title);
+          if(member.role!=='manager'||m.id===user.uid||!teams.length) continue;
+          const options=field(row,'الفريق','select');
+          add(options,'option','اختر الفريق').value='';
+          for(const t of teams) add(options,'option',t.title).value=t.id;
+          const message=add(row,'p');message.setAttribute('role','status');
+          button(row,'إسناد إلى الفريق',async()=>{
+            if(!options.value){message.textContent='اختر الفريق.';return;}
+            await auditedEdit('members',m,{teamId:options.value});await render(user,'التوزيع على الفرق');
+          },message);
+        }
+        const reports=pane('تقارير العضوية');
+        add(reports,'p','الطلبات المقبولة · '+applications.filter(a=>a.state==='accepted').length);
+        add(reports,'p','عضويات مفعّلة · '+active.length);
+        add(reports,'p','عضويات مسندة إلى فريق · '+(active.length-unassigned.length));
+        for(const t of teams){
+          const count=active.filter(m=>m.teamId===t.id).length;
+          add(reports,'p',t.title+' · '+count+' أعضاء'+(t.target>count?' · المتبقي '+(t.target-count):''));
+        }
+        return;
+      }
       const projects=await fetch('./public-data.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json();});
       const events=Array.isArray(projects.events)?projects.events:[];
-      const [nominations,profile,tasks,team]=await Promise.all([
+      const [nominations,profile,tasks,team,needs,courses]=await Promise.all([
         list('volunteerNominations',...(manager?[]:[['uid','==',user.uid]])),
         read('volunteerProfiles',user.uid),
         list('tasks',['assigneeId','==',user.uid]),
-        member.teamId?read('teams',member.teamId):null
+        member.teamId?read('teams',member.teamId):null,
+        list('eventStaffing'),list('volunteerTraining')
       ]);
       if(current!==revision) return;
       status.textContent='';
@@ -1566,12 +1733,72 @@ function mountVolunteer(root, auth, authSdk, db, sdk) {
         const event=events.find(e=>e.id===n.eventId);
         add(appointments,'p',[event?.title||n.eventId,n.assignedRole,event?.status==='معتمد'&&event.date ? event.date : 'الموعد قيد التثبيت',event?.location].filter(Boolean).join(' · '));
       }
+      const learning=section('دورات وورش ودروس مشروع أثَر');
+      const academic=await read('academicPublishers',user.uid);
+      if(current!==revision) return;
+      if(!courses.length) add(learning,'p','لا توجد مواد تدريبية منشورة بعد.');
+      const lessons=add(learning,'ul');
+      for(const course of [...courses].sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999'))){
+        const lesson=branch(lessons,[course.title,course.kind,course.date||'الموعد قيد التحديد'].join(' · '));
+        if(course.description) add(lesson,'p',course.description);
+        if(/^https:\/\//i.test(course.url||'')) link(lesson,'فتح المادة أو التسجيل',course.url);
+      }
+      if(manager||academic?.enabled){
+        const editor=add(learning,'details');add(editor,'summary','نشر تدريب للمتطوعين');
+        const kind=field(editor,'النوع','select');
+        for(const label of ['دورة','ورشة عمل','درس']) add(kind,'option',label).value=label;
+        const title=field(editor,'العنوان','input');title.maxLength=200;
+        const date=field(editor,'التاريخ','input');date.type='date';
+        const url=field(editor,'رابط HTTPS','input');url.type='url';url.maxLength=2000;
+        const description=field(editor,'التفاصيل والأهداف','textarea');description.maxLength=2000;
+        const message=add(editor,'p');message.setAttribute('role','status');
+        button(editor,'نشر في مساحة المتطوع',async()=>{
+          if(!title.value.trim()||(url.value&&!/^https:\/\/[^\s]+$/i.test(url.value))){
+            message.textContent='أدخل عنوانًا ورابط HTTPS صالحًا إن وُجد.';return;
+          }
+          await sdk.addDoc(collection('volunteerTraining'),{title:title.value.trim(),kind:kind.value,date:date.value,url:url.value.trim(),
+            description:description.value.trim(),updatedAt:sdk.serverTimestamp()});
+          await render(user,'دورات وورش ودروس مشروع أثَر');
+        },message);
+      }
       const opportunities=section('الفعاليات وفرص التطوع');
       const eventTree=add(opportunities,'ul');
       if(!events.length) add(eventTree,'li','لا توجد فعاليات منشورة.');
       for(const event of events){
-        const item=branch(eventTree,[event.title,event.status||'مقترح',event.date||'الموعد قيد التحديد'].join(' · '));
+        const item=branch(eventTree,[event.title,event.status||'مقترح',event.date||'الموعد قيد التحديد'].join(' · '),event.id===eventToOpen);
+        item.parentElement.id='volunteer-event-'+event.id;
         link(item,'تفاصيل الفعالية','?section=event-program#event-'+encodeURIComponent(event.id));
+        const eventNeeds=needs.filter(n=>n.eventId===event.id);
+        const needsPanel=add(item,'details');add(needsPanel,'summary','احتياج الفعالية');
+        if(!eventNeeds.length) add(needsPanel,'p','لم تُحدد الأدوار والأعداد بعد.');
+        for(const need of eventNeeds){
+          const matching=nominations.filter(n=>n.eventId===event.id&&normalizeSearch(n.assignedRole||n.requestedRole)===normalizeSearch(need.role));
+          const count=matching.filter(n=>['pending','offered','confirmed'].includes(n.state)).length;
+          const confirmedCount=matching.filter(n=>n.state==='confirmed').length;
+          add(needsPanel,'p',need.role+' · مطلوب '+need.quantity+(manager?' · مرشحون '+count+' · مؤكدون '+confirmedCount+' · المتبقي '+Math.max(0,need.quantity-confirmedCount):''));
+        }
+        if(manager){
+          const flexible=nominations.filter(n=>n.eventId===event.id&&n.state==='pending'&&n.mode==='any').length;
+          if(flexible) add(needsPanel,'p','مرشحون لأي دور ولم يُسندوا بعد · '+flexible);
+          const edit=add(needsPanel,'details');add(edit,'summary','إضافة دور أو تعديل العدد');
+          const role=field(edit,'الدور','input');role.maxLength=100;
+          const quantity=field(edit,'العدد المطلوب','input');quantity.type='number';quantity.min=0;quantity.max=500;
+          for(const need of eventNeeds){
+            button(edit,need.role,()=>{role.value=need.role;quantity.value=need.quantity;},status);
+          }
+          const message=add(edit,'p');message.setAttribute('role','status');
+          button(edit,'حفظ الاحتياج',async()=>{
+            const title=role.value.trim(),count=Number(quantity.value);
+            if(!title||!quantity.value||!Number.isInteger(count)||count<0||count>500){message.textContent='أدخل دورًا وعددًا صحيحًا بين 0 و500.';return;}
+            const roleKey=normalizeSearch(title).replaceAll(' ','-');
+            if(!roleKey){message.textContent='اكتب اسم الدور.';return;}
+            const prior=eventNeeds.find(n=>normalizeSearch(n.role)===normalizeSearch(title));
+            await sdk.setDoc(sdk.doc(collection('eventStaffing'),prior?.id||event.id+'_'+roleKey),{
+              eventId:event.id,role:prior?.role||title,quantity:count,updatedAt:sdk.serverTimestamp()
+            });
+            await render(user,'الفعاليات وفرص التطوع',event.id);
+          },message);
+        }
         const existing=mine.find(n=>n.eventId===event.id);
         if(existing){add(item,'p',volunteerStates[existing.state]);continue;}
         const form=add(item,'details'); add(form,'summary','أرشّح نفسي للتطوع');
@@ -1579,6 +1806,11 @@ function mountVolunteer(root, auth, authSdk, db, sdk) {
         const mode=field(form,'طريقة المشاركة','select');
         for(const [value,label] of [['any','مستعد لأي دور'],['specific','أرغب في دور محدد']]) add(mode,'option',label).value=value;
         const requested=field(form,'الدور المقترح','input'); requested.maxLength=200;
+        if(eventNeeds.length){
+          const roleOptions=add(form,'datalist');roleOptions.id='event-roles-'+event.id;
+          for(const need of eventNeeds.filter(n=>n.quantity>0)) add(roleOptions,'option').value=need.role;
+          requested.setAttribute('list',roleOptions.id);
+        }
         requested.parentElement.hidden=true;
         mode.onchange=()=>{requested.parentElement.hidden=mode.value!=='specific';};
         const note=field(form,'ملاحظة عن تفرغك أو خبرتك','textarea');note.maxLength=1000;
@@ -1627,6 +1859,12 @@ function mountVolunteer(root, auth, authSdk, db, sdk) {
           const item=add(review,'article');
           add(item,'p',[n.displayName,events.find(e=>e.id===n.eventId)?.title||n.eventId,n.requestedRole||'مستعد لأي دور',n.note].filter(Boolean).join(' · '));
           const assigned=field(item,'الدور المعروض','input',n.requestedRole);assigned.maxLength=200;
+          const plannedRoles=needs.filter(need=>need.eventId===n.eventId&&need.quantity>0);
+          if(plannedRoles.length) {
+            const options=add(item,'datalist');options.id='assigned-roles-'+n.id;
+            for(const role of plannedRoles) add(options,'option').value=role.role;
+            assigned.setAttribute('list',options.id);
+          }
           const message=add(item,'p');message.setAttribute('role','status');
           button(item,'عرض الدور على المتطوع',async()=>{
             if(!assigned.value.trim()){message.textContent='حدّد الدور أولًا.';return;}
@@ -1637,12 +1875,16 @@ function mountVolunteer(root, auth, authSdk, db, sdk) {
       }
     } catch { if(current===revision) status.textContent='تعذّر تحميل مساحة المتطوع. تحقق من الاتصال والصلاحية.'; }
   }
-  authSdk.onAuthStateChanged(auth,user=>render(user),()=>{root.textContent='تعذّر التحقق من تسجيل الدخول.';});
+  authSdk.onAuthStateChanged(auth,user=>{
+    const eventId=new URLSearchParams(location.search).get('event');
+    return render(user,eventId?'الفعاليات وفرص التطوع':'الرئيسية',eventId||'');
+  },()=>{root.textContent='تعذّر التحقق من تسجيل الدخول.';});
 }
 
-if (['media-committee','meeting-01','meeting-02','volunteer-space'].includes(document.documentElement.dataset.section)) {
-  const volunteerRoot = document.getElementById('volunteer-workspace');
-  const volunteerPage = document.documentElement.dataset.section === 'volunteer-space';
+if (['media-committee','meeting-01','meeting-02','volunteer-space','membership-committee'].includes(document.documentElement.dataset.section)) {
+  const membershipPage = document.documentElement.dataset.section === 'membership-committee';
+  const volunteerPage = membershipPage || document.documentElement.dataset.section === 'volunteer-space';
+  const volunteerRoot = document.getElementById(membershipPage?'membership-workspace':'volunteer-workspace');
   const firstMeeting = document.documentElement.dataset.section === 'meeting-01';
   const meetingPage = firstMeeting || document.documentElement.dataset.section === 'meeting-02';
   const el = id => document.getElementById('media-' + id);
@@ -1658,7 +1900,7 @@ if (['media-committee','meeting-01','meeting-02','volunteer-space'].includes(doc
     await authSdk.setPersistence(auth, authSdk.browserSessionPersistence);
     const db = dbSdk.getFirestore(app);
     if (volunteerPage) {
-      mountVolunteer(volunteerRoot, auth, authSdk, db, dbSdk);
+      mountVolunteer(volunteerRoot, auth, authSdk, db, dbSdk,membershipPage);
     } else if (meetingPage) {
       const {mountMeeting} = await import('./meeting-register.mjs?v=3');
       mountMeeting(db, dbSdk, auth, authSdk);

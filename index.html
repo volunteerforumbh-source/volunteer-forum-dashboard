@@ -184,6 +184,19 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 .archive-grid [hidden]{display:none}
 .archive-grid summary{cursor:pointer}
 @media(max-width:640px){.archive-grid{grid-template-columns:1fr}}
+#media-committee .media-header {display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;padding:.7rem 0}
+.media-header h2 {margin:0;margin-inline-end:auto}
+.media-account {display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
+.media-account p {margin:0;font-size:.88rem}
+.media-primary-nav details {position:relative}
+.media-primary-nav summary {cursor:pointer;border:1px solid #dedbea;border-radius:.55rem;padding:.55rem .7rem;background:white}
+.media-primary-nav details > div {position:absolute;z-index:4;inset-inline-end:0;min-width:max-content;background:white;padding:.35rem;border:1px solid #dedbea;border-radius:.6rem;box-shadow:0 .3rem 1rem #20144920}
+.media-primary-nav details button {display:block;width:100%;text-align:start}
+.media-primary-nav .media-selected {outline:2px solid #524791}
+.media-subnav {padding-inline-start:.6rem;border-inline-start:2px solid #dedbea}
+.media-home-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,245px),1fr));gap:1rem}
+.media-home-grid section {border:1px solid #dedbea;border-radius:.75rem;padding:1rem}
+.media-home-grid h4 {margin-block-start:0}
 .media-tabs, .media-panel > form {margin-block: 1rem}
 .media-tabs {display:flex;flex-wrap:wrap;gap:.5rem}
 .media-tabs [aria-current="page"] {outline:2px solid #524791;outline-offset:2px}
@@ -307,16 +320,15 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
   </section>
 
   <section id="media-committee">
-    <div class="section-head"><h2>اللجنة الإعلامية والعلاقات العامة</h2><p>مساحة الأعضاء وإدارة العمل الإعلامي</p></div>
-    <article class="card" aria-labelledby="media-bylaws-heading">
-      <h3 id="media-bylaws-heading">اللائحة الداخلية</h3>
-      <a class="btn secondary" href="./media-bylaws.html">فتح الفهرس التفاعلي</a>
-    </article>
-    <div class="card">
+    <header class="media-header">
+      <h2>اللجنة الإعلامية والعلاقات العامة</h2>
+      <a href="./media-bylaws.html">اللائحة الداخلية</a>
+      <div class="media-account">
       <p id="media-status" role="status">جارٍ التحقق من تسجيل الدخول…</p>
       <button class="btn primary" id="media-login" type="button" hidden>الدخول بحساب Google</button>
       <button class="btn secondary" id="media-logout" type="button" hidden>تسجيل الخروج</button>
-    </div>
+      </div>
+    </header>
     <div id="media-operations" hidden></div>
     <div id="media-workspace" hidden>
       <details class="card"><summary>السجلات السابقة</summary>

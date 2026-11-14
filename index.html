@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#524791">
 <title>بوابة متابعة المنتدى | المنتدى الثاني للعمل التطوعي</title>
 <script>
-  const sections = ["organization","media-committee","meetings","initiatives","reports","calendar","recommendations","plan","meeting-01","meeting-02","forum-vision","updates","news","associations","notice"];
+  const sections = ["organization","media-committee","meetings","initiatives","reports","calendar","recommendations","plan","event-program","meeting-01","meeting-02","forum-vision","updates","news","associations","notice"];
   const params = new URLSearchParams(location.search);
   const section = params.get('section') || location.hash.slice(1);
   if (sections.includes(section)) document.documentElement.dataset.section = section;
@@ -25,6 +25,7 @@ html[data-section="reports"] #reports,
 html[data-section="calendar"] #calendar,
 html[data-section="recommendations"] #recommendations,
 html[data-section="plan"] #plan,
+html[data-section="event-program"] #event-program,
 html[data-section="meeting-01"] #meeting-01,
 html[data-section="meeting-02"] #meeting-02,
 html[data-section="forum-vision"] #forum-vision,
@@ -238,6 +239,13 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 .home-sections {padding-block:1rem}
 .forum-tree {max-width:48rem;margin:0;padding:0;list-style:none}
 .org-tree {max-width:none}
+.event-editor {margin-block:1rem;padding:.8rem 1rem;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.event-editor summary {cursor:pointer;font-weight:700}
+#event-form {display:grid;gap:.65rem;margin-block-start:.8rem}
+#event-form label {display:grid;gap:.25rem}
+#event-form button {justify-self:start}
+#event-months ul > li {margin-block:.4rem}
+#event-months ul > li::before {inset-block-start:1.3rem}
 #media-committee:has(#media-operations:not([hidden]) .media-tree) #media-bylaws-tree {display:none}
 .media-tree details li {margin-block:.35rem}
 .media-tree details li::before {inset-block-start:1.35rem}
@@ -300,6 +308,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
         <summary>الخطة والمبادرات</summary>
         <ul>
           <li><a href="?section=plan">الخطة السنوية</a></li>
+          <li><a href="?section=event-program">برنامج الفعاليات وورش العمل</a></li>
           <li><a href="?section=initiatives">المبادرات</a></li>
           <li><a href="?section=forum-vision">رؤية تطوير المنتدى الثالث</a></li>
         </ul>
@@ -337,6 +346,28 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
   </div>
 
   <a class="btn secondary section-home" href="./">العودة إلى الرئيسية</a>
+
+  <section id="event-program">
+    <div class="section-head"><h2>برنامج الفعاليات وورش العمل</h2></div>
+    <label>السنة <input id="event-year" type="number" min="2026" max="9999" required></label>
+    <details class="event-editor">
+      <summary>إضافة مسودة نشاط</summary>
+      <form id="event-form">
+        <p>تُحفظ المسودات في هذا المتصفح. لإتاحتها للفريق، تُضاف إلى سجل البرنامج المنشور.</p>
+        <label>عنوان النشاط <input name="title" required maxlength="200"></label>
+        <label>الشهر <select name="month" required></select></label>
+        <label>التاريخ (اختياري) <input name="date" type="date"></label>
+        <label>نوع النشاط <input name="type" maxlength="120"></label>
+        <label>التفاصيل والفئة المستهدفة <textarea name="description" maxlength="2000"></textarea></label>
+        <label>الأهداف والمخرجات المتوقعة <textarea name="goal" maxlength="2000"></textarea></label>
+        <label>الوقت والمكان أو رابط اللقاء <input name="location" maxlength="500"></label>
+        <label>المسؤول ومهام التجهيز <textarea name="owner" maxlength="2000"></textarea></label>
+        <button class="btn primary" type="submit">حفظ المسودة</button>
+      </form>
+    </details>
+    <p id="event-feedback" role="status"></p>
+    <ul id="event-months" class="forum-tree org-tree" aria-label="أشهر برنامج الفعاليات"></ul>
+  </section>
 
   <section id="organization">
     <div class="section-head">
@@ -877,6 +908,105 @@ function renderMeetingTree(meetings, activities){
   }
 }
 
+function renderEventProgram(published){
+  const yearField = document.getElementById('event-year');
+  const form = document.getElementById('event-form');
+  const editor = form.closest('details');
+  const host = document.getElementById('event-months');
+  const feedback = document.getElementById('event-feedback');
+  const key = 'forum-event-drafts-v1';
+  const current = new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Bahrain',year:'numeric',month:'2-digit'}).format(new Date());
+  const [thisYear,thisMonth] = current.split('-').map(Number);
+  const monthNames = Array.from({length:12},(_,i)=>new Intl.DateTimeFormat('ar-BH',{month:'long',timeZone:'UTC'}).format(new Date(Date.UTC(2026,i,1))));
+  let drafts = [];
+  let editing = null;
+  try {
+    const saved = JSON.parse(localStorage.getItem(key) || '[]');
+    if (Array.isArray(saved)) drafts = saved;
+  } catch { feedback.textContent = 'تعذّر استرداد المسودات المحفوظة.'; }
+  yearField.value = thisYear;
+  monthNames.forEach((label,i)=>{
+    const option = createNode('option','',label);
+    option.value = i+1;
+    form.elements.month.append(option);
+  });
+  form.elements.month.value = thisMonth;
+
+  function draw(openMonth){
+    const year = Number(yearField.value);
+    host.replaceChildren();
+    monthNames.forEach((label,i)=>{
+      const month = i+1;
+      const items = [...published,...drafts].filter(item=>item.year===year && item.month===month);
+      items.sort((a,b)=>(a.date || '9999').localeCompare(b.date || '9999') || a.title.localeCompare(b.title,'ar'));
+      const row = createNode('li');
+      const branch = createNode('details');
+      branch.open = month === openMonth;
+      branch.append(createNode('summary','',label + ' · ' + items.length));
+      const list = createNode('ul');
+      if (!items.length) list.append(createNode('li','','لا توجد أنشطة في هذا الشهر.'));
+      for (const item of items) {
+        const entry = createNode('li');
+        const details = createNode('details');
+        const local = drafts.includes(item);
+        const date = item.date || 'الموعد قيد التحديد';
+        details.append(createNode('summary','',[item.title,date,local ? 'مسودة محلية' : item.status || 'مقترح'].join(' · ')));
+        const body = createNode('div','org-branch');
+        for (const [label,value] of [['النوع',item.type],['التفاصيل',item.description],['الأهداف',item.goal],['الوقت والمكان',item.location],['التنفيذ',item.owner]]) {
+          if (value) body.append(createNode('p','',label + ' · ' + value));
+        }
+        if (local) {
+          const edit = createNode('button','btn secondary','تعديل المسودة أو تثبيت التاريخ');
+          edit.type = 'button';
+          edit.onclick = () => {
+            editing = item.id;
+            for (const name of ['title','month','date','type','description','goal','location','owner']) form.elements[name].value = item[name] ?? '';
+            editor.open = true;
+            form.elements.title.focus();
+          };
+          body.append(edit);
+        }
+        details.append(body);
+        entry.append(details);
+        list.append(entry);
+      }
+      branch.append(list);
+      row.append(branch);
+      host.append(row);
+    });
+  }
+  yearField.onchange = () => {
+    editing = null;
+    form.reset();
+    form.elements.month.value = Number(yearField.value) === thisYear ? thisMonth : 1;
+    draw(Number(yearField.value) === thisYear ? thisMonth : 1);
+  };
+  form.onsubmit = event => {
+    event.preventDefault();
+    if (!yearField.reportValidity()) return;
+    const data = Object.fromEntries([...new FormData(form)].map(([name,value])=>[name,value.trim()]));
+    const year = Number(yearField.value);
+    const month = Number(data.month);
+    if (!data.title) { feedback.textContent = 'أدخل عنوان النشاط.'; return; }
+    if (data.date && !data.date.startsWith(year + '-' + String(month).padStart(2,'0') + '-')) {
+      feedback.textContent = 'اختر تاريخًا ضمن الشهر والسنة المحددين.';
+      return;
+    }
+    const item = {...data,year,month,id:editing ?? crypto.randomUUID()};
+    const updated = [...drafts.filter(draft=>draft.id!==item.id),item];
+    try { localStorage.setItem(key,JSON.stringify(updated)); }
+    catch { feedback.textContent = 'تعذّر حفظ المسودة في هذا المتصفح.'; return; }
+    drafts = updated;
+    editing = null;
+    form.reset();
+    form.elements.month.value = month;
+    editor.open = false;
+    feedback.textContent = 'حُفظت المسودة في هذا المتصفح.';
+    draw(month);
+  };
+  draw(thisMonth);
+}
+
 function renderCalendar(meetings){
   const today = new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Bahrain',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   const [year,month] = today.split('-').map(Number);
@@ -1066,12 +1196,18 @@ fetch('./public-data.json', {cache:'no-store'})
     const reports = Array.isArray(data.reports) ? data.reports : [];
     const activities = Array.isArray(data.activities) ? data.activities : draftActivities;
     renderPlan(activities);
-    renderCalendar(meetings);
+    const events = Array.isArray(data.events) ? data.events : [];
+    renderCalendar([...meetings,...events.filter(item=>item.status === 'معتمد').map(item=>({...item,status:'مؤكد'}))]);
+    if (section === 'event-program') renderEventProgram(events);
     renderMeetingTree(meetings,activities);
     renderSection(initiatives, 'initiatives-grid', 'initiatives');
     renderSection(reports, 'reports-grid', 'reports');
   })
   .catch(() => {
+    if (section === 'event-program') {
+      renderEventProgram([]);
+      document.getElementById('event-feedback').textContent = 'تعذّر تحميل الأنشطة المنشورة.';
+    }
     ['meetings-grid','initiatives-grid','reports-grid','plan-grid','calendar-meetings'].forEach(id => {
       document.getElementById(id).append(createNode('div','empty','تعذر تحميل المحتوى. تأكد من رفع الملفات أو افتح الصفحة من GitHub Pages.'));
     });

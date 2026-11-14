@@ -56,11 +56,21 @@ export function mountMeeting(db, sdk, auth, authSdk) {
       add(details,'summary',label);
       buckets[key] = add(details,'ul');
     }
-    const append = (group,id,description,owner,due) => {
+    const append = (group,id,description,owner,due,title = titles.get(id)) => {
       const item = add(buckets[group],'li');
-      const link = add(item,'a','البند ' + id);
-      link.href = Number(id) <= 15 ? '?section=meeting-01#topic-' + Number(id) : '#item-' + id;
-      add(item,'span',' · ' + [description,owner,due].filter(Boolean).join(' · '));
+      const details = add(item,'details');
+      details.className = 'meeting-item';
+      add(details,'summary',['البند ' + id,title].filter(Boolean).join(' · '));
+      add(details,'p',description);
+      if (owner) add(details,'p','المسؤول · ' + owner);
+      if (due) add(details,'p','الموعد · ' + due);
+      if (titles.has(id)) {
+        const topic = document.getElementById('topic-' + Number(id));
+        const context = topic?.querySelector('.detail > p');
+        if (context) add(details,'p',context.textContent);
+        add(details,'a','فتح المحور في محضر الاجتماع الأول').href =
+          '?section=meeting-01#topic-' + Number(id);
+      }
     };
     initial.forEach(([id,description,group]) => append(group,id,description));
     try {
@@ -82,7 +92,7 @@ export function mountMeeting(db, sdk, auth, authSdk) {
       }
       for (const item of updates.docs) {
         const row = item.data();
-        append(row.action === 'reschedule' ? 'assign' : row.action,row.itemId,row.note,row.owner,row.due);
+        append(row.action === 'reschedule' ? 'assign' : row.action,row.itemId,row.note,row.owner,row.due,itemTitles.get(row.itemId));
       }
       for (const key of Object.keys(groups)) {
         if (!buckets[key].children.length) add(buckets[key],'li','لا توجد بنود مسجّلة.');

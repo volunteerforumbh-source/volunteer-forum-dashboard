@@ -1,0 +1,66 @@
+name: Execute approved WhatsApp request
+on:
+  workflow_dispatch:
+    inputs:
+      request_id:
+        description: ID of a request approved in the forum's private sending service
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: whatsapp-request-${{ inputs.request_id }}
+  cancel-in-progress: false
+
+jobs:
+  execute:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Execute approved request
+        env:
+          REQUEST_ID: ${{ inputs.request_id }}
+          EXECUTION_URL: ${{ secrets.SANADBOOST_NEWS_EXECUTION_URL }}
+          EXECUTION_TOKEN: ${{ secrets.SANADBOOST_NEWS_EXECUTION_TOKEN }}
+        run: |
+          node --input-type=module <<'JS'
+          const { REQUEST_ID, EXECUTION_URL, EXECUTION_TOKEN } = process.env;
+          if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(REQUEST_ID ?? '')) {
+            console.error('Expected a request UUID.');
+            process.exit(1);
+          }
+
+          let endpoint;
+          try {
+            endpoint = new URL(EXECUTION_URL);
+            if (endpoint.protocol !== 'https:' || endpoint.username || endpoint.password || endpoint.hash || !EXECUTION_TOKEN?.trim()) {
+              throw new Error();
+            }
+          } catch {
+            console.error('The private sending service is not configured.');
+            process.exit(1);
+          }
+
+          try {
+            const response = await fetch(endpoint, {
+              method: 'POST',
+              headers: {
+                Authorization: 'Bearer ' + EXECUTION_TOKEN,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ requestId: REQUEST_ID }),
+              redirect: 'error',
+              signal: AbortSignal.timeout(25000)
+            });
+            if (![200, 202].includes(response.status)) {
+              console.error('Sending service did not accept the request (HTTP ' + response.status + ').');
+              process.exitCode = 1;
+            } else {
+              console.log('Sending service accepted the execution request. Check the private request record for delivery status.');
+            }
+          } catch {
+            console.error('Execution result is unknown. Check the private request record before retrying.');
+            process.exitCode = 1;
+          }
+          JS

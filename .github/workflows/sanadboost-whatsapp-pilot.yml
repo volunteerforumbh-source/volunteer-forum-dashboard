@@ -1,0 +1,34 @@
+name: Sanad Boost WhatsApp pilot
+on:
+  workflow_dispatch:
+permissions: {}
+concurrency: sanadboost-whatsapp-pilot
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Trigger one WhatsApp test
+        env:
+          PILOT_WEBHOOK: ${{ secrets.SANADBOOST_WHATSAPP_PILOT_WEBHOOK_URL }}
+        run: |
+          node --input-type=module <<'JS'
+          try {
+            const url = new URL(process.env.PILOT_WEBHOOK);
+            if (url.protocol !== 'https:' || url.username || url.password) {
+              throw new Error('Invalid endpoint');
+            }
+            const response = await fetch(url, {
+              method: 'POST',
+              redirect: 'error',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ pilot: true }),
+              signal: AbortSignal.timeout(15000)
+            });
+            console.log('Webhook returned HTTP ' + response.status);
+            if (!response.ok) process.exitCode = 1;
+          } catch {
+            console.error('Webhook result unavailable. Check Sanad Boost before retrying.');
+            process.exitCode = 1;
+          }
+          JS

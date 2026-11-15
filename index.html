@@ -212,15 +212,11 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 .recommendations-priorities li{margin-block:8px}
 .recommendations-priorities a{color:var(--c-indigo);text-decoration:underline}
 
-#news .news-feature{padding:clamp(22px,5vw,54px);border-radius:24px;background:linear-gradient(135deg,#30264f,#514893 68%,#326a80);color:#fff;margin-block:16px 24px}
-#news .news-feature .pill{background:#fff;color:#3c3268}
-#news .news-feature h3{color:#fff;font-size:clamp(1.65rem,4.5vw,2.65rem);line-height:1.35;margin-block:14px 8px}
-#news .news-feature p{color:#f5f2ff;max-width:64ch}
-#news .news-feature .btn{background:#fff;color:#322755}
-#news .news-actions{display:flex;flex-wrap:wrap;gap:10px;margin-block-start:18px}
-#news .news-panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:14px;margin-block:20px 32px}
-#news summary{cursor:pointer}
 
+#news #archive-news{margin-inline:0}
+#news #archive-news > li{margin-block:.45rem}
+#news #archive-news > li::before{inset-block-start:1.4rem}
+#news #archive-news time{display:block;color:var(--muted);font-size:.85rem;font-weight:400}
 .archive-controls{flex-wrap:wrap}
 .archive-controls input{font:inherit;border:1px solid var(--line);border-radius:10px;padding:6px 12px;max-width:100%}
 .archive-grid{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
@@ -272,6 +268,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 .home-update-body p {margin:0 0 .6rem}
 .update-list .home-update-body a {color:#0969a5;text-decoration:underline;text-underline-offset:.18em}
 .home-sections {padding-block:1rem}
+/* Shared layout for forum pages and sections: expandable branches with details and summary. */
 .forum-tree {max-width:48rem;margin:0;padding:0;list-style:none}
 .org-tree {max-width:none}
 .event-editor {margin-block:1rem;padding:.8rem 1rem;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
@@ -703,46 +700,42 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 
   <section id="news">
     <div class="section-head"><h2>المركز الإخباري</h2><p>آخر أخبار منتدى العمل التطوعي وإعلاناته وفرص المشاركة</p></div>
-    <article class="news-feature" aria-labelledby="news-feature-title">
-      <span class="pill">آخر مستجدات المنتدى</span>
-      <h3 id="news-feature-title">ما بعد المنتدى الثاني للعمل التطوعي</h3>
-      <p>بدأت متابعة توصيات المنتدى والتحضير لمسارات تأهيل المتطوعين ضمن مشروع «أثَر».</p>
-      <details>
-        <summary>اقرأ تفاصيل التحديث</summary>
-        <p>يعرض المنتدى توصياته الأولية وأولويات التنفيذ المقترحة. ويجري تشكيل الفريق الأكاديمي لمشروع «أثَر» للمساهمة في إعداد مسارات تدريبية وتأهيل الفرق التطوعية.</p>
-        <div class="news-actions">
-          <a class="btn" href="?section=recommendations">اقرأ التوصيات</a>
-          <a class="btn" href="?section=meeting-01#topic-5">اطّلع على مستجدات «أثَر»</a>
-        </div>
-      </details>
-    </article>
-    <div class="news-panels">
-      <article class="card">
-        <h3>الإعلانات</h3>
+    <ul class="forum-tree org-tree" aria-label="أقسام المركز الإخباري">
+      <li><details><summary>آخر مستجدات المنتدى</summary>
+        <ul>
+          <li><details><summary>ما بعد المنتدى الثاني للعمل التطوعي</summary><div class="org-branch">
+            <p>بدأت متابعة توصيات المنتدى والتحضير لمسارات تأهيل المتطوعين ضمن مشروع «أثَر».</p>
+            <p>يعرض المنتدى توصياته الأولية وأولويات التنفيذ المقترحة. ويجري تشكيل الفريق الأكاديمي لمشروع «أثَر» للمساهمة في إعداد مسارات تدريبية وتأهيل الفرق التطوعية.</p>
+            <a href="?section=recommendations">اقرأ التوصيات</a>
+            <a href="?section=meeting-01#topic-5">اطّلع على مستجدات «أثَر»</a>
+          </div></details></li>
+        </ul>
+      </details></li>
+      <li><details><summary>الإعلانات</summary><div class="org-branch">
         <p>تابع المواعيد المنشورة للقاءات المنتدى في التقويم.</p>
-        <a class="btn secondary" href="?section=calendar">عرض التقويم</a>
-      </article>
-      <article class="card">
-        <h3>الاشتراك في أخبار واتساب</h3>
+        <a href="?section=calendar">عرض التقويم</a>
+      </div></details></li>
+      <li><details><summary>الاشتراك في أخبار واتساب</summary><div class="org-branch">
         <p>الاشتراك مفتوح للجميع. سجّل لتصلك أخبار المنتدى عبر واتساب.</p>
-        <a class="btn secondary" href="https://docs.google.com/forms/d/e/1FAIpQLScD_DJ-tvtcPLTmUz6e-qn-aU4xbGomlQ_32P78cE2XPw2PmA/viewform">اشترك في أخبار المنتدى</a>
-      </article>
-    </div>
-    <h3>أرشيف الأخبار</h3>
-    <p><a href="https://www.instagram.com/volunteerforumbh/">حساب المنتدى الرسمي على إنستغرام</a></p>
-    <div class="updates-filter archive-controls"><label>ابحث في الأخبار <input type="search" id="archive-search"></label><label>التصنيف <select id="archive-category"><option value="">جميع التصنيفات</option><option>البرنامج والمحاور والمتحدثون</option><option>الجمعيات المشاركة والشراكات</option><option>أخبار المنتدى وإعلاناته العامة</option></select></label></div>
-    <p id="archive-count" aria-live="polite"></p>
-    <div class="grid archive-grid" id="archive-news">
-<article class="card" data-category="البرنامج والمحاور والمتحدثون"><span class="pill">البرنامج والمحاور والمتحدثون</span><h3>ماذا سنناقش في المنتدى الثاني للعمل التطوعي؟</h3><time datetime="2026-10-19">2026-10-19</time><p>يطرح المنتدى الثاني للعمل التطوعي 2026 محاور تتناول واقع العمل التطوعي والخيري، منها الأفكار والتجارب العملية، والشراكات والتكامل، والاستدامة وصناعة الأثر، والتحديات والحلول. ويسعى الحوار إلى طرح أفكار قابلة للتطبيق وبناء شراكات تصنع أثرًا مستدامًا. ويقام المنتدى يوم السبت 31 أكتوبر في مركز مبارك جاسم كانو الاجتماعي الشامل من السابعة حتى العاشرة مساءً.</p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/p/DerTsN4EaFD/">عرض المنشور والوسائط على إنستغرام</a></article>
-<article class="card" data-category="الجمعيات المشاركة والشراكات"><span class="pill">الجمعيات المشاركة والشراكات</span><h3>المنتدى الثاني يسلّط الضوء على شراكته مع جمعيتي إسكان جدحفص والديه</h3><time datetime="2026-10-18">2026-10-18</time><p>ضمن سلسلة التعريف بشركاء المنتدى الثاني للعمل التطوعي 2026، يسلّط المنتدى الضوء على جمعية إسكان جدحفص وجمعية الديه الخيرية، في إطار إبراز الشراكات المجتمعية وتبادل الخبرات وتوسيع فرص التعاون لتحويل المبادرات إلى أثر مستدام. ويُعقد المنتدى يوم السبت 31 أكتوبر بمركز مبارك جاسم كانو الاجتماعي الشامل.</p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/p/DeouvWWFLjw/">عرض المنشور والوسائط على إنستغرام</a></article>
-<article class="card" data-category="البرنامج والمحاور والمتحدثون"><span class="pill">البرنامج والمحاور والمتحدثون</span><h3>من سيصنع محتوى المنتدى الثاني للعمل التطوعي؟</h3><time datetime="2026-10-17">2026-10-17</time><p>يمهّد المنتدى الثاني للعمل التطوعي 2026 للإعلان عن المتحدثين وأوراق العمل وبرنامجه، مؤكدًا أن نخبة من الخبرات والتجارب والأفكار والحلول ستسهم في تقديم محتوى عملي يفتح آفاقًا للشراكات والعمل المؤسسي المستدام. ويقام المنتدى يوم السبت 31 أكتوبر في مركز مبارك جاسم كانو الاجتماعي الشامل من السابعة حتى العاشرة مساءً.</p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/reel/DemKCcNghTw/">عرض المنشور والوسائط على إنستغرام</a></article>
-<article class="card" data-category="الجمعيات المشاركة والشراكات"><span class="pill">الجمعيات المشاركة والشراكات</span><h3>تعرّف على شركاء المنتدى: جمعيات سترة وتوبلي والسنابس</h3><time datetime="2026-10-16">2026-10-16</time><p>يسلط المنتدى الثاني للعمل التطوعي 2026 الضوء على جمعيات سترة الخيرية وتوبلي الخيرية والسنابس الخيرية، بوصفها من الجهات التي تقدم برامج ومبادرات مجتمعية في العمل الخيري والتطوعي. ويأتي التعريف بالشركاء ضمن توجه المنتدى إلى تبادل الخبرات وبناء شراكات تعزز الأثر المجتمعي المستدام.</p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/p/DejkoYglU-F/">عرض المنشور والوسائط على إنستغرام</a></article>
-<article class="card" data-category="أخبار المنتدى وإعلاناته العامة"><span class="pill">أخبار المنتدى وإعلاناته العامة</span><h3>المنتدى الثاني للعمل التطوعي يدعو الجمهور إلى حفظ موعد 31 أكتوبر</h3><time datetime="2026-10-15">2026-10-15</time><p>أعلن المنتدى الثاني للعمل التطوعي 2026 عن موعد انعقاده يوم السبت 31 أكتوبر 2026، في مركز مبارك جاسم كانو الاجتماعي الشامل، من الساعة السابعة حتى العاشرة مساءً. ويأتي المنتدى تحت شعار «شراكات .. لأثر مستدام»، ليجمع الخبرات والتجارب والشراكات ويفتح آفاقًا لتطوير العمل التطوعي وتعزيز الأثر المجتمعي المستدام.</p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/reel/DehB7aujREy/">عرض المنشور والوسائط على إنستغرام</a></article>
-<article class="card" data-category="الجمعيات المشاركة والشراكات"><span class="pill">الجمعيات المشاركة والشراكات</span><h3>تعرّف على شركاء المنتدى: الحدادة والنبيه صالح والمنامة</h3><time datetime="2026-10-14">2026-10-14</time><p>&quot;يعرّف المنتدى الثاني للعمل التطوعي 2026 بجمعيات الحدادة الخيرية والنبيه صالح الخيرية والمنامة الخيرية ضمن سلسلة التعريف بشركائه، وإبراز تجاربهم في خدمة المجتمع وتعزيز التعاون. ثلاث تجارب مختلفة وخبرات تتكامل من أجل أثر مجتمعي أكبر، تحت شعار «شراكات .. لأثر مستدام». الحساب الرسمي للمنتدى: @volunteerforumbh&quot;</p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/p/Deecj9FIAI6/">عرض المنشور والوسائط على إنستغرام</a></article>
-<article class="card" data-category="الجمعيات المشاركة والشراكات"><span class="pill">الجمعيات المشاركة والشراكات</span><h3>الشراكة ليست شعارًا: تعاون يصنع أثرًا مجتمعيًا أكبر</h3><time datetime="2026-10-13">2026-10-13</time><p>&quot;🌿 حين تلتقي الجهود، تتكامل الخبرات، وتتسع دائرة التأثير. في المنتدى الثاني للعمل التطوعي 2026، نؤمن أن الشراكة ليست مجرد شعار؛ بل طريقة نعمل بها معًا، ونتبادل من خلالها الخبرات، ونحوّل الجهود المتفرقة إلى أثر مجتمعي أكبر. جمعيات مختلفة.. هدف مشترك 🤝 وكل تعاون، مهما كان بسيطًا، يفتح مساحة جديدة للأثر والاستدامة. الشراكة ليست شعارًا.. إنها طريقة نصنع بها أثرًا أكبر. شراكات .. لأثر مستدام تابعوا الحساب الرسمي: @volunteerforumbh #المنتدى_الثاني_للعمل_التطوعي #شراكات_لأثر_مستدام #العمل_التطوعي&quot;</p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/reel/Deb4ddIk5DI/">عرض المنشور والوسائط على إنستغرام</a></article>
-<article class="card" data-category="الجمعيات المشاركة والشراكات"><span class="pill">الجمعيات المشاركة والشراكات</span><h3>11 جمعية تشارك بخبراتها في المنتدى الثاني للعمل التطوعي</h3><time datetime="2026-10-11">2026-10-11</time><p>&quot;🌿 حين تلتقي الخبرات وتتكاتف الجهود، يصبح الأثر أكبر. في المنتدى الثاني للعمل التطوعي 2026 تلتقي 11 جمعية خيرية في تجربة مشتركة، هدفها تعزيز التعاون، وتبادل الخبرات، وفتح مساحات جديدة للشراكة والعمل التطوعي. الجمعيات المشاركة: 1. جمعية النعيم الخيرية @naimcharity 2. جمعية رأس الرمان الخيرية @rasrummancharity 3. جمعية العكر الخيرية @alekercharity 4. جمعية الحدادة الخيرية @alhaddada_charity 5. جمعية النبي صالح الخيرية @nscs_bh 6. جمعية المنامة الخيرية @manama_charity 7. جمعية سترة الخيرية @sitrasociety 8. جمعية توبلي الخيرية @tublicharity 9. جمعية السنابس الخيرية @sanabisfund 10. جمعية إسكان جدحفص @iskancharity 11. جمعية الديه الخيرية @daihcharity 🤝 شراكات .. لأثر مستدام تابعوا الحساب الرسمي: @volunteerforumbh #المنتدى_الثاني_للعمل_التطوعي #شراكات_لأثر_مستدام #العمل_التطوعي&quot;</p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/p/DeWuI9glS-i/">عرض المنشور والوسائط على إنستغرام</a></article>
-<article class="card" data-category="أخبار المنتدى وإعلاناته العامة"><span class="pill">أخبار المنتدى وإعلاناته العامة</span><h3>تدشين الحساب الرسمي للمنتدى الثاني للعمل التطوعي على إنستغرام</h3><time datetime="2026-10-08">2026-10-08</time><p>دُشّن الحساب الرسمي للمنتدى الثاني للعمل التطوعي 2026 على إنستغرام تحت شعار «شراكات .. أثر مستدام»، ليكون منصة لأخبار المنتدى والجمعيات المشاركة، وعرض المبادرات والتغطيات خلال الفترة القادمة.</p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/p/DeO_lIdo9dR/">عرض المنشور والوسائط على إنستغرام</a></article>
-    </div>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLScD_DJ-tvtcPLTmUz6e-qn-aU4xbGomlQ_32P78cE2XPw2PmA/viewform">اشترك في أخبار المنتدى</a>
+      </div></details></li>
+      <li><details><summary>أرشيف الأخبار</summary><div class="org-branch">
+        <a href="https://www.instagram.com/volunteerforumbh/">حساب المنتدى الرسمي على إنستغرام</a>
+        <div class="updates-filter archive-controls"><label>ابحث في الأخبار <input type="search" id="archive-search"></label><label>التصنيف <select id="archive-category"><option value="">جميع التصنيفات</option><option>البرنامج والمحاور والمتحدثون</option><option>الجمعيات المشاركة والشراكات</option><option>أخبار المنتدى وإعلاناته العامة</option></select></label></div>
+        <p id="archive-count" aria-live="polite"></p>
+        <ul id="archive-news">
+          <li data-category="البرنامج والمحاور والمتحدثون"><details><summary><strong>ماذا سنناقش في المنتدى الثاني للعمل التطوعي؟</strong><time datetime="2026-10-19">2026-10-19</time></summary><div class="org-branch"><span class="pill">البرنامج والمحاور والمتحدثون</span><p>يطرح المنتدى الثاني للعمل التطوعي 2026 محاور تتناول واقع العمل التطوعي والخيري، منها الأفكار والتجارب العملية، والشراكات والتكامل، والاستدامة وصناعة الأثر، والتحديات والحلول. ويسعى الحوار إلى طرح أفكار قابلة للتطبيق وبناء شراكات تصنع أثرًا مستدامًا. ويقام المنتدى يوم السبت 31 أكتوبر في مركز مبارك جاسم كانو الاجتماعي الشامل من السابعة حتى العاشرة مساءً.</p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/p/DerTsN4EaFD/">عرض المنشور والوسائط على إنستغرام</a></div></details></li>
+          <li data-category="الجمعيات المشاركة والشراكات"><details><summary><strong>المنتدى الثاني يسلّط الضوء على شراكته مع جمعيتي إسكان جدحفص والديه</strong><time datetime="2026-10-18">2026-10-18</time></summary><div class="org-branch"><span class="pill">الجمعيات المشاركة والشراكات</span><p>ضمن سلسلة التعريف بشركاء المنتدى الثاني للعمل التطوعي 2026، يسلّط المنتدى الضوء على جمعية إسكان جدحفص وجمعية الديه الخيرية، في إطار إبراز الشراكات المجتمعية وتبادل الخبرات وتوسيع فرص التعاون لتحويل المبادرات إلى أثر مستدام. ويُعقد المنتدى يوم السبت 31 أكتوبر بمركز مبارك جاسم كانو الاجتماعي الشامل.</p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/p/DeouvWWFLjw/">عرض المنشور والوسائط على إنستغرام</a></div></details></li>
+          <li data-category="البرنامج والمحاور والمتحدثون"><details><summary><strong>من سيصنع محتوى المنتدى الثاني للعمل التطوعي؟</strong><time datetime="2026-10-17">2026-10-17</time></summary><div class="org-branch"><span class="pill">البرنامج والمحاور والمتحدثون</span><p>يمهّد المنتدى الثاني للعمل التطوعي 2026 للإعلان عن المتحدثين وأوراق العمل وبرنامجه، مؤكدًا أن نخبة من الخبرات والتجارب والأفكار والحلول ستسهم في تقديم محتوى عملي يفتح آفاقًا للشراكات والعمل المؤسسي المستدام. ويقام المنتدى يوم السبت 31 أكتوبر في مركز مبارك جاسم كانو الاجتماعي الشامل من السابعة حتى العاشرة مساءً.</p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/reel/DemKCcNghTw/">عرض المنشور والوسائط على إنستغرام</a></div></details></li>
+          <li data-category="الجمعيات المشاركة والشراكات"><details><summary><strong>تعرّف على شركاء المنتدى: جمعيات سترة وتوبلي والسنابس</strong><time datetime="2026-10-16">2026-10-16</time></summary><div class="org-branch"><span class="pill">الجمعيات المشاركة والشراكات</span><p>يسلط المنتدى الثاني للعمل التطوعي 2026 الضوء على جمعيات سترة الخيرية وتوبلي الخيرية والسنابس الخيرية، بوصفها من الجهات التي تقدم برامج ومبادرات مجتمعية في العمل الخيري والتطوعي. ويأتي التعريف بالشركاء ضمن توجه المنتدى إلى تبادل الخبرات وبناء شراكات تعزز الأثر المجتمعي المستدام.</p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/p/DejkoYglU-F/">عرض المنشور والوسائط على إنستغرام</a></div></details></li>
+          <li data-category="أخبار المنتدى وإعلاناته العامة"><details><summary><strong>المنتدى الثاني للعمل التطوعي يدعو الجمهور إلى حفظ موعد 31 أكتوبر</strong><time datetime="2026-10-15">2026-10-15</time></summary><div class="org-branch"><span class="pill">أخبار المنتدى وإعلاناته العامة</span><p>أعلن المنتدى الثاني للعمل التطوعي 2026 عن موعد انعقاده يوم السبت 31 أكتوبر 2026، في مركز مبارك جاسم كانو الاجتماعي الشامل، من الساعة السابعة حتى العاشرة مساءً. ويأتي المنتدى تحت شعار «شراكات .. لأثر مستدام»، ليجمع الخبرات والتجارب والشراكات ويفتح آفاقًا لتطوير العمل التطوعي وتعزيز الأثر المجتمعي المستدام.</p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/reel/DehB7aujREy/">عرض المنشور والوسائط على إنستغرام</a></div></details></li>
+          <li data-category="الجمعيات المشاركة والشراكات"><details><summary><strong>تعرّف على شركاء المنتدى: الحدادة والنبيه صالح والمنامة</strong><time datetime="2026-10-14">2026-10-14</time></summary><div class="org-branch"><span class="pill">الجمعيات المشاركة والشراكات</span><p>&quot;يعرّف المنتدى الثاني للعمل التطوعي 2026 بجمعيات الحدادة الخيرية والنبيه صالح الخيرية والمنامة الخيرية ضمن سلسلة التعريف بشركائه، وإبراز تجاربهم في خدمة المجتمع وتعزيز التعاون. ثلاث تجارب مختلفة وخبرات تتكامل من أجل أثر مجتمعي أكبر، تحت شعار «شراكات .. لأثر مستدام». الحساب الرسمي للمنتدى: @volunteerforumbh&quot;</p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/p/Deecj9FIAI6/">عرض المنشور والوسائط على إنستغرام</a></div></details></li>
+          <li data-category="الجمعيات المشاركة والشراكات"><details><summary><strong>الشراكة ليست شعارًا: تعاون يصنع أثرًا مجتمعيًا أكبر</strong><time datetime="2026-10-13">2026-10-13</time></summary><div class="org-branch"><span class="pill">الجمعيات المشاركة والشراكات</span><p>&quot;🌿 حين تلتقي الجهود، تتكامل الخبرات، وتتسع دائرة التأثير. في المنتدى الثاني للعمل التطوعي 2026، نؤمن أن الشراكة ليست مجرد شعار؛ بل طريقة نعمل بها معًا، ونتبادل من خلالها الخبرات، ونحوّل الجهود المتفرقة إلى أثر مجتمعي أكبر. جمعيات مختلفة.. هدف مشترك 🤝 وكل تعاون، مهما كان بسيطًا، يفتح مساحة جديدة للأثر والاستدامة. الشراكة ليست شعارًا.. إنها طريقة نصنع بها أثرًا أكبر. شراكات .. لأثر مستدام تابعوا الحساب الرسمي: @volunteerforumbh #المنتدى_الثاني_للعمل_التطوعي #شراكات_لأثر_مستدام #العمل_التطوعي&quot;</p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/reel/Deb4ddIk5DI/">عرض المنشور والوسائط على إنستغرام</a></div></details></li>
+          <li data-category="الجمعيات المشاركة والشراكات"><details><summary><strong>11 جمعية تشارك بخبراتها في المنتدى الثاني للعمل التطوعي</strong><time datetime="2026-10-11">2026-10-11</time></summary><div class="org-branch"><span class="pill">الجمعيات المشاركة والشراكات</span><p>&quot;🌿 حين تلتقي الخبرات وتتكاتف الجهود، يصبح الأثر أكبر. في المنتدى الثاني للعمل التطوعي 2026 تلتقي 11 جمعية خيرية في تجربة مشتركة، هدفها تعزيز التعاون، وتبادل الخبرات، وفتح مساحات جديدة للشراكة والعمل التطوعي. الجمعيات المشاركة: 1. جمعية النعيم الخيرية @naimcharity 2. جمعية رأس الرمان الخيرية @rasrummancharity 3. جمعية العكر الخيرية @alekercharity 4. جمعية الحدادة الخيرية @alhaddada_charity 5. جمعية النبي صالح الخيرية @nscs_bh 6. جمعية المنامة الخيرية @manama_charity 7. جمعية سترة الخيرية @sitrasociety 8. جمعية توبلي الخيرية @tublicharity 9. جمعية السنابس الخيرية @sanabisfund 10. جمعية إسكان جدحفص @iskancharity 11. جمعية الديه الخيرية @daihcharity 🤝 شراكات .. لأثر مستدام تابعوا الحساب الرسمي: @volunteerforumbh #المنتدى_الثاني_للعمل_التطوعي #شراكات_لأثر_مستدام #العمل_التطوعي&quot;</p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/p/DeWuI9glS-i/">عرض المنشور والوسائط على إنستغرام</a></div></details></li>
+          <li data-category="أخبار المنتدى وإعلاناته العامة"><details><summary><strong>تدشين الحساب الرسمي للمنتدى الثاني للعمل التطوعي على إنستغرام</strong><time datetime="2026-10-08">2026-10-08</time></summary><div class="org-branch"><span class="pill">أخبار المنتدى وإعلاناته العامة</span><p>دُشّن الحساب الرسمي للمنتدى الثاني للعمل التطوعي 2026 على إنستغرام تحت شعار «شراكات .. أثر مستدام»، ليكون منصة لأخبار المنتدى والجمعيات المشاركة، وعرض المبادرات والتغطيات خلال الفترة القادمة.</p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/p/DeO_lIdo9dR/">عرض المنشور والوسائط على إنستغرام</a></div></details></li>
+        </ul>
+      </div></details></li>
+    </ul>
   </section>
   <section id="associations">
     <div class="section-head"><h2>الجمعيات المشاركة</h2><p>ملفات الجمعيات الشريكة ومجالات عملها</p></div>

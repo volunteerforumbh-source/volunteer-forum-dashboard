@@ -1,0 +1,66 @@
+name: Sanad Boost contact pilot
+
+on:
+  workflow_dispatch:
+    inputs:
+      send_test_contact:
+        description: 'Run the verified contact-only webhook'
+        type: boolean
+        default: false
+
+permissions: {}
+
+jobs:
+  pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    concurrency: sanadboost-contact-pilot
+    steps:
+      - name: Preview or submit one test contact
+        env:
+          SEND_TEST_CONTACT: ${{ inputs.send_test_contact }}
+          SANADBOOST_WEBHOOK_URL: ${{ secrets.SANADBOOST_PILOT_WEBHOOK_URL }}
+          SANADBOOST_CONTACT_JSON: ${{ secrets.SANADBOOST_PILOT_CONTACT_JSON }}
+        run: |
+          node --input-type=module <<'JS'
+          if (process.env.SEND_TEST_CONTACT !== 'true') {
+            console.log('Preview completed. No contact data read and no request sent.');
+            process.exit(0);
+          }
+
+          let endpoint;
+          let contact;
+          try {
+            endpoint = new URL(process.env.SANADBOOST_WEBHOOK_URL);
+            contact = JSON.parse(process.env.SANADBOOST_CONTACT_JSON);
+          } catch {
+            console.error('Configure the verified contact webhook URL and its test JSON in GitHub Secrets.');
+            process.exit(1);
+          }
+
+          if (endpoint.protocol !== 'https:' || endpoint.username || endpoint.password ||
+              !contact || Array.isArray(contact) || typeof contact !== 'object' ||
+              Object.keys(contact).length === 0) {
+            console.error('Expected an HTTPS webhook and a non-empty JSON object for one test contact.');
+            process.exit(1);
+          }
+
+          try {
+            const response = await fetch(endpoint, {
+              method: 'POST',
+              redirect: 'error',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify(contact),
+              signal: AbortSignal.timeout(15000)
+            });
+            if (!response.ok) {
+              console.error(`Webhook returned HTTP ${response.status}. Check Sanad Boost before retrying.`);
+              process.exitCode = 1;
+            } else {
+              console.log(`Webhook returned HTTP ${response.status}. Verify the test contact in Sanad Boost.`);
+            }
+          } catch {
+            console.error('Webhook result unavailable. Check Sanad Boost before retrying.');
+            process.exitCode = 1;
+          }
+          JS

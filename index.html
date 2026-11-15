@@ -505,6 +505,29 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
       <div id="media-whatsapp-sending" role="region" aria-labelledby="media-whatsapp-title">
         <div class="section-head"><h3 id="media-whatsapp-title">إرسال رسائل واتساب</h3></div>
         <ul class="forum-tree org-tree">
+          <li><details><summary>تجهيز رسالة ومعاينتها</summary><div class="org-branch">
+            <p>قالب أخبار المنتدى قيد مراجعة Meta. المعاينة متاحة الآن.</p>
+            <form id="media-news-draft">
+              <label for="media-news-mode">نوع الإرسال</label>
+              <select id="media-news-mode" name="mode"><option value="single">فردي</option><option value="batch">جماعي</option></select>
+              <label for="media-news-phones">أرقام المستلمين (رقم لكل سطر، مع رمز الدولة)</label>
+              <textarea id="media-news-phones" name="recipients" rows="2" maxlength="4000" required dir="ltr" placeholder="+973XXXXXXXX"></textarea>
+              <label for="media-news-name">اسم المستلم للمعاينة</label>
+              <input id="media-news-name" name="recipientName" maxlength="100" required>
+              <label for="media-news-title">عنوان الخبر</label>
+              <input id="media-news-title" name="headline" maxlength="180" required>
+              <label for="media-news-date">تاريخ الإرسال في نص الرسالة</label>
+              <input id="media-news-date" name="date" type="date" required>
+              <label for="media-news-summary">موجز الخبر</label>
+              <textarea id="media-news-summary" name="summary" rows="3" maxlength="420" required></textarea>
+              <button class="btn secondary" type="submit">معاينة الرسالة</button>
+            </form>
+            <p id="media-news-draft-status" role="status"></p>
+            <div id="media-news-draft-preview" hidden>
+              <p id="media-news-draft-message" style="white-space:pre-wrap"></p>
+              <a href="?section=news#news">آخر أخبار المنتدى</a>
+            </div>
+          </div></details></li>
           <li><details><summary>إرسال فردي</summary><div class="org-branch">
             <p>افتح المحادثات في حساب المنتدى، وابحث عن المستلم، ثم اختر قناة WhatsApp واكتب الرسالة أو اختر القالب المناسب من القوالب المتاحة.</p>
             <a href="https://app.sanadboost.io/v2/location/JWpqvSmfgfac35fabPLX/conversations/conversations" target="_blank" rel="noopener noreferrer">فتح محادثات سند بوست</a>
@@ -2209,6 +2232,49 @@ if (['media-committee','meeting-01','meeting-02','volunteer-space','membership-c
       const {mountMeeting} = await import('./meeting-register.mjs?v=3');
       mountMeeting(db, dbSdk, auth, authSdk);
     } else {
+    const draft = el('news-draft');
+    const draftStatus = el('news-draft-status');
+    const draftPreview = el('news-draft-preview');
+    function clearDraftPreview(){
+      draftStatus.textContent = '';
+      draftPreview.hidden = true;
+      el('news-draft-message').textContent = '';
+    }
+    draft.addEventListener('input', clearDraftPreview);
+    draft.addEventListener('submit', event => {
+      event.preventDefault();
+      clearDraftPreview();
+      const values = new FormData(draft);
+      const phones = values.get('recipients').split(/\r?\n/).map(line => line.trim()
+        .replace(/[٠-٩۰-۹]/g, digit => String(digit.charCodeAt(0) & 15))
+        .replace(/[ ()-]/g, '')).filter(Boolean);
+      if (!phones.length || phones.some(phone => !/^\+[1-9]\d{7,14}$/.test(phone))) {
+        draftStatus.textContent = 'أدخل كل رقم مع رمز الدولة. مثال: ‎+973 ثم رقم الهاتف.';
+        return;
+      }
+      const recipients = new Set(phones);
+      if (values.get('mode') === 'single' && recipients.size !== 1) {
+        draftStatus.textContent = 'للإرسال الفردي، أدخل رقم مستلم واحد.';
+        return;
+      }
+      const name = values.get('recipientName').trim();
+      const headline = values.get('headline').trim();
+      const summary = values.get('summary').trim();
+      if (!name || !headline || !summary) {
+        draftStatus.textContent = 'أكمل اسم المعاينة والعنوان والموجز.';
+        return;
+      }
+      const date = values.get('date').split('-').reverse().join('/');
+      draftStatus.textContent = 'عدد المستلمين بعد إزالة التكرار: ' + recipients.size;
+      el('news-draft-message').textContent = [
+        'مرحبًا ' + name + ' 🌿',
+        'نشاركك هذا التحديث ضمن اشتراكك في القائمة الإخبارية لمنتدى العمل التطوعي.',
+        headline, '📅 تاريخ الإرسال ' + date, 'موجز الخبر — ' + summary,
+        'اضغط على زر آخر أخبار المنتدى لقراءة التفاصيل والاطلاع على الإعلانات والمستجدات.',
+        'فريق منتدى العمل التطوعي'
+      ].join('\n');
+      draftPreview.hidden = false;
+    });
     const workspace = dbSdk.doc(db, 'mediaCommittee', 'workspace');
     const member = email => dbSdk.doc(db, 'mediaMembers', email);
 
@@ -2216,6 +2282,8 @@ if (['media-committee','meeting-01','meeting-02','volunteer-space','membership-c
     let generation = 0;
     let stopOperations = () => {};
     function clearWorkspace(){
+      draft.reset();
+      clearDraftPreview();
       previousWorkspace = undefined;
       el('workspace').hidden = true;
       el('members').hidden = true;

@@ -94,6 +94,10 @@ header{padding:28px 0 48px;position:relative}
 #academic-workspace label,#membership-workspace label,#volunteer-workspace label{display:grid;gap:.25rem;margin-block:.5rem}
 #membership-workspace button,#volunteer-workspace button{margin-inline-end:.4rem;margin-block:.25rem}
 #membership-workspace .org-branch>details,#volunteer-workspace .org-branch>details{margin-block:.5rem}
+.forum-page-guide{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-block:.6rem 1rem}
+.forum-page-guide>summary{cursor:pointer;font-weight:700;padding:.75rem 1rem;color:var(--c-indigo)}
+.forum-page-guide>div{padding:0 1rem .55rem}
+.forum-page-guide p{margin:.25rem 0 .55rem}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:24px}
 .brand{display:flex;align-items:center;gap:15px}
 .brand-logo{width:64px;height:64px;border-radius:20px;background:#fff;box-shadow:var(--shadow);display:grid;place-items:center;padding:10px;border:1px solid rgba(82,71,145,.08)}
@@ -337,6 +341,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 <main class="container">
   <nav class="home-only home-sections" aria-labelledby="forum-sections-heading">
     <h2 id="forum-sections-heading">أقسام المنتدى</h2>
+    <details class="forum-page-guide"><summary>دليل الصفحة الرئيسية</summary><div><p>تجمع الصفحة مداخل الخطط والاجتماعات واللجان والفعاليات. استخدم البحث أو افتح أحد فروع الأقسام للوصول إلى ما تحتاجه.</p></div></details>
     <ul class="forum-tree">
       <li><details open>
         <summary>الاجتماعات والمحاضر</summary>
@@ -394,6 +399,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 
   <section id="event-program">
     <div class="section-head"><h2>برنامج الفعاليات وورش العمل</h2></div>
+    <details class="forum-page-guide"><summary>دليل الفعاليات وورش العمل</summary><div><p>يعرض الأنشطة حسب الشهر، بما فيها المقترحات والمواعيد قيد التحديد. افتح النشاط لمراجعة أهدافه واكتمال بياناته أو الوصول إلى احتياج الأدوار والترشيح. تُحفظ تعديلات النموذج في متصفحك إلى أن تُدرج في السجل المنشور.</p></div></details>
     <label>السنة <input id="event-year" type="number" min="2026" max="9999" required></label>
     <details class="event-editor">
       <summary>إضافة مسودة نشاط</summary>
@@ -420,6 +426,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
       <h2>الهيكل التنظيمي واللجان</h2>
       <p>تُنشر الصفة والنبذة والصورة بعد اعتمادها والحصول على الموافقة</p>
     </div>
+    <details class="forum-page-guide"><summary>دليل الهيكل التنظيمي</summary><div><p>يعرض اللجنة العليا واللجان وفرق العمل وأدوارها المعتمدة للنشر. تظهر تصورات اللجان قيد الإعداد بحسب حالتها.</p></div></details>
     <div class="org-intro"><strong>اللجنة العليا واللجان التنفيذية</strong><span>يجري استكمال بيانات المسؤولين والأعضاء. هذه الصفحة لا تنشر أسماء غير معتمدة.</span></div>
     <ul class="forum-tree org-tree">
       <li><details><summary>اللجنة العليا</summary><div class="org-branch"><p>البطاقات المعتمدة للنشر</p><div id="leadership-grid" class="grid"></div></div></details></li>
@@ -442,6 +449,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 
   <section id="academic-committee">
     <div class="section-head"><h2>لجنة مشروع «أثَر» الأكاديمي</h2></div>
+    <details class="forum-page-guide"><summary>اللائحة الداخلية للجنة «أثَر» الأكاديمي</summary><div><p>مسودة للمراجعة. يُعدّ الخبراء برامج التأهيل بأهدافها وجلساتها ومواعيدها والتطبيق العملي ومعايير التقييم. تعتمد رئيسة اللجنة البرنامج أو تعيده للاستكمال. بعد الاعتماد يراه المتطوع ويطلب المشاركة، وتوثّق اللجنة الحضور والمخرجات لدعم اختيار أعضاء المجلس التطوعي.</p></div></details>
     <ul class="forum-tree org-tree">
       <li><details><summary>اختصاص اللجنة ومسار التأهيل</summary><div class="org-branch">
         <p>تترأس اللجنة الأستاذة ابتهاج خليفة، وتضم خبراء واستشاريين يصممون برامج تدريبية وتطبيقية لنحو 100 متطوع.</p>
@@ -463,6 +471,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
   </section>
   <section id="volunteer-space">
     <div class="section-head"><h2>مساحة المتطوع</h2></div>
+    <details class="forum-page-guide"><summary>دليل مساحة المتطوع</summary><div><p>يتابع العضو المفعّل فريقه ومهامه ومواعيده وملفه. ويستطيع الترشيح للفعاليات وتأكيد الدور المعروض، أو طلب المشاركة في البرامج الأكاديمية المعتمدة.</p></div></details>
     <div id="volunteer-workspace"><p role="status">جارٍ التحقق من تسجيل الدخول…</p></div>
   </section>
   <section id="media-committee">
@@ -474,6 +483,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
       <button class="btn secondary" id="media-logout" type="button" hidden>تسجيل الخروج</button>
       </div>
     </header>
+    <details class="forum-page-guide"><summary>دليل اللجنة الإعلامية والعلاقات العامة</summary><div><p>تدير اللجنة الخطط والمهام والتغطيات والمحتوى ومواعيد النشر. ويتابع فرع العلاقات العامة التنسيق مع اللجان والشركاء والدعوات وما بعد الفعاليات. تظهر أدوات العمل بحسب الصلاحية، وتتوفر اللائحة التفصيلية في فرع «اللائحة الداخلية».</p></div></details>
     <div id="media-operations" hidden></div>
     <ul id="media-bylaws-tree" class="forum-tree org-tree media-tree" aria-label="مراجع اللجنة">
       <li id="media-bylaws-branch"><details>
@@ -509,6 +519,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
       <h2>الاجتماعات والمناقشات</h2>
       <p>ملخصات مناسبة للمشاركة العامة</p>
     </div>
+    <details class="forum-page-guide"><summary>دليل الاجتماعات والمحاضر</summary><div><p>يجمع السجل الاجتماعات السابقة واللقاءات القادمة وروابط المحاضر وجداول الأعمال. تُستخدم المواعيد المقترحة للتخطيط.</p></div></details>
     <ul class="forum-tree org-tree" aria-label="شجرة الاجتماعات">
       <li><details open><summary>الاجتماعات القادمة</summary>
         <div class="org-branch"><p>تظهر أربعة مواعيد للتخطيط. تُقترح المواعيد أسبوعيًا عند عدم تحديد موعد رسمي. افتح الاجتماع لعرض جدول أعماله والمهام المنشورة.</p></div>
@@ -520,6 +531,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 
   <section id="meeting-02">
     <div class="section-head"><h2>الاجتماع 02 | متابعة مخرجات الاجتماع الأول</h2></div>
+    <details class="forum-page-guide"><summary>دليل الاجتماع الثاني</summary><div><p>يجمع البنود المرحّلة من الاجتماع الأول والمسائل المقترحة للنقاش والإجراءات المطلوب متابعتها. يستخدم المخوّلون سجل البنود بحسب صلاحياتهم.</p></div></details>
     <p>مسودة جدول أعمال · الموعد يُحدّد لاحقًا</p>
     <a class="btn secondary" href="?section=meeting-01">الاجتماع السابق · 01</a>
     <div id="meeting-register"></div>
@@ -531,6 +543,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
   <section id="meeting-01">
     <a class="btn secondary" href="?section=meeting-02">الاجتماع التالي · 02</a>
     <div class="section-head"><h2>الاجتماع 01 | ما بعد المنتدى</h2></div>
+    <details class="forum-page-guide"><summary>دليل محضر الاجتماع الأول</summary><div><p>يوثّق محاور النقاش ومخرجات الاجتماع الأول. افتح كل بند للاطلاع على تفاصيله وروابط المتابعة.</p></div></details>
     <p class="muted"><bdi>MTG-2026-001</bdi></p>
     <p>الأربعاء <time datetime="2026-11-11">11 نوفمبر 2026</time> · جمعية السنابس الخيرية · 7:15–8:40 مساءً بتوقيت البحرين · 9 مشاركين</p>
     <a class="btn secondary" href="?section=meetings">العودة إلى الاجتماعات والمحاضر</a>
@@ -610,6 +623,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 
   <section id="forum-vision">
     <div class="section-head"><h2>رؤية تطوير المنتدى الثالث</h2></div>
+    <details class="forum-page-guide"><summary>دليل رؤية المنتدى الثالث</summary><div><p>تعرض تصور تطوير المنتدى ومراحل العمل والنتائج المستهدفة. تُحال القرارات التي تُعتمد إلى الخطة والمبادرات للتنفيذ.</p></div></details>
       <p><strong>صاحب الرؤية</strong> · جعفر النشيط، رئيس اللجنة الإعلامية والعلاقات العامة في اللجنة العليا للمنتدى.</p>
     <span class="pill">مشروع رئيسي · مقترح للدراسة</span>
     <p>رؤية مرتبطة باجتماع 11 نوفمبر 2026، تجمع التصور السنوي والحوكمة وتأهيل القيادات والشراكات والتوثيق وقياس الأثر. يعرض الفهرس أسئلة المقترح وإجراءاته للدراسة.</p>
@@ -679,6 +693,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 
   <section id="news">
     <div class="section-head"><h2>المركز الإخباري</h2><p>أرشيف أخبار المنتدى الثاني وإعلاناته العامة</p></div>
+    <details class="forum-page-guide"><summary>دليل المركز الإخباري</summary><div><p>يضم أخبار المنتدى وإعلاناته العامة. استخدم البحث للعثور على خبر وافتح مصدره للاطلاع على التفاصيل.</p></div></details>
     <p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/">حساب المنتدى الرسمي</a> <a class="btn secondary" href="https://docs.google.com/forms/d/e/1FAIpQLScD_DJ-tvtcPLTmUz6e-qn-aU4xbGomlQ_32P78cE2XPw2PmA/viewform">الاشتراك في أخبار واتساب</a></p>
     <div class="updates-filter archive-controls"><label>ابحث في الأخبار <input type="search" id="archive-search"></label><label>التصنيف <select id="archive-category"><option value="">جميع التصنيفات</option><option>البرنامج والمحاور والمتحدثون</option><option>الجمعيات المشاركة والشراكات</option><option>أخبار المنتدى وإعلاناته العامة</option></select></label></div>
     <p id="archive-count" aria-live="polite"></p>
@@ -696,6 +711,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
   </section>
   <section id="associations">
     <div class="section-head"><h2>الجمعيات المشاركة</h2><p>ملفات الجمعيات الشريكة ومجالات عملها</p></div>
+    <details class="forum-page-guide"><summary>دليل الجمعيات المشاركة</summary><div><p>يعرّف الدليل بالجمعيات ومجالات عملها وروابطها المنشورة، ويسهّل الوصول إلى معلومات الشركاء العامة.</p></div></details>
     <div class="updates-filter archive-controls"><label>ابحث عن جمعية <input type="search" id="association-search"></label></div>
     <p id="association-count" aria-live="polite"></p>
     <div class="grid archive-grid" id="association-directory">
@@ -714,6 +730,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
   </section>
   <section id="updates">
     <div class="section-head"><h2>آخر المستجدات</h2><p>تحديثات المنتدى والمهام المنشورة وخطواتها التالية</p></div>
+    <details class="forum-page-guide"><summary>دليل المستجدات</summary><div><p>يعرض ما نُشر أو تغيّر في أعمال المنتدى. افتح بند المستجد للاطلاع على تفاصيله والخطوة التالية عند توفرها.</p></div></details>
     <div class="updates-filter">
       <label for="update-type">عرض</label>
       <select id="update-type">
@@ -727,6 +744,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 
   <section id="calendar">
     <div class="section-head"><h2>تقويم الاجتماعات القادمة</h2><p>الأوقات بتوقيت البحرين</p></div>
+    <details class="forum-page-guide"><summary>دليل تقويم الاجتماعات</summary><div><p>يعرض المواعيد المؤكدة بحسب الشهر وبتوقيت البحرين. تُتابع المواعيد المقترحة في سجل الاجتماعات أو برنامج الفعاليات.</p></div></details>
     <div class="calendar-controls">
       <button type="button" class="btn secondary" id="prev-month">الشهر السابق</button>
       <strong id="calendar-month" aria-live="polite"></strong>
@@ -738,6 +756,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 
   <section id="recommendations">
     <div class="section-head"><h2>التوصيات الأولية للمنتدى الثاني للعمل التطوعي 2026</h2></div>
+    <details class="forum-page-guide"><summary>دليل التوصيات</summary><div><p>تجمع الصفحة توصيات أوراق العمل للمراجعة وترتيب الأولويات. تُحال التوصيات المعتمدة إلى الجهات المعنية لتخطيط التنفيذ.</p></div></details>
     <p>استنادًا إلى أوراق العمل المقدمة في المنتدى الثاني للعمل التطوعي 2026، وإلى نتائج تفاعل الحضور مع المحاور المطروحة، يوصي المنتدى بما يلي:</p>
     <a class="btn secondary" href="#priorities">أولويات التنفيذ المقترحة</a>
     <a class="btn secondary" href="?section=organization#recommendations-committee">لجنة دراسة التوصيات ومتابعة تنفيذها</a>
@@ -779,6 +798,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 
   <section id="plan">
     <div class="section-head"><h2>الخطة السنوية للمنتدى</h2><p>نوفمبر 2026 – أكتوبر 2027 · مسودة للتخطيط</p></div>
+    <details class="forum-page-guide"><summary>دليل الخطة السنوية</summary><div><p>تجمع الخطة الأولويات والأنشطة والمخرجات السنوية. تُعرض تفاصيل الورش والفعاليات بحسب الشهر في برنامج الفعاليات.</p></div></details>
     <div id="plan-grid" class="grid plan-grid"></div>
   </section>
 
@@ -787,6 +807,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
       <h2>المشاريع والمبادرات</h2>
       <p>الحالات الظاهرة تعكس ما تم نشره، ولا تعني دائمًا الاعتماد النهائي</p>
     </div>
+    <details class="forum-page-guide"><summary>دليل المشاريع والمبادرات</summary><div><p>يعرض القسم أهداف المبادرات وحالتها وروابطها والخطوة التالية عند توفرها.</p></div></details>
     <article class="card vision-feature">
       <span class="pill">مشروع رئيسي · مقترح للدراسة</span>
       <h3>رؤية تطوير المنتدى الثالث</h3>
@@ -802,11 +823,13 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
       <h2>التقارير والمنشورات</h2>
       <p>الروابط المعتمدة للنشر العام فقط</p>
     </div>
+    <details class="forum-page-guide"><summary>دليل التقارير والمنشورات</summary><div><p>يجمع القسم التقارير وملفات التقييم والمنشورات المعتمدة للنشر العام. افتح رابط التقرير للاطلاع على المصدر.</p></div></details>
     <div id="reports-grid" class="grid"></div>
   </section>
 
   <section id="notice">
     <div class="section-head"><h2>تنويه</h2></div>
+    <details class="forum-page-guide"><summary>دليل التنويه</summary><div><p>يوضح التنويه حالة المواد المنشورة والفرق في التعامل مع المقترحات والمسودات والقرارات المعتمدة.</p></div></details>
     <div class="note"><strong>تنويه:</strong> المقترحات أو الأفكار الواردة في هذه البوابة لا تُعد قرارات معتمدة إلا إذا أعلن المنتدى اعتمادها رسميًا. كما أن التحديثات العامة تُدار عبر حساب GitHub التابع للمنتدى، بينما تبقى قواعد البيانات الداخلية خارج هذا الموقع.</div>
   </section>
 </main>

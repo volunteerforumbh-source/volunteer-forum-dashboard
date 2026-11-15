@@ -211,6 +211,16 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 .recommendations-priorities{padding-inline-start:42px}
 .recommendations-priorities li{margin-block:8px}
 .recommendations-priorities a{color:var(--c-indigo);text-decoration:underline}
+
+#news .news-feature{padding:clamp(22px,5vw,54px);border-radius:24px;background:linear-gradient(135deg,#30264f,#514893 68%,#326a80);color:#fff;margin-block:16px 24px}
+#news .news-feature .pill{background:#fff;color:#3c3268}
+#news .news-feature h3{color:#fff;font-size:clamp(1.65rem,4.5vw,2.65rem);line-height:1.35;margin-block:14px 8px}
+#news .news-feature p{color:#f5f2ff;max-width:64ch}
+#news .news-feature .btn{background:#fff;color:#322755}
+#news .news-actions{display:flex;flex-wrap:wrap;gap:10px;margin-block-start:18px}
+#news .news-panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:14px;margin-block:20px 32px}
+#news summary{cursor:pointer}
+
 .archive-controls{flex-wrap:wrap}
 .archive-controls input{font:inherit;border:1px solid var(--line);border-radius:10px;padding:6px 12px;max-width:100%}
 .archive-grid{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
@@ -692,9 +702,34 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
   </section>
 
   <section id="news">
-    <div class="section-head"><h2>المركز الإخباري</h2><p>أرشيف أخبار المنتدى الثاني وإعلاناته العامة</p></div>
-    <details class="forum-page-guide"><summary>دليل المركز الإخباري</summary><div><p>يضم أخبار المنتدى وإعلاناته العامة. استخدم البحث للعثور على خبر وافتح مصدره للاطلاع على التفاصيل.</p></div></details>
-    <p><a class="btn secondary" href="https://www.instagram.com/volunteerforumbh/">حساب المنتدى الرسمي</a> <a class="btn secondary" href="https://docs.google.com/forms/d/e/1FAIpQLScD_DJ-tvtcPLTmUz6e-qn-aU4xbGomlQ_32P78cE2XPw2PmA/viewform">الاشتراك في أخبار واتساب</a></p>
+    <div class="section-head"><h2>المركز الإخباري</h2><p>آخر أخبار منتدى العمل التطوعي وإعلاناته وفرص المشاركة</p></div>
+    <article class="news-feature" aria-labelledby="news-feature-title">
+      <span class="pill">آخر مستجدات المنتدى</span>
+      <h3 id="news-feature-title">ما بعد المنتدى الثاني للعمل التطوعي</h3>
+      <p>بدأت متابعة توصيات المنتدى والتحضير لمسارات تأهيل المتطوعين ضمن مشروع «أثَر».</p>
+      <details>
+        <summary>اقرأ تفاصيل التحديث</summary>
+        <p>يعرض المنتدى توصياته الأولية وأولويات التنفيذ المقترحة. ويجري تشكيل الفريق الأكاديمي لمشروع «أثَر» للمساهمة في إعداد مسارات تدريبية وتأهيل الفرق التطوعية.</p>
+        <div class="news-actions">
+          <a class="btn" href="?section=recommendations">اقرأ التوصيات</a>
+          <a class="btn" href="?section=meeting-01#topic-5">اطّلع على مستجدات «أثَر»</a>
+        </div>
+      </details>
+    </article>
+    <div class="news-panels">
+      <article class="card">
+        <h3>الإعلانات</h3>
+        <p>تابع المواعيد المنشورة للقاءات المنتدى في التقويم.</p>
+        <a class="btn secondary" href="?section=calendar">عرض التقويم</a>
+      </article>
+      <article class="card">
+        <h3>الاشتراك في أخبار واتساب</h3>
+        <p>الاشتراك مفتوح للجميع. سجّل لتصلك أخبار المنتدى عبر واتساب.</p>
+        <a class="btn secondary" href="https://docs.google.com/forms/d/e/1FAIpQLScD_DJ-tvtcPLTmUz6e-qn-aU4xbGomlQ_32P78cE2XPw2PmA/viewform">اشترك في أخبار المنتدى</a>
+      </article>
+    </div>
+    <h3>أرشيف الأخبار</h3>
+    <p><a href="https://www.instagram.com/volunteerforumbh/">حساب المنتدى الرسمي على إنستغرام</a></p>
     <div class="updates-filter archive-controls"><label>ابحث في الأخبار <input type="search" id="archive-search"></label><label>التصنيف <select id="archive-category"><option value="">جميع التصنيفات</option><option>البرنامج والمحاور والمتحدثون</option><option>الجمعيات المشاركة والشراكات</option><option>أخبار المنتدى وإعلاناته العامة</option></select></label></div>
     <p id="archive-count" aria-live="polite"></p>
     <div class="grid archive-grid" id="archive-news">

@@ -8,6 +8,11 @@ async function request(user, body) {
   if(!response.ok)throw Error('notification_service_unavailable');
   return response.json();
 }
+export async function inspectNotificationSource(user,group,sourceId) {
+  const result=await request(user,{action:'forumNotificationInspect',group,sourceId});
+  if(result.status!=='read_only')throw Error(result.reason||'source_read_not_verified');
+  return result;
+}
 export async function withNotification(user,eventType,sourceId,mutate) {
   let prepared;
   try {prepared=await request(user,{action:'forumNotificationPrepare',eventType,sourceId});} catch {}

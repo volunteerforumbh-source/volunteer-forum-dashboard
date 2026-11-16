@@ -1,0 +1,18 @@
+name: Forum notifications offline checks
+on:
+  workflow_dispatch:
+  push:
+    branches: [forum-notifications-dry-run]
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node integration/notification-core.test.cjs
+      - run: node integration/apps-script.test.cjs
+      - run: node integration/portal-notifications.test.mjs

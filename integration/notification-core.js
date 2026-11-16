@@ -72,7 +72,7 @@ var ForumNotificationCore = (() => {
     const review = reason => ({status: 'REVIEW_REQUIRED', reason});
     if (!reply || !validReplyId(reply.replyId) || !reply.messageId) return review('missing_message_context');
     if (!context || context.messageId !== reply.messageId || context.template !== templates.task_followup ||
-        context.status !== 'SENT' || !context.taskId) return review('unknown_message');
+        !(context.status === 'SENT' || (context.status === 'SIMULATED' && context.mode === 'synthetic' && reply.mode === 'synthetic')) || !context.taskId) return review('unknown_message');
     if (reply.memberId !== context.memberId || !member || member.id !== context.memberId || member.state !== 'active') {
       return review('identity_mismatch');
     }

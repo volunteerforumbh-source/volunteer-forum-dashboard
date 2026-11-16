@@ -25,7 +25,7 @@ function harness(){
       const path=decodeURIComponent(url.split('/media/')[1]||'');const doc=docs[path];
       return doc?response(200,{updateTime:doc.revision,fields:Object.fromEntries(Object.entries(doc.data).map(([k,v])=>[k,encode(v)]))}):response(404,{});}}
   });
-  vm.runInContext(fs.readFileSync(__dirname+'/notification-core.js','utf8')+'\n'+fs.readFileSync(__dirname+'/ForumNotifications.gs','utf8'),context);
+  vm.runInContext(['notification-core.js','reply-context.js','ForumNotifications.gs'].map(f=>fs.readFileSync(__dirname+'/'+f,'utf8')).join('\n'),context);
   docs['members/actor']={revision:'v1',data:{title:'مسؤول تجريبي',state:'active',role:'manager'}};
   return {context,rows,docs,request:body=>context.forumNotificationRequest_({idToken:'x'.repeat(120),...body}),
     setUid:id=>uid=id,fail:()=>failWrite=true};
@@ -35,6 +35,33 @@ test('existing ledger: actual Apps Script dry-run harness writes 4 events, 3 rep
   const before=JSON.stringify(h.rows);h.context.forumRunDryRun();assert.equal(h.rows.length,9);
   assert.equal(h.rows.filter(r=>r[0].includes('task_assigned')).length,1);
   assert.ok(before.includes('DRY_RUN'));
+});
+
+test('read-only source inspection verifies actor/member/audit without any ledger or source mutation',()=>{
+  const h=harness();h.docs['members/member-A']={revision:'v1',data:{state:'active',role:'member'}};
+  h.docs['tasks/task-A']={revision:'v2',data:{assigneeId:'member-A',auditId:'audit-A',updatedAt:'time-A'}};
+  h.docs['audit/audit-A']={revision:'v2',data:{actorId:'actor',group:'tasks',targetId:'task-A',timestamp:'time-A'}};
+  const docs=JSON.stringify(h.docs),rows=JSON.stringify(h.rows);
+  const result=h.request({action:'forumNotificationInspect',group:'tasks',sourceId:'task-A'});
+  assert.equal(result.auditMatches,true);assert.equal(result.memberId,'member-A');assert.equal(result.memberActive,true);
+  assert.equal(JSON.stringify(h.docs),docs);assert.equal(JSON.stringify(h.rows),rows);
+  h.setUid('member-A');assert.equal(h.request({action:'forumNotificationInspect',group:'tasks',sourceId:'task-A'}).status,'read_only');
+  h.docs['tasks/task-A'].data.assigneeId='member-B';assert.throws(()=>h.request({action:'forumNotificationInspect',group:'tasks',sourceId:'task-A'}),/unauthorized/);
+});
+
+test('editor context harness persists two tasks/nine replies, and the repeated run adds no rows',()=>{
+  const h=harness();const docs=JSON.stringify(h.docs);h.context.forumRunReplyContextDryRun();const count=h.rows.length;
+  h.context.forumRunReplyContextDryRun();assert.equal(h.rows.length,count);assert.equal(JSON.stringify(h.docs),docs);
+  const summary=JSON.parse(h.rows.find(r=>r[0]==='FORUM_NOTIFY:reply-context-test-20261117')[1]);
+  assert.equal(summary.replyCases,9);assert.ok(summary.results.every(r=>r.existing));
+  assert.ok(!h.rows.some(r=>String(r[1]).includes('"status":"SENT"')));
+});
+
+test('public JSON cannot manufacture a trusted provider receipt or bypass Firebase authentication',()=>{
+  const h=harness();const before=JSON.stringify(h.rows);
+  const result=h.request({action:'forumNotificationProviderReply',authenticated:true,mode:'live',replyId:'fake'});
+  assert.equal(result.status,'unsupported_action');assert.equal(JSON.stringify(h.rows),before);
+  assert.throws(()=>h.request({action:'forumNotificationProviderReply',idToken:'short',authenticated:true}),/unauthorized/);
 });
 test('two-phase adapter verifies the source and audit, snapshots the recipient, deduplicates retries',()=>{
   const h=harness();h.docs['tasks/task-A']={revision:'v1',data:{title:'task',planState:'proposed',state:'idea',assigneeId:''}};

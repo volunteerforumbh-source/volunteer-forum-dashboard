@@ -81,6 +81,7 @@ function forumNotificationRequest_(body) {
   // All supported public requests require the existing Firebase identity verification.
   // Neither browser-supplied "Active" nor a caller-supplied recipient snapshot is trusted.
   const identity = forumIdentity_(body.idToken);
+  if (body.action === 'forumNotificationInspect') return forumInspectSource_(body,identity);
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(3000)) return {status: 'busy'};
   try {
@@ -160,6 +161,74 @@ function forumNotificationRequest_(body) {
     // Provider context/message IDs and a trusted callback adapter must be verified before live replies.
     return {status:'unsupported_action',dryRun:true};
   } finally { lock.releaseLock(); }
+}
+
+function forumInspectSource_(body,identity) {
+  // Read-only probe: same Firebase ID token and existing rules, no ledger/source writes.
+  if (!['members','tasks'].includes(body.group) || !ForumNotificationCore.validId(body.sourceId)) throw Error('invalid_source');
+  const actor=forumSource_('members',identity.uid,body.idToken);
+  if (actor?.data.state!=='active' || !['member','lead','manager','deputy','observer'].includes(actor.data.role)) throw Error('unauthorized');
+  const operator=['manager','deputy'].includes(actor.data.role);
+  const source=forumSource_(body.group,body.sourceId,body.idToken);
+  if (!source) return {status:'not_found',dryRun:true,sourceWrites:0};
+  const memberId=body.group==='members'?source.id:source.data.assigneeId;
+  if (!operator && memberId!==identity.uid) throw Error('unauthorized');
+  const member=forumSource_('members',memberId,body.idToken);
+  const audit=source.data.auditId?forumSource_('audit',source.data.auditId,body.idToken):null;
+  const auditMatches=!!audit && audit.data.group===body.group && audit.data.targetId===source.id &&
+    audit.data.timestamp===source.data.updatedAt && ForumNotificationCore.validId(audit.data.actorId);
+  return {status:'read_only',actorId:identity.uid,actorRole:actor.data.role,group:body.group,sourceId:source.id,
+    revision:source.revision,memberId,memberActive:member?.data.state==='active',
+    auditPresent:!!audit,auditMatches,dryRun:true,sourceWrites:0};
+}
+
+function forumRunReplyContextDryRun() {
+  // Editor-only, synthetic inputs only. Uses the existing ledger, no UrlFetch or Firestore writes.
+  const lock=LockService.getScriptLock();
+  if(!lock.tryLock(3000))throw Error('busy');
+  try {
+    const ledger=forumLedger_(),now=new Date().toISOString();
+    const trust={authenticated:true,receiptVerified:true,memberBindingVerified:true,mode:'synthetic'};
+    const member={id:'synthetic-context-member',title:'عضو اصطناعي',state:'active',role:'member'};
+    const tasks={};
+    ['A','B'].forEach(n=>{
+      const taskId='synthetic-context-task-'+n;
+      tasks[taskId]={id:taskId,title:'مهمة اصطناعية '+n,assigneeId:member.id,planState:'accepted',state:'production',revision:'synthetic-rev-'+n};
+      const event={eventId:'synthetic-context-event-'+n,memberId:member.id,taskId,revision:'synthetic-rev-'+n,
+        template:ForumNotificationCore.templates.task_followup,synthetic:true,dryRun:true,status:'DRY_RUN'};
+      ForumReplyContext.bind(ledger,event,{messageId:'synthetic-context-crm-'+n,altIds:['synthetic-context-wamid-'+n],
+        locationId:'synthetic-context-location',contactId:'synthetic-context-contact',conversationId:'synthetic-context-conversation',status:'sent'},
+        {memberId:member.id,locationId:'synthetic-context-location',contactId:'synthetic-context-contact'},trust,now);
+    });
+    const before=JSON.stringify(tasks);
+    const read=(group,id)=>group==='members'&&id===member.id?member:tasks[id]||null;
+    const input=(suffix,text='تمت المهمة',originalMessageId='synthetic-context-wamid-A')=>({replyId:'synthetic-context-reply-'+suffix,
+      originalMessageId,text,locationId:'synthetic-context-location',contactId:'synthetic-context-contact',conversationId:'synthetic-context-conversation'});
+    const cases=[['done',input('done'),'DRY_RUN','synthetic-context-task-A'],
+      ['progress',input('progress','تحت التنفيذ'),'DRY_RUN','synthetic-context-task-A'],
+      ['help',input('help','أحتاج مساعدة'),'DRY_RUN','synthetic-context-task-A'],
+      ['second_task',input('second','تمت المهمة','synthetic-context-crm-B'),'DRY_RUN','synthetic-context-task-B'],
+      ['unknown_text',input('unknown-text','غير معروف'),'REVIEW_REQUIRED'],
+      ['unknown_parent',input('unknown-parent','تمت المهمة','synthetic-context-unknown'),'REVIEW_REQUIRED'],
+      ['missing_parent',{...input('missing-parent'),originalMessageId:null},'REVIEW_REQUIRED'],
+      ['wrong_task',{...input('wrong-task'),taskId:'synthetic-context-task-B'},'REVIEW_REQUIRED'],
+      ['wrong_sender',{...input('wrong-sender'),contactId:'synthetic-other-contact'},'REVIEW_REQUIRED']];
+    const results=[];
+    cases.forEach(([name,body,status,taskId])=>{
+      const response=ForumReplyContext.process(ledger,body,trust,read,now);
+      const saved=ledger.get(ForumReplyContext.key('reply',trust.mode,body.locationId,body.replyId));
+      if(saved.status!==status || (taskId && saved.taskId!==taskId))throw Error('context_test_failed');
+      if(name==='done' && saved.patch.state!=='review')throw Error('completion_not_reviewed');
+      if(name==='help' && saved.alertResponsible!==true)throw Error('missing_help_alert');
+      if(ForumReplyContext.process(ledger,body,trust,read,now).status!=='duplicate')throw Error('reply_dedup_failed');
+      results.push({name,status:'PASS',existing:response.status==='duplicate'});
+    });
+    if(JSON.stringify(tasks)!==before)throw Error('source_changed');
+    const summary={status:'REPLY_CONTEXT_DRY_RUN_PASS',synthetic:true,results,contexts:2,sameMemberTasks:2,
+      replyCases:cases.length,dedup:true,sourceWrites:0,liveSendCalls:0,createdAt:now};
+    ledger.put('reply-context-test-20261117',summary);
+    console.log(JSON.stringify({status:summary.status,replyCases:summary.replyCases,contexts:2,dedup:true,sourceWrites:0,liveSendCalls:0}));
+  } finally {lock.releaseLock();}
 }
 
 function forumNotificationOwns_(event) {

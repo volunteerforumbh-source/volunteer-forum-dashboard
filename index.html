@@ -46,7 +46,10 @@ html[data-portal-access="locked"] .forum-assistant,
 html[data-portal-access="locked"] .home-only,
 html[data-section="news"] .site-search,
 html[data-section="news"] .forum-assistant{display:none}
-#portal-gate{margin-block:24px}
+html:not([data-portal-scope="limited"]) #portal-shortcuts,
+html[data-portal-scope="limited"] .home-only{display:none}
+#portal-shortcuts,#portal-gate{margin-block:24px}
+#portal-shortcut-list{display:flex;flex-wrap:wrap;gap:.5rem}
 #portal-gate .btn{margin-inline-end:.5rem}
 
 :root{
@@ -369,6 +372,10 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
   <noscript><p>فعّل JavaScript للتحقق من العضوية.</p></noscript>
 </div>
 
+<nav id="portal-shortcuts" class="container" aria-label="مساحاتي في البوابة">
+  <h2>مساحاتي في البوابة</h2>
+  <div id="portal-shortcut-list"></div>
+</nav>
 <main class="container">
   <nav class="home-only home-sections" aria-labelledby="forum-sections-heading">
     <h2 id="forum-sections-heading">أقسام المنتدى</h2>
@@ -1550,6 +1557,13 @@ const forumSearch = document.getElementById('forum-search');
 const forumSearchList = document.getElementById('forum-search-results');
 const forumSearchStatus = document.getElementById('forum-search-status');
 const searchEntries = [];
+let allowedPortalSections = null;
+function canOpenPortalRoute(route) {
+  return route === 'news' || !allowedPortalSections || allowedPortalSections.includes(route);
+}
+function canOpenPortalUrl(url) {
+  return canOpenPortalRoute(new URL(url,location.href).searchParams.get('section'));
+}
 function normalizeSearch(value) {
   return String(value ?? '').normalize('NFKC').toLowerCase()
     .replace(/[\u064b-\u065f\u0670\u0640]/g,'').replace(/[أإآٱ]/g,'ا')
@@ -1579,7 +1593,7 @@ function showForumSearch() {
   forumSearchStatus.hidden=query.length<2;
   if(query.length<2) return;
   const words=query.split(' ');
-  const matches=searchEntries.filter(entry=>words.every(word=>entry.textKey.includes(word)))
+  const matches=searchEntries.filter(entry=>canOpenPortalUrl(entry.url)&&words.every(word=>entry.textKey.includes(word)))
     .sort((a,b)=>rank(b)-rank(a));
   function rank(entry) {
     return (entry.titleKey.includes(query) ? 10 : 0) + words.filter(word=>entry.titleKey.includes(word)).length;
@@ -1627,7 +1641,9 @@ function answerForumQuestion(question){
     if(description) line.append(document.createTextNode(' · '+description));
     answer.append(line);
   }
-  if(month && eventQuestion && assistantEvents){
+  if(month && eventQuestion && !canOpenPortalRoute('event-program')){
+    answer.append(createNode('p','','برنامج الفعاليات غير متاح ضمن مساحات هذا الحساب.'));
+  } else if(month && eventQuestion && assistantEvents){
     const matches=assistantEvents.filter(item=>item.month===month&&(!year||item.year===year)&&(!query.includes('مقترح')||item.status==='مقترح'));
     if(!matches.length) answer.append(createNode('p','','لا توجد فعاليات مطابقة منشورة لهذا الشهر.'));
     for(const item of matches) result(item.title,[item.year,item.status,item.date||'الموعد قيد التحديد'].filter(Boolean).join(' · '),'?section=event-program#event-'+encodeURIComponent(item.id));
@@ -1635,7 +1651,7 @@ function answerForumQuestion(question){
     answer.append(createNode('p','','سجل الفعاليات غير متاح الآن. افتح البرنامج للاطلاع عليه.'));
     result('برنامج الفعاليات وورش العمل','','?section=event-program');
   } else {
-    const matches=words.length?searchEntries.filter(entry=>words.every(word=>entry.textKey.includes(word)))
+    const matches=words.length?searchEntries.filter(entry=>canOpenPortalUrl(entry.url)&&words.every(word=>entry.textKey.includes(word)))
       .sort((a,b)=>Number(b.url.includes('#'))-Number(a.url.includes('#'))):[];
     if(!matches.length) answer.append(createNode('p','','لم أجد إجابة في المحتوى المنشور. جرّب كتابة اسم الموضوع أو الفعالية.'));
     for(const item of matches.slice(0,3)) {
@@ -1774,6 +1790,12 @@ fetch('./organization-public.json',{cache:'no-store'})
 .catch(()=>{document.getElementById('leadership-grid').append(createNode('div','empty org-empty','تعذر تحميل بيانات الهيكل التنظيمي.'));});
 </script>
 <script type="module">
+const assignablePortalSections = {
+  'volunteer-space':'مساحة المتطوع',
+  'media-committee':'اللجنة الإعلامية والعلاقات العامة',
+  'academic-committee':'لجنة مشروع أثَر الأكاديمي',
+  'membership-committee':'لجنة العضويات'
+};
 const volunteerStates = {pending:'بانتظار المراجعة',offered:'بانتظار تأكيدك',confirmed:'مشاركة مؤكدة',declined:'لم يُقبل الترشيح',withdrawn:'اعتُذر عن المشاركة'};
 const programFields = [
   ['title','اسم البرنامج',200],['goal','الأهداف',2000],['audience','الفئة المستهدفة',1000],
@@ -2022,22 +2044,36 @@ function mountVolunteer(root, auth, authSdk, db, sdk, membershipPage = false, ac
             },message);
           },message);
         }
+        function sectionPicker(parent, selected) {
+          const choices=add(parent,'fieldset');
+          add(choices,'legend','الصفحات المسموح بها');
+          add(choices,'p','يمكن الجمع بين مساحة المتطوع وصفحة لجنة واحدة أو أكثر. فتح الصفحة يخضع أيضًا لصلاحيات العمل داخل اللجنة.');
+          const inputs=Object.entries(assignablePortalSections).map(([route,label])=>{
+            const input=field(choices,label,'input',route);
+            input.type='checkbox';
+            input.checked=selected.includes(route);
+            return input;
+          });
+          return ()=>inputs.filter(input=>input.checked).map(input=>input.value);
+        }
         const activation=pane('تفعيل العضويات');
         if(member.role==='manager'){
-          link(activation,'تجهيز دعوة بالبريد وإدارة الدعوات','?section=media-committee&view=members');
           const invitation=add(activation,'details');add(invitation,'summary','تجهيز دعوة من هذه الصفحة');
           const name=field(invitation,'اسم المتطوع','input');name.maxLength=200;
           const email=field(invitation,'بريد حساب Google','input');email.type='email';
+          const selectedSections=sectionPicker(invitation,['volunteer-space']);
           const message=add(invitation,'p');message.setAttribute('role','status');
           button(invitation,'حفظ دعوة العضوية',async()=>{
             if(!name.value.trim()||!email.value.trim()||!email.checkValidity()||!/^\S+@\S+\.\S+$/.test(email.value.trim())){
               message.textContent='أدخل الاسم وبريد Google الصحيح.';return;
             }
+            const portalSections=selectedSections();
+            if(!portalSections.length){message.textContent='اختر صفحة واحدة على الأقل.';return;}
             const ref=sdk.doc(collection('memberInvites'),email.value.trim().toLowerCase());
             await sdk.runTransaction(db,async tx=>{
               const current=await tx.get(ref);
               if(current.exists()) throw Error('existing');
-              tx.set(ref,{profile:{title:name.value.trim(),role:'member',teamId:'',primaryRole:'',supportRoles:'',skills:'',availability:'',state:'active'},
+              tx.set(ref,{profile:{title:name.value.trim(),role:'member',teamId:'',primaryRole:'',supportRoles:'',skills:'',availability:'',state:'active',portalSections},
                 claimedUid:'',updatedAt:sdk.serverTimestamp()});
             });
             await render(user,'تفعيل العضويات');
@@ -2057,6 +2093,27 @@ function mountVolunteer(root, auth, authSdk, db, sdk, membershipPage = false, ac
               message.textContent=enabled?'تم منح صلاحية النشر.':'تم إيقاف صلاحية النشر.';
             },message);
           }
+        }
+        if(member.role==='manager'){
+          const permissions=pane('صلاحيات صفحات الأعضاء');
+          const select=field(permissions,'العضو المفعّل','select');
+          add(select,'option','اختر عضوًا').value='';
+          for(const person of active.filter(person=>person.id!==user.uid)) add(select,'option',person.title).value=person.id;
+          const editor=add(permissions,'div');
+          select.onchange=()=>{
+            editor.replaceChildren();
+            const person=active.find(candidate=>candidate.id===select.value);
+            if(!person) return;
+            if(!Array.isArray(person.portalSections)) add(editor,'p','هذا الحساب يستخدم صلاحيات البوابة السابقة. اختر المساحات التي تريد إتاحتها له.');
+            const getSections=sectionPicker(editor,Array.isArray(person.portalSections)?person.portalSections:['volunteer-space']);
+            const message=add(editor,'p');message.setAttribute('role','status');
+            button(editor,'حفظ صلاحيات الصفحات',async()=>{
+              const portalSections=getSections();
+              if(!portalSections.length){message.textContent='اختر صفحة واحدة على الأقل.';return;}
+              await auditedEdit('members',person,{portalSections});
+              await render(user,'صلاحيات صفحات الأعضاء');
+            },message);
+          };
         }
         const directory=pane('دليل المتطوعين');
         const filter=field(directory,'ابحث بالاسم أو المهارة أو الفريق أو التفرغ أو الحالة','input');
@@ -2282,7 +2339,7 @@ function mountVolunteer(root, auth, authSdk, db, sdk, membershipPage = false, ac
 }
 
 async function verifyPortalMembership(user, db, sdk) {
-  if (!user.emailVerified || !user.email) return false;
+  if (!user.emailVerified || !user.email) return null;
   const member = sdk.doc(db,'forumCommittees','media','members',user.uid);
   let profile = (await sdk.getDocFromServer(member)).data();
   if (!profile) {
@@ -2297,7 +2354,7 @@ async function verifyPortalMembership(user, db, sdk) {
     });
     profile = (await sdk.getDocFromServer(member)).data();
   }
-  return profile?.state === 'active' && ['manager','deputy','lead','member'].includes(profile.role);
+  return profile?.state === 'active' && ['manager','deputy','lead','member'].includes(profile.role) ? profile : null;
 }
 
 function mountPortalGate(auth, authSdk, db, sdk, onAccess) {
@@ -2318,10 +2375,17 @@ function mountPortalGate(auth, authSdk, db, sdk, onAccess) {
     try { await authSdk.signOut(auth); }
     catch { window.alert('تعذّر تسجيل الخروج. حاول مجددًا.'); }
   };
+  const shortcuts = document.getElementById('portal-shortcut-list');
   let generation = 0;
   authSdk.onAuthStateChanged(auth,async user=>{
     const current = ++generation;
     root.dataset.portalAccess = 'locked';
+    delete root.dataset.portalScope;
+    allowedPortalSections = null;
+    shortcuts.replaceChildren();
+    document.getElementById('forum-search').value='';
+    showForumSearch();
+    document.getElementById('forum-thread').replaceChildren();
     login.hidden = Boolean(user);
     switchAccount.hidden = !user;
     if (!user) {
@@ -2330,12 +2394,29 @@ function mountPortalGate(auth, authSdk, db, sdk, onAccess) {
     }
     status.textContent = 'جارٍ التحقق من العضوية…';
     try {
-      const active = await verifyPortalMembership(user,db,sdk);
+      const profile = await verifyPortalMembership(user,db,sdk);
       if (current !== generation) return;
-      if (active) {
-        root.dataset.portalAccess = 'member';
-        onAccess();
-      } else status.textContent = 'لا توجد عضوية مفعّلة لهذا الحساب. تواصل مع لجنة العضويات أو بدّل الحساب.';
+      if (!profile) {
+        status.textContent = 'لا توجد عضوية مفعّلة لهذا الحساب. تواصل مع لجنة العضويات أو بدّل الحساب.';
+        return;
+      }
+      if (Array.isArray(profile.portalSections)) {
+        allowedPortalSections = Object.keys(assignablePortalSections).filter(route=>profile.portalSections.includes(route));
+        root.dataset.portalScope = 'limited';
+        for (const route of [...allowedPortalSections,'news']) {
+          const link = document.createElement('a');
+          link.className = 'btn secondary';
+          link.href = '?section='+route;
+          link.textContent = assignablePortalSections[route] ?? 'المركز الإخباري';
+          shortcuts.append(link);
+        }
+        if (sections.includes(section) && !canOpenPortalRoute(section)) {
+          status.textContent = 'هذه الصفحة خارج صلاحيات عضويتك. اختر إحدى المساحات المتاحة لحسابك.';
+          return;
+        }
+      }
+      root.dataset.portalAccess = 'member';
+      onAccess();
     } catch (error) {
       if (current !== generation) return;
       status.textContent = error.code === 'permission-denied'

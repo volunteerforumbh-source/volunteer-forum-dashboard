@@ -2291,7 +2291,7 @@ if (['media-committee','meeting-01','meeting-02','volunteer-space','membership-c
     ]);
     const app = initializeApp({"apiKey":"AIzaSyASssLjqgz-IViLCvPwDhjLayhLiDi2mGc","authDomain":"forum-committee-membership.firebaseapp.com","projectId":"forum-committee-membership","storageBucket":"forum-committee-membership.firebasestorage.app","messagingSenderId":"486503955171","appId":"1:486503955171:web:b930db260197d4614ea3d6"});
     const auth = authSdk.getAuth(app);
-    await authSdk.setPersistence(auth, authSdk.browserSessionPersistence);
+    await authSdk.setPersistence(auth, authSdk.browserLocalPersistence);
     const db = dbSdk.getFirestore(app);
     if (volunteerPage) {
       mountVolunteer(volunteerRoot, auth, authSdk, db, dbSdk,membershipPage,academicPage);

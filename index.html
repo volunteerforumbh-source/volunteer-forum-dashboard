@@ -50,6 +50,8 @@ html:not([data-portal-scope="limited"]) #portal-shortcuts,
 html[data-portal-scope="limited"] .home-only{display:none}
 #portal-shortcuts,#portal-gate{margin-block:24px}
 #portal-shortcut-list{display:flex;flex-wrap:wrap;gap:.5rem}
+html[data-portal-observer] .event-editor,
+html[data-portal-observer] .event-edit-action{display:none}
 #portal-gate .btn{margin-inline-end:.5rem}
 
 :root{
@@ -1317,7 +1319,7 @@ function renderEventProgram(published){
       branch.open = month === openMonth && year === openYear;
       branch.append(createNode('summary','',label + ' ' + year + ' · ' + items.length));
       const controls = createNode('div','org-branch');
-      const addEvent = createNode('button','btn secondary','إدراج فعالية');
+      const addEvent = createNode('button','btn secondary event-edit-action','إدراج فعالية');
       addEvent.type = 'button';
       addEvent.setAttribute('aria-label','إدراج فعالية في ' + label);
       addEvent.onclick = () => {
@@ -1360,7 +1362,7 @@ function renderEventProgram(published){
           if (hasValue(value)) body.append(createNode('p','',label + ' · ' + value));
         }
         if (!local) body.append(planningLink('احتياج الفعالية والترشيح للتطوع','?section=volunteer-space&event='+encodeURIComponent(item.id)));
-        const edit = createNode('button','btn secondary','تعديل الفعالية واستكمال البيانات');
+        const edit = createNode('button','btn secondary event-edit-action','تعديل الفعالية واستكمال البيانات');
         edit.type = 'button';
         edit.onclick = () => {
           editing = item.id;
@@ -2061,19 +2063,22 @@ function mountVolunteer(root, auth, authSdk, db, sdk, membershipPage = false, ac
           const invitation=add(activation,'details');add(invitation,'summary','تجهيز دعوة من هذه الصفحة');
           const name=field(invitation,'اسم المتطوع','input');name.maxLength=200;
           const email=field(invitation,'بريد حساب Google','input');email.type='email';
+          const observer=field(invitation,'اللجنة العليا — مشاهدة فقط لجميع الصفحات','input');
+          observer.type='checkbox';
           const selectedSections=sectionPicker(invitation,['volunteer-space']);
+          observer.onchange=()=>{invitation.querySelector('fieldset').hidden=observer.checked;};
           const message=add(invitation,'p');message.setAttribute('role','status');
           button(invitation,'حفظ دعوة العضوية',async()=>{
             if(!name.value.trim()||!email.value.trim()||!email.checkValidity()||!/^\S+@\S+\.\S+$/.test(email.value.trim())){
               message.textContent='أدخل الاسم وبريد Google الصحيح.';return;
             }
             const portalSections=selectedSections();
-            if(!portalSections.length){message.textContent='اختر صفحة واحدة على الأقل.';return;}
+            if(!observer.checked&&!portalSections.length){message.textContent='اختر صفحة واحدة على الأقل.';return;}
             const ref=sdk.doc(collection('memberInvites'),email.value.trim().toLowerCase());
             await sdk.runTransaction(db,async tx=>{
               const current=await tx.get(ref);
               if(current.exists()) throw Error('existing');
-              tx.set(ref,{profile:{title:name.value.trim(),role:'member',teamId:'',primaryRole:'',supportRoles:'',skills:'',availability:'',state:'active',portalSections},
+              tx.set(ref,{profile:{title:name.value.trim(),role:observer.checked?'observer':'member',teamId:'',primaryRole:'',supportRoles:'',skills:'',availability:'',state:'active',...(observer.checked?{}:{portalSections})},
                 claimedUid:'',updatedAt:sdk.serverTimestamp()});
             });
             await render(user,'تفعيل العضويات');
@@ -2098,7 +2103,7 @@ function mountVolunteer(root, auth, authSdk, db, sdk, membershipPage = false, ac
           const permissions=pane('صلاحيات صفحات الأعضاء');
           const select=field(permissions,'العضو المفعّل','select');
           add(select,'option','اختر عضوًا').value='';
-          for(const person of active.filter(person=>person.id!==user.uid)) add(select,'option',person.title).value=person.id;
+          for(const person of active.filter(person=>person.id!==user.uid&&person.role!=='observer')) add(select,'option',person.title).value=person.id;
           const editor=add(permissions,'div');
           select.onchange=()=>{
             editor.replaceChildren();
@@ -2354,7 +2359,7 @@ async function verifyPortalMembership(user, db, sdk) {
     });
     profile = (await sdk.getDocFromServer(member)).data();
   }
-  return profile?.state === 'active' && ['manager','deputy','lead','member'].includes(profile.role) ? profile : null;
+  return profile?.state === 'active' && ['manager','deputy','lead','member','observer'].includes(profile.role) ? profile : null;
 }
 
 function mountPortalGate(auth, authSdk, db, sdk, onAccess) {
@@ -2377,10 +2382,12 @@ function mountPortalGate(auth, authSdk, db, sdk, onAccess) {
   };
   const shortcuts = document.getElementById('portal-shortcut-list');
   let generation = 0;
+  let observerMode;
   authSdk.onAuthStateChanged(auth,async user=>{
     const current = ++generation;
     root.dataset.portalAccess = 'locked';
     delete root.dataset.portalScope;
+    delete root.dataset.portalObserver;
     allowedPortalSections = null;
     shortcuts.replaceChildren();
     document.getElementById('forum-search').value='';
@@ -2400,7 +2407,14 @@ function mountPortalGate(auth, authSdk, db, sdk, onAccess) {
         status.textContent = 'لا توجد عضوية مفعّلة لهذا الحساب. تواصل مع لجنة العضويات أو بدّل الحساب.';
         return;
       }
-      if (Array.isArray(profile.portalSections)) {
+      const isObserver = profile.role === 'observer';
+      if (observerMode !== undefined && observerMode !== isObserver) {
+        location.reload();
+        return;
+      }
+      observerMode = isObserver;
+      if (isObserver) root.dataset.portalObserver = '';
+      if (!isObserver && Array.isArray(profile.portalSections)) {
         allowedPortalSections = Object.keys(assignablePortalSections).filter(route=>profile.portalSections.includes(route));
         root.dataset.portalScope = 'limited';
         for (const route of [...allowedPortalSections,'news']) {
@@ -2416,7 +2430,7 @@ function mountPortalGate(auth, authSdk, db, sdk, onAccess) {
         }
       }
       root.dataset.portalAccess = 'member';
-      onAccess();
+      onAccess(profile);
     } catch (error) {
       if (current !== generation) return;
       status.textContent = error.code === 'permission-denied'
@@ -2449,8 +2463,39 @@ if (document.documentElement.dataset.portalAccess === 'locked') {
     const auth = authSdk.getAuth(app);
     await authSdk.setPersistence(auth, authSdk.browserLocalPersistence);
     const db = dbSdk.getFirestore(app);
-    await new Promise(resolve => mountPortalGate(auth,authSdk,db,dbSdk,resolve));
-    if (volunteerPage) {
+    const profile = await new Promise(resolve => mountPortalGate(auth,authSdk,db,dbSdk,resolve));
+    if (profile.role === 'observer' && volunteerPage) {
+      status.textContent = 'اللجنة العليا · مشاهدة فقط';
+      if (academicPage || section === 'volunteer-space') {
+        try {
+          const programs = dbSdk.collection(db,'forumCommittees','media','academicPrograms');
+          const published = await dbSdk.getDocs(dbSdk.query(programs,dbSdk.where('state','==','published')));
+          if (published.empty) volunteerRoot.append(createNode('p','','لا توجد برامج معتمدة ومنشورة حاليًا.'));
+          for (const entry of published.docs) {
+            const program = entry.data();
+            const details = createNode('details');
+            details.append(createNode('summary','',program.title));
+            for (const [key,label] of programFields.slice(1)) {
+              if (program[key]) details.append(createNode('p','',label+' · '+program[key]));
+            }
+            volunteerRoot.append(details);
+          }
+        } catch {
+          volunteerRoot.append(createNode('p','','تعذّر تحميل البرامج المنشورة.'));
+        }
+      }
+    } else if (profile.role === 'observer' && section === 'media-committee') {
+      status.textContent = 'اللجنة العليا · مشاهدة فقط';
+      const operations = el('operations');
+      const {mountOperations} = await import('./media-operations.mjs?v=5');
+      operations.hidden = false;
+      let stop = () => {};
+      authSdk.onAuthStateChanged(auth,user=>{
+        stop();
+        operations.replaceChildren();
+        if (user && document.documentElement.hasAttribute('data-portal-observer')) stop=mountOperations(operations,db,dbSdk,user);
+      });
+    } else if (volunteerPage) {
       mountVolunteer(volunteerRoot, auth, authSdk, db, dbSdk,membershipPage,academicPage);
     } else if (meetingPage) {
       const {mountMeeting} = await import('./meeting-register.mjs?v=3');

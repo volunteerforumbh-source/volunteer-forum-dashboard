@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#524791">
 <title>بوابة متابعة المنتدى | المنتدى الثاني للعمل التطوعي</title>
 <script>
-  const sections = ["organization","academic-committee","membership-committee","volunteer-space","media-committee","meetings","initiatives","reports","calendar","recommendations","plan","event-program","meeting-01","meeting-02","forum-vision","updates","news","associations","notice"];
+  const sections = ["organization","academic-committee","membership-committee","volunteer-space","media-committee","meetings","initiatives","reports","calendar","recommendations","plan","event-program","meeting-01","meeting-02","forum-vision","updates","member-updates","news","associations","notice"];
   const params = new URLSearchParams(location.search);
   const section = params.get('section') || location.hash.slice(1);
   if (sections.includes(section)) document.documentElement.dataset.section = section;
@@ -34,6 +34,7 @@ html[data-section="meeting-01"] #meeting-01,
 html[data-section="meeting-02"] #meeting-02,
 html[data-section="forum-vision"] #forum-vision,
 html[data-section="updates"] #updates,
+html[data-section="member-updates"] #member-updates,
 html[data-section="news"] #news,
 html[data-section="associations"] #associations,
 html[data-section="notice"] #notice{display:block}
@@ -422,6 +423,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
         <summary>المستجدات والأخبار</summary>
         <ul>
           <li><a href="?section=updates">جميع المستجدات</a></li>
+          <li><a href="?section=member-updates">مستجدات البوابة</a></li>
           <li><a href="?section=news">المركز الإخباري</a></li>
           <li><a href="?section=notice">تنويه</a></li>
         </ul>
@@ -992,6 +994,11 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
 <details class="card"><summary><strong>جمعية الديه الخيرية</strong></summary><h3>نبذة عن الجمعية</h3><p>تأسست كصندوق الديه الخيري عام 1992، ثم تحولت إلى جمعية خيرية عام 2012، وتهدف إلى رعاية الأسر المتعففة وتعزيز التكافل والتواصل الاجتماعي.</p><h3>مجالات العمل</h3><ul><li>المساعدات الشهرية والموسمية</li><li>التعليم الجامعي</li><li>العلاج</li><li>الزواج</li><li>البناء والترميم والتأثيث</li><li>الأجهزة المنزلية</li><li>كفالة الأيتام</li><li>الأنشطة الاجتماعية</li></ul><h3>البرامج والمبادرات والفعاليات الموثقة</h3><ul><li>مشروع كفالة حاج</li><li>مشروع أضاحي العيد</li><li>مشروع العقيقة والذبيحة</li></ul><h3>الحسابات الرسمية</h3><p><a href="https://www.instagram.com/daihcharity/">إنستغرام</a></p><p><a href="https://daihcharity.khairplus.com/">الموقع الإلكتروني</a></p><p><a href="https://www.youtube.com/channel/UCZzyvrSc6Fr27EN5yrdWTgQ">يوتيوب</a></p><h3>المشاركة في المنتدى</h3><p>جمعية شريكة في المنتدى الثاني للعمل التطوعي 2026</p></details>
     </div>
   </section>
+  <section id="member-updates">
+    <div class="section-head"><h2>مستجدات البوابة</h2><p>التحديثات الموجّهة إلى جميع أعضاء البوابة</p></div>
+    <ul id="member-updates-feed" class="update-list" aria-live="polite"></ul>
+  </section>
+
   <section id="updates">
     <div class="section-head"><h2>آخر المستجدات</h2><p>تحديثات المنتدى والمهام المنشورة وخطواتها التالية</p></div>
     <details class="forum-page-guide"><summary>دليل المستجدات</summary><div><p>يعرض ما نُشر أو تغيّر في أعمال المنتدى. افتح بند المستجد للاطلاع على تفاصيله والخطوة التالية عند توفرها.</p></div></details>
@@ -1498,6 +1505,7 @@ const forumUpdates = [
   },
   {
     id: 'news-and-associations-added',
+    audience: 'all-members',
     kind: 'update',
     date: '2026-11-13',
     title: 'إضافة المركز الإخباري ودليل الجمعيات المشاركة',
@@ -1561,7 +1569,7 @@ const forumSearchStatus = document.getElementById('forum-search-status');
 const searchEntries = [];
 let allowedPortalSections = null;
 function canOpenPortalRoute(route) {
-  return route === 'news' || !allowedPortalSections || allowedPortalSections.includes(route);
+  return route === 'news' || route === 'member-updates' || !allowedPortalSections || allowedPortalSections.includes(route);
 }
 function canOpenPortalUrl(url) {
   return canOpenPortalRoute(new URL(url,location.href).searchParams.get('section'));
@@ -1707,6 +1715,22 @@ function renderForumUpdates(kind){
   const entries = latestForumUpdates.filter(item => kind === 'all' || item.kind === kind);
   feed.replaceChildren(...entries.map(item => updateRow(item,true)));
   if (!entries.length) feed.append(createNode('li','empty org-empty','لا توجد بنود منشورة ضمن هذا العرض.'));
+}
+
+if (section === 'member-updates'){
+  const feed = document.getElementById('member-updates-feed');
+  const shared = latestForumUpdates.filter(item => item.audience === 'all-members');
+  feed.replaceChildren(...shared.map(item => updateRow(item,true)));
+  if (!shared.length) feed.append(createNode('li','empty org-empty','لا توجد مستجدات منشورة لجميع الأعضاء حاليًا.'));
+  const openSharedUpdate = () => {
+    const target = document.getElementById(location.hash.slice(1));
+    if (target?.matches('#member-updates-feed details')) {
+      target.open = true;
+      target.scrollIntoView();
+    }
+  };
+  window.addEventListener('hashchange',openSharedUpdate);
+  window.addEventListener('forum-member-access',openSharedUpdate);
 }
 
 if (section === 'updates'){
@@ -2417,11 +2441,11 @@ function mountPortalGate(auth, authSdk, db, sdk, onAccess) {
       if (!isObserver && Array.isArray(profile.portalSections)) {
         allowedPortalSections = Object.keys(assignablePortalSections).filter(route=>profile.portalSections.includes(route));
         root.dataset.portalScope = 'limited';
-        for (const route of [...allowedPortalSections,'news']) {
+        for (const route of [...allowedPortalSections,'member-updates','news']) {
           const link = document.createElement('a');
           link.className = 'btn secondary';
           link.href = '?section='+route;
-          link.textContent = assignablePortalSections[route] ?? 'المركز الإخباري';
+          link.textContent = assignablePortalSections[route] ?? (route === 'member-updates' ? 'مستجدات البوابة' : 'المركز الإخباري');
           shortcuts.append(link);
         }
         if (sections.includes(section) && !canOpenPortalRoute(section)) {
@@ -2430,6 +2454,7 @@ function mountPortalGate(auth, authSdk, db, sdk, onAccess) {
         }
       }
       root.dataset.portalAccess = 'member';
+      window.dispatchEvent(new Event('forum-member-access'));
       onAccess(profile);
     } catch (error) {
       if (current !== generation) return;

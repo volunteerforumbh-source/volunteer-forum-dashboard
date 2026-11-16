@@ -30,7 +30,7 @@ node integration/apps-script.test.cjs
 node integration/portal-notifications.test.mjs
 ```
 
-Sixteen tests pass locally. They cover four event types, no-op saves, a second task belonging to the same member, identity mismatch, expired/missing message context, duplicate commits/replies, simulated storage failure, source-write failure, preservation of the original operation during service outages, and immutable recipient snapshots. Apps Script services are mocked in these local checks; they are not proof of a live Google/Firebase/Sanad integration.
+Sixteen tests pass locally. They cover four event types, no-op saves, a second task belonging to the same member, identity mismatch, missing message context, duplicate commits/replies, simulated storage failure, source-write failure, preservation of the original operation during service outages, and immutable recipient snapshots. Apps Script services are mocked in these local checks; they are not proof of a live Google/Firebase/Sanad integration.
 
 `forumRunDryRun()` is an editor-only test that can write four synthetic events, three synthetic replies and a summary to the existing ledger, with stable keys for repeat runs. It performs zero WhatsApp calls and zero source-data writes. Its **remote execution is pending Google authorization**; it has only been run in the local service harness.
 

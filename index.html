@@ -11,6 +11,7 @@
   const params = new URLSearchParams(location.search);
   const section = params.get('section') || location.hash.slice(1);
   if (sections.includes(section)) document.documentElement.dataset.section = section;
+  if (section !== 'news') document.documentElement.dataset.portalAccess = 'locked';
 </script>
 <style>
 html:not([data-section]) main > section,
@@ -37,6 +38,16 @@ html[data-section="news"] #news,
 html[data-section="associations"] #associations,
 html[data-section="notice"] #notice{display:block}
 .section-home{margin-block-start:24px}
+html:not([data-portal-access="locked"]) #portal-gate,
+html:not([data-portal-access="member"]) #portal-logout,
+html[data-portal-access="locked"] main,
+html[data-portal-access="locked"] .site-search,
+html[data-portal-access="locked"] .forum-assistant,
+html[data-portal-access="locked"] .home-only,
+html[data-section="news"] .site-search,
+html[data-section="news"] .forum-assistant{display:none}
+#portal-gate{margin-block:24px}
+#portal-gate .btn{margin-inline-end:.5rem}
 
 :root{
   --c-coral:#ff7175;
@@ -316,6 +327,7 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
           <span>شراكات .. لأثر مستدام</span>
         </div>
       </div>
+      <button id="portal-logout" class="btn secondary" type="button">تسجيل الخروج</button>
       <a class="btn secondary home-only" href="?section=volunteer-space">مساحة المتطوع</a>
       <a class="btn secondary home-only" href="?section=media-committee">مساحة أعضاء اللجنة</a>
     </div>
@@ -346,6 +358,15 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
       <a class="btn secondary" href="?section=updates">شاهد الكل</a>
     </div>
   </header>
+</div>
+
+<div id="portal-gate" class="container">
+  <h1>الدخول إلى بوابة المنتدى</h1>
+  <p id="portal-status" role="status">جارٍ التحقق من العضوية…</p>
+  <button id="portal-login" class="btn primary" type="button" hidden>الدخول بحساب Google</button>
+  <button id="portal-switch" class="btn secondary" type="button" hidden>تسجيل الخروج لتبديل الحساب</button>
+  <a class="btn secondary" href="?section=news">المركز الإخباري</a>
+  <noscript><p>فعّل JavaScript للتحقق من العضوية.</p></noscript>
 </div>
 
 <main class="container">
@@ -1898,21 +1919,7 @@ function mountVolunteer(root, auth, authSdk, db, sdk, membershipPage = false, ac
     button(root,'تسجيل الخروج',()=>authSdk.signOut(auth),status);
     status.textContent='جارٍ تحميل مساحة المتطوع…';
     try {
-      let member=await read('members',user.uid);
-      if(!member && user.emailVerified && user.email){
-        const invitation=sdk.doc(collection('memberInvites'),user.email);
-        const memberRef=sdk.doc(collection('members'),user.uid);
-        await sdk.runTransaction(db,async tx=>{
-          const currentMember=await tx.get(memberRef);
-          if(currentMember.exists()) return;
-          const pending=await tx.get(invitation);
-          if(!pending.exists()||pending.data().claimedUid) return;
-          const updatedAt=sdk.serverTimestamp();
-          tx.set(memberRef,{...pending.data().profile,updatedAt,auditId:''});
-          tx.update(invitation,{claimedUid:user.uid,updatedAt});
-        });
-        member=await read('members',user.uid);
-      }
+      const member=await read('members',user.uid);
       if(current!==revision) return;
       if(member?.state!=='active'||!['manager','deputy','lead','member'].includes(member.role)){
         status.textContent='مساحة المتطوع متاحة بعد تفعيل العضوية. إذا تلقيت دعوة، افتح صفحة اللجنة لتفعيلها أول مرة.';
@@ -2274,7 +2281,75 @@ function mountVolunteer(root, auth, authSdk, db, sdk, membershipPage = false, ac
   },()=>{root.textContent='تعذّر التحقق من تسجيل الدخول.';});
 }
 
-if (['media-committee','meeting-01','meeting-02','volunteer-space','membership-committee','academic-committee'].includes(document.documentElement.dataset.section)) {
+async function verifyPortalMembership(user, db, sdk) {
+  if (!user.emailVerified || !user.email) return false;
+  const member = sdk.doc(db,'forumCommittees','media','members',user.uid);
+  let profile = (await sdk.getDocFromServer(member)).data();
+  if (!profile) {
+    const invite = sdk.doc(db,'forumCommittees','media','memberInvites',user.email);
+    await sdk.runTransaction(db,async tx=>{
+      if ((await tx.get(member)).exists()) return;
+      const pending = (await tx.get(invite)).data();
+      if (!pending || pending.claimedUid) return;
+      const updatedAt = sdk.serverTimestamp();
+      tx.set(member,{...pending.profile,updatedAt,auditId:''});
+      tx.update(invite,{claimedUid:user.uid,updatedAt});
+    });
+    profile = (await sdk.getDocFromServer(member)).data();
+  }
+  return profile?.state === 'active' && ['manager','deputy','lead','member'].includes(profile.role);
+}
+
+function mountPortalGate(auth, authSdk, db, sdk, onAccess) {
+  const root = document.documentElement;
+  const status = document.getElementById('portal-status');
+  const login = document.getElementById('portal-login');
+  const switchAccount = document.getElementById('portal-switch');
+  const logout = document.getElementById('portal-logout');
+  const provider = new authSdk.GoogleAuthProvider();
+  provider.setCustomParameters({prompt:'select_account'});
+  login.onclick = async () => {
+    login.disabled = true;
+    try { await authSdk.signInWithPopup(auth,provider); }
+    catch { status.textContent = 'تعذّر تسجيل الدخول. تحقق من السماح بالنوافذ المنبثقة وحاول مجددًا.'; }
+    finally { login.disabled = false; }
+  };
+  logout.onclick = switchAccount.onclick = async () => {
+    try { await authSdk.signOut(auth); }
+    catch { window.alert('تعذّر تسجيل الخروج. حاول مجددًا.'); }
+  };
+  let generation = 0;
+  authSdk.onAuthStateChanged(auth,async user=>{
+    const current = ++generation;
+    root.dataset.portalAccess = 'locked';
+    login.hidden = Boolean(user);
+    switchAccount.hidden = !user;
+    if (!user) {
+      status.textContent = 'سجّل الدخول بحساب Google المرتبط بعضويتك.';
+      return;
+    }
+    status.textContent = 'جارٍ التحقق من العضوية…';
+    try {
+      const active = await verifyPortalMembership(user,db,sdk);
+      if (current !== generation) return;
+      if (active) {
+        root.dataset.portalAccess = 'member';
+        onAccess();
+      } else status.textContent = 'لا توجد عضوية مفعّلة لهذا الحساب. تواصل مع لجنة العضويات أو بدّل الحساب.';
+    } catch (error) {
+      if (current !== generation) return;
+      status.textContent = error.code === 'permission-denied'
+        ? 'تعذّر تفعيل العضوية لهذا الحساب. تأكد من البريد المسجّل لدى لجنة العضويات.'
+        : 'تعذّر التحقق من العضوية. تحقق من الاتصال وحدّث الصفحة.';
+    }
+  },()=>{
+    ++generation;
+    root.dataset.portalAccess = 'locked';
+    status.textContent = 'تعذّر التحقق من تسجيل الدخول. حدّث الصفحة وحاول مرة أخرى.';
+  });
+}
+
+if (document.documentElement.dataset.portalAccess === 'locked') {
   const membershipPage = document.documentElement.dataset.section === 'membership-committee';
   const academicPage = document.documentElement.dataset.section === 'academic-committee';
   const volunteerPage = academicPage || membershipPage || document.documentElement.dataset.section === 'volunteer-space';
@@ -2293,12 +2368,13 @@ if (['media-committee','meeting-01','meeting-02','volunteer-space','membership-c
     const auth = authSdk.getAuth(app);
     await authSdk.setPersistence(auth, authSdk.browserLocalPersistence);
     const db = dbSdk.getFirestore(app);
+    await new Promise(resolve => mountPortalGate(auth,authSdk,db,dbSdk,resolve));
     if (volunteerPage) {
       mountVolunteer(volunteerRoot, auth, authSdk, db, dbSdk,membershipPage,academicPage);
     } else if (meetingPage) {
       const {mountMeeting} = await import('./meeting-register.mjs?v=3');
       mountMeeting(db, dbSdk, auth, authSdk);
-    } else {
+    } else if (section === 'media-committee') {
     const draft = el('news-draft');
     const draftStatus = el('news-draft-status');
     const draftPreview = el('news-draft-preview');
@@ -2491,7 +2567,9 @@ if (['media-committee','meeting-01','meeting-02','volunteer-space','membership-c
     };
     }
   } catch {
-    status.textContent = 'تعذّر تحميل خدمة العضوية. حدّث الصفحة وحاول مرة أخرى.';
+    const message = 'تعذّر تحميل خدمة العضوية. حدّث الصفحة وحاول مرة أخرى.';
+    if (status) status.textContent = message;
+    document.getElementById('portal-status').textContent = message;
   }
 }
 </script>

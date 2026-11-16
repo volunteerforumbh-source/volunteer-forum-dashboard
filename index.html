@@ -43,10 +43,8 @@ html:not([data-portal-access="locked"]) #portal-gate,
 html:not([data-portal-access="member"]) #portal-logout,
 html[data-portal-access="locked"] main,
 html[data-portal-access="locked"] .site-search,
-html[data-portal-access="locked"] .forum-assistant,
 html[data-portal-access="locked"] .home-only,
-html[data-section="news"] .site-search,
-html[data-section="news"] .forum-assistant{display:none}
+html[data-section="news"] .site-search{display:none}
 html:not([data-portal-scope="limited"]) #portal-shortcuts,
 html[data-portal-scope="limited"] .home-only{display:none}
 #portal-shortcuts,#portal-gate{margin-block:24px}
@@ -100,14 +98,6 @@ header{padding:28px 0 48px;position:relative}
 #forum-search-results li+li{border-block-start:1px solid var(--line)}
 #forum-search-results a{display:block;padding:.65rem 1rem;color:var(--c-indigo)}
 #forum-search-results small{display:block;color:var(--muted)}
-.forum-assistant{max-inline-size:42rem;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:.75rem 1rem;margin-block-end:1rem}
-.forum-assistant summary{cursor:pointer;font-weight:700}
-#forum-thread:not(:empty){max-block-size:22rem;overflow:auto;margin-block:1rem}
-#forum-thread article{padding:.6rem;margin-block:.45rem;background:var(--surface-2);border-radius:8px;overflow-wrap:anywhere}
-#forum-thread p{margin:.4rem 0}
-#forum-question,.forum-question-examples{display:flex;flex-wrap:wrap;gap:.5rem;margin-block-start:.5rem}
-#forum-question label{flex-basis:100%;font-weight:700}
-#forum-question input{flex:1;min-inline-size:min(100%,13rem);padding:.6rem;border:1px solid var(--line);border-radius:8px;font:inherit}
 #academic-workspace label,#membership-workspace label,#volunteer-workspace label{display:grid;gap:.25rem;margin-block:.5rem}
 #membership-workspace button,#volunteer-workspace button{margin-inline-end:.4rem;margin-block:.25rem}
 #membership-workspace .org-branch>details,#volunteer-workspace .org-branch>details{margin-block:.5rem}
@@ -344,20 +334,6 @@ footer{padding:26px 0 36px;color:#6c6478;font-size:13px;text-align:center}
       <p id="forum-search-status" role="status" hidden></p>
       <ul id="forum-search-results" hidden></ul>
     </div>
-    <details class="forum-assistant">
-      <summary>اسأل المنتدى</summary>
-      <p>مساعد بحث في المحتوى المنشور.</p>
-      <div id="forum-thread" role="log" aria-label="المحادثة"></div>
-      <form id="forum-question">
-        <label for="forum-question-text">سؤالك عن المنتدى</label>
-        <input id="forum-question-text" required maxlength="240" placeholder="مثال: ما الفعاليات المقترحة في ديسمبر؟">
-        <button class="btn primary" type="submit">اسأل</button>
-      </form>
-      <div class="forum-question-examples">
-        <button class="btn secondary" type="button">ما الفعاليات المقترحة في ديسمبر؟</button>
-        <button class="btn secondary" type="button">وين أجد توصيات الحوكمة؟</button>
-      </div>
-    </details>
     <div class="home-only home-updates" aria-labelledby="home-updates-heading">
       <h2 id="home-updates-heading">آخر المستجدات</h2>
       <ul id="home-updates-list" class="update-list"></ul>
@@ -1625,61 +1601,6 @@ forumSearch.addEventListener('keydown',event=>{
   if(event.key==='Escape') {forumSearch.value='';showForumSearch();}
 });
 
-const questionForm = document.getElementById('forum-question');
-const questionField = document.getElementById('forum-question-text');
-const thread = document.getElementById('forum-thread');
-let assistantEvents = null;
-function answerForumQuestion(question){
-  if(!question.trim()) return;
-  const turn=createNode('article');
-  turn.append(createNode('p','',question));
-  const answer=createNode('div');
-  turn.append(answer);
-  thread.append(turn);
-  const query=normalizeSearch(question);
-  const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'].map(normalizeSearch);
-  const month=months.findIndex(name=>query.split(' ').includes(name))+1;
-  const year=Number(query.match(/\b20\d{2}\b/)?.[0]);
-  const eventQuestion=/فعاليات|ورش|انشطه/.test(query);
-  const stop=new Set('ما ماذا وين اين اجد القى احصل علي في من عن هو هي هل متي اي كيف اريد ابغي لي المنتدى'.split(' ').map(normalizeSearch));
-  const words=query.split(' ').filter(word=>word.length>1&&!stop.has(word));
-  function result(title,description,url){
-    const line=createNode('p');
-    const link=createNode('a','',title);
-    link.href=url;
-    line.append(link);
-    if(description) line.append(document.createTextNode(' · '+description));
-    answer.append(line);
-  }
-  if(month && eventQuestion && !canOpenPortalRoute('event-program')){
-    answer.append(createNode('p','','برنامج الفعاليات غير متاح ضمن مساحات هذا الحساب.'));
-  } else if(month && eventQuestion && assistantEvents){
-    const matches=assistantEvents.filter(item=>item.month===month&&(!year||item.year===year)&&(!query.includes('مقترح')||item.status==='مقترح'));
-    if(!matches.length) answer.append(createNode('p','','لا توجد فعاليات مطابقة منشورة لهذا الشهر.'));
-    for(const item of matches) result(item.title,[item.year,item.status,item.date||'الموعد قيد التحديد'].filter(Boolean).join(' · '),'?section=event-program#event-'+encodeURIComponent(item.id));
-  } else if(month && eventQuestion) {
-    answer.append(createNode('p','','سجل الفعاليات غير متاح الآن. افتح البرنامج للاطلاع عليه.'));
-    result('برنامج الفعاليات وورش العمل','','?section=event-program');
-  } else {
-    const matches=words.length?searchEntries.filter(entry=>canOpenPortalUrl(entry.url)&&words.every(word=>entry.textKey.includes(word)))
-      .sort((a,b)=>Number(b.url.includes('#'))-Number(a.url.includes('#'))):[];
-    if(!matches.length) answer.append(createNode('p','','لم أجد إجابة في المحتوى المنشور. جرّب كتابة اسم الموضوع أو الفعالية.'));
-    for(const item of matches.slice(0,3)) {
-      const description=String(item.description||'').replace(/\s+/g,' ').trim();
-      result(item.title,description.length>260?description.slice(0,260)+'…':description,item.url);
-    }
-  }
-  thread.scrollTop=thread.scrollHeight;
-}
-questionForm.addEventListener('submit',event=>{
-  event.preventDefault();
-  answerForumQuestion(questionField.value);
-  questionField.value='';
-});
-for(const button of document.querySelectorAll('.forum-question-examples button')){
-  button.addEventListener('click',()=>answerForumQuestion(button.textContent));
-}
-
 const latestForumUpdates = [...forumUpdates].sort((a,b) => b.date.localeCompare(a.date));
 const updateDateFormatter = new Intl.DateTimeFormat('ar-BH',{dateStyle:'long',timeZone:'Asia/Bahrain'});
 function formatUpdateDate(value){
@@ -1758,7 +1679,6 @@ fetch('./public-data.json', {cache:'no-store'})
     const activities = Array.isArray(data.activities) ? data.activities : draftActivities;
     renderPlan(activities);
     const events = Array.isArray(data.events) ? data.events : [];
-    assistantEvents = events;
     renderCalendar([...meetings,...events.filter(item=>item.status === 'معتمد').map(item=>({...item,status:'مؤكد'}))]);
     if (section === 'event-program') renderEventProgram(events);
     for(const [items,label,route] of [[events,'برنامج الفعاليات وورش العمل','event-program'],[activities,'الخطة السنوية','plan'],[reports,'التقارير','reports'],[initiatives,'المبادرات','initiatives']]){
@@ -2416,7 +2336,6 @@ function mountPortalGate(auth, authSdk, db, sdk, onAccess) {
     shortcuts.replaceChildren();
     document.getElementById('forum-search').value='';
     showForumSearch();
-    document.getElementById('forum-thread').replaceChildren();
     login.hidden = Boolean(user);
     switchAccount.hidden = !user;
     if (!user) {

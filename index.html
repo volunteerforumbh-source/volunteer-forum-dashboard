@@ -1736,6 +1736,7 @@ fetch('./organization-public.json',{cache:'no-store'})
 .catch(()=>{document.getElementById('leadership-grid').append(createNode('div','empty org-empty','تعذر تحميل بيانات الهيكل التنظيمي.'));});
 </script>
 <script type="module">
+import {withNotification} from './forum-notifications.mjs';
 const assignablePortalSections = {
   'volunteer-space':'مساحة المتطوع',
   'media-committee':'اللجنة الإعلامية والعلاقات العامة',
@@ -1946,13 +1947,17 @@ function mountVolunteer(root, auth, authSdk, db, sdk, membershipPage = false, ac
         async function auditedEdit(group,row,fields) {
           const ref=sdk.doc(collection(group),row.id);
           const audit=sdk.doc(collection('audit'));
-          await sdk.runTransaction(db,async tx=>{
+          const write = () => sdk.runTransaction(db,async tx=>{
             const old=await tx.get(ref);
             if(!old.exists()||!old.data().updatedAt?.isEqual(row.updatedAt)) throw Error('stale');
             const timestamp=sdk.serverTimestamp();
             tx.set(audit,{actorId:user.uid,group,targetId:row.id,operation:'update',timestamp});
             tx.update(ref,{...fields,auditId:audit.id,updatedAt:timestamp});
           });
+          const type=group==='members' && fields.state==='active' && row.state!=='active' ? 'membership_activated'
+            : group==='members' && (Object.hasOwn(fields,'portalSections') || Object.hasOwn(fields,'role')) ? 'permission_updated' : '';
+          if(type) await withNotification(user,type,row.id,write);
+          else await write();
         }
         const overview=pane('الرئيسية');
         countLink(overview,'طلبات تحتاج متابعة',pending.length,'طلبات التطوع');
@@ -2293,14 +2298,14 @@ async function verifyPortalMembership(user, db, sdk) {
   let profile = (await sdk.getDocFromServer(member)).data();
   if (!profile) {
     const invite = sdk.doc(db,'forumCommittees','media','memberInvites',user.email);
-    await sdk.runTransaction(db,async tx=>{
+    await withNotification(user,'membership_activated',user.uid,()=>sdk.runTransaction(db,async tx=>{
       if ((await tx.get(member)).exists()) return;
       const pending = (await tx.get(invite)).data();
       if (!pending || pending.claimedUid) return;
       const updatedAt = sdk.serverTimestamp();
       tx.set(member,{...pending.profile,updatedAt,auditId:''});
       tx.update(invite,{claimedUid:user.uid,updatedAt});
-    });
+    }));
     profile = (await sdk.getDocFromServer(member)).data();
   }
   return profile?.state === 'active' && ['manager','deputy','lead','member','observer'].includes(profile.role) ? profile : null;

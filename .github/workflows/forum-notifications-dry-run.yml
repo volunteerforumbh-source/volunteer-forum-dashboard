@@ -17,3 +17,4 @@ jobs:
       - run: node integration/reply-context.test.cjs
       - run: node integration/apps-script.test.cjs
       - run: node integration/portal-notifications.test.mjs
+      - run: node integration/task-link.test.mjs

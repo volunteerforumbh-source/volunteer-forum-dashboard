@@ -28,7 +28,7 @@
   function openSpeakerProfile(){
     let id;try{id=decodeURIComponent(location.hash.slice(1));}catch{return;}
     const target=document.getElementById(id);
-    if(!target?.closest('.speaker-profile'))return;
+    if(!target?.closest('.speaker-profile') && target?.id!=='forum-evaluation')return;
     const chain=[];
     for(let panel=target.closest('details');panel;panel=panel.parentElement?.closest('details'))chain.unshift(panel);
     for(const panel of chain){if(panel.matches(selector))closePeers(panel);panel.open=true;}

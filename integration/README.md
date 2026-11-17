@@ -7,7 +7,7 @@ This extends the existing Firebase portal, existing Apps Script pilot and centra
 - `forumRunDryRun()` ran successfully in Google. Its second run retained eight unique synthetic records: four events, three replies and a summary. The seven event/reply records and earlier unrelated ledger records were unchanged.
 - `forumRunReplyContextDryRun()` passed twice in the same Google Apps Script project (02:41 and 02:42 Bahrain). It uses two simulated original messages for two tasks assigned to the same simulated member, plus nine reply cases. The existing Sheet retained the same 15 context/alias/reply records on the second run; only its test summary changed. All prior eight synthetic records and unrelated ledger records were preserved. Neither test performs network calls or source writes.
 - Firebase Console was inspected using the existing project-owner session, without modifying documents or rules. Existing member records were readable. One member's audit document matched its target ID and update timestamp, and its actor ID was in the existing membership collection. This is an administrative console check, **not** validation of a Firebase test-account ID token through the integration.
-- No explicitly designated, already authorized test account was identified in the central membership register or the current `forumCommittees/media/members` records. The current portal session reported no active membership. No new member, invitation or permission was created. Authenticated test-account integration reads therefore remain **unverified**.
+- The follow-up Authentication inspection found an existing training-labelled account among seven users; its current Firestore membership is active with role member, but its membership audit ID is empty. The portal's Google account chooser offers only the two previously signed-in accounts, without this training account. No eligible training login/test-source session was available, and no member, invitation or permission was created. Authenticated test-account integration reads therefore remain **unverified**. This refines the earlier register-only finding without treating Console reads as an integration pass.
 - Both existing Sanad workflows remain Draft. `WF_FORUM_NOTIFICATIONS` retains its four event branches and no send actions. `WF_FORUM_REPLIES` retains Customer Replied restricted to WhatsApp; no callback or task-write action has been saved.
 - In the actual reply Workflow's Custom Webhook variable picker, the Message category exposed Message Body, Message Subject and Message Attachments. An original-message ID was not available in the inspected picker. The unsaved action was cancelled. This finding does not prove that every Sanad API lacks that ID.
 - The four templates were last checked as Pending. The live portal and Apps Script deployment have not been updated.
@@ -42,6 +42,8 @@ The trust argument is an internal server boundary, **not a JSON authentication s
 
 ## Provider contract still to verify
 
+The current release decision and official API/Workflow findings are in [SANAD-REPLY-DECISION.md](SANAD-REPLY-DECISION.md). Prefer the authenticated exact-task portal button for the first task pilot. This draft tightens task links to one authorized assigned task and rejects malformed/ambiguous links. The existing templates and live portal have not been changed.
+
 The normalized internal reply requires `replyId`, `originalMessageId`, `locationId`, `contactId`, `conversationId` and the button value. Member/task IDs come from stored context, not shared mutable Contact fields. Optional caller-claimed IDs can only cause a mismatch rejection.
 
 Meta contextual replies use their original message context, but that provider ID must be mapped to the exact outbound event. A CRM inbound message ID, a conversation ID, a phone number, a timestamp or body text is not a substitute for the original message ID. The documented HighLevel inbound webhook schema does not guarantee that parent ID. A real authorized sample or existing provider read API must establish the actual Sanad contract. This requires neither a second reply workflow nor a text-based fallback.
@@ -57,9 +59,10 @@ node integration/notification-core.test.cjs
 node integration/reply-context.test.cjs
 node integration/apps-script.test.cjs
 node integration/portal-notifications.test.mjs
+node integration/task-link.test.mjs
 ```
 
-29 local tests cover all four event types, no-op edits, original-operation failures, source/audit and identity checks, immutable snapshots, three buttons, two tasks for one member, alias/context collisions, duplicate and unknown replies, wrong parent/task/sender/conversation/location, reassignment, observer access, stale revisions, partial storage recovery and separation of synthetic/live namespaces. Google/Firebase services are mocked in local tests. Successful Google editor tests verify actual Sheet persistence, but use synthetic member/task/provider fixtures.
+35 local tests cover all four event types, no-op edits, original-operation failures, source/audit and identity checks, immutable snapshots, three buttons, two tasks for one member, alias/context collisions, duplicate and unknown replies, wrong parent/task/sender/conversation/location, reassignment, observer access, stale revisions, partial storage recovery and separation of synthetic/live namespaces. Added regressions reject inbound/alternate/send-request IDs as substitutes for the parent and verify exact-task URL selection, forwarded/missing/malformed links, duplicate parameters and no URL-driven mutations. Google/Firebase services are mocked in local tests. Successful Google editor tests verify actual Sheet persistence, but use synthetic member/task/provider fixtures.
 
 Install in the existing Apps Script file in order: `notification-core.js`, `reply-context.js`, `ForumNotifications.gs`. Preserve the existing `doPost` routing and old `sendPilot` handler. Saving editor code does not publish a new deployment.
 

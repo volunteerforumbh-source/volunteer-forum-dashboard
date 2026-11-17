@@ -47,6 +47,20 @@ test('location, sender and conversation scope must match, not just message ID',(
   const h=fixture();h.bind('A');
   for(const field of ['contactId','conversationId','locationId'])assert.equal(h.process({...h.incoming('synthetic-'+field),[field]:'synthetic-other'}).status,'REVIEW_REQUIRED');
 });
+
+test('inbound CRM IDs, alternate IDs and outbound reply fields do not substitute for a verified parent',()=>{
+  const h=fixture();h.bind('A');h.bind('B');const before=JSON.stringify(h.tasks);
+  // These fields identify the incoming message or belong to a send request.
+  // Even values colliding with known outbound aliases cannot select a task.
+  for (const [index,fields] of [{messageId:'synthetic-crm-A'},{id:'synthetic-crm-B',altId:'synthetic-wamid-B'},{replyMessageId:'synthetic-crm-A'},{lastMessageId:'synthetic-crm-B'}].entries()) {
+    const body={...h.incoming('synthetic-contract-'+index),originalMessageId:null,...fields};
+    const result=h.process(body);
+    assert.equal(result.status,'REVIEW_REQUIRED');
+    assert.equal(result.reason,'missing_original_message');
+    assert.equal(Object.hasOwn(result,'patch'),false);
+  }
+  assert.equal(JSON.stringify(h.tasks),before);
+});
 test('current member role, assignment and source revision are revalidated',()=>{
   const h=fixture();h.bind('A');h.member.role='observer';assert.equal(h.process(h.incoming()).reason,'member_not_authorized');
   h.member.role='member';h.tasks['synthetic-task-A'].assigneeId='synthetic-other';assert.equal(h.process(h.incoming('synthetic-other-assignee')).reason,'task_mismatch');

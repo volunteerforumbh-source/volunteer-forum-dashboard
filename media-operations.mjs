@@ -16,6 +16,7 @@ const prCoordination = [
 
 import {plans} from './media-plans.mjs';
 import {withNotification} from './forum-notifications.mjs';
+import {taskLinkRequest,linkedTasks} from './task-link.mjs';
 
 const committee = 'media';
 const roles = {manager:'مسؤول اللجنة', deputy:'نائب المسؤول', lead:'قائد فريق', member:'عضو', observer:'اللجنة العليا'};
@@ -553,8 +554,11 @@ export function mountOperations(root, db, sdk, user) {
           element('summary','إضافة بند أو مهمة',newTask);
           taskEditor(newTask);
         }
-        const visible = tab === 'review' ? rows.filter(row => row.state === 'review' && (operator || row.assigneeId !== uid)) : rows;
-        if (!visible.length) element('p','لا توجد مهام في هذه القائمة.',panel);
+        const linkRequest = tab === 'tasks' ? taskLinkRequest(location.search) : {requested:false};
+        const visible = tab === 'review' ? rows.filter(row => row.state === 'review' && (operator || row.assigneeId !== uid)) : linkedTasks(rows,linkRequest,uid);
+        if (!visible.length) element('p',linkRequest.requested
+          ? 'تعذّر فتح المهمة المحددة بهذا الحساب. تحقق من حساب الدخول أو اطلب من المسؤول مراجعة الرابط والإسناد.'
+          : 'لا توجد مهام في هذه القائمة.',panel);
         for (const row of visible) {
           const details = element('details','',panel);
           element('summary',row.title+' · '+stages[row.state]+' · '+(row.progress ?? 0)+'٪',details);
@@ -565,7 +569,7 @@ export function mountOperations(root, db, sdk, user) {
             await withNotification(user,'task_followup',row.id,async()=>{});
             status.textContent='انتهت معاينة تجهيز التذكير دون إرسال. راجع سجل الرسائل المركزي.';
           });
-          if(new URLSearchParams(location.search).get('task')===row.id){details.open=true;details.id='task-'+row.id;}
+          if(linkRequest.valid && linkRequest.taskId===row.id){details.open=true;details.id='task-'+row.id;}
         }
         return;
       }

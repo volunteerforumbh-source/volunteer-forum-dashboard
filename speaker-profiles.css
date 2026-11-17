@@ -1,0 +1,45 @@
+/* Scope every override to speaker content; no recursive tree indentation. */
+.speaker-directory{padding:0 .5rem .75rem;min-inline-size:0}
+.speaker-directory :is(.speaker-profile,.speaker-panel,.speaker-report-axis){inline-size:100%;min-inline-size:0;box-sizing:border-box;margin:.75rem 0;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.speaker-directory :is(.speaker-profile,.speaker-panel,.speaker-report-axis)>summary{min-block-size:48px;padding:.75rem;font-weight:700;line-height:1.7;cursor:pointer;overflow-wrap:anywhere;list-style-position:inside}
+.speaker-directory .speaker-profile>summary{color:var(--c-indigo);background:var(--gradient-soft);border-radius:13px}
+.speaker-directory summary:focus-visible{outline:3px solid var(--c-blue);outline-offset:2px}
+.speaker-directory .speaker-profile-body{padding:0 .5rem .5rem;min-inline-size:0}
+.speaker-directory .speaker-identity{display:flex;align-items:center;flex-wrap:wrap;gap:1rem;padding:1rem .25rem}
+.speaker-directory .speaker-identity>img{inline-size:150px;max-inline-size:100%;block-size:200px;object-fit:contain;border-radius:12px;background:var(--surface-2)}
+.speaker-directory .speaker-identity>div{flex:1 1 220px;min-inline-size:0;overflow-wrap:anywhere}
+.speaker-directory .speaker-identity h3{margin:0 0 .4rem}
+.speaker-directory .speaker-paper-title{font-weight:700;color:var(--c-indigo)}
+.speaker-directory .speaker-panel-body,.speaker-directory .speaker-axis-body{padding:.25rem .6rem .8rem;min-inline-size:0;overflow-wrap:anywhere;line-height:1.9}
+.speaker-directory [id$="-report"]>.speaker-panel-body{padding:0}
+.speaker-directory .speaker-report-intro{padding:.25rem .6rem .6rem}
+.speaker-directory .speaker-report-axis{margin:0 0 .65rem;border-inline:0;border-radius:0}
+.speaker-directory .speaker-report-axis>summary{background:var(--surface-2);border-radius:0}
+.speaker-directory .speaker-source-paragraph{white-space:pre-line}
+.speaker-directory .speaker-bio-points{display:grid;gap:.6rem;list-style:none;margin:0;padding:0;border:0}
+.speaker-directory .speaker-bio-points>li{margin:0;padding:.65rem .75rem;border:0;border-inline-start:3px solid var(--c-indigo);border-radius:10px;background:#f5f4fa}
+.speaker-directory .speaker-bio-points>li::before{display:none}
+.speaker-directory .speaker-note{font-size:.9rem;color:var(--muted)}
+.speaker-directory .speaker-survey-context{padding:.8rem;border-radius:10px;background:#edf7fa;border-inline-start:3px solid #167eae}
+.speaker-directory .speaker-chart{min-inline-size:0;margin:1rem 0;padding:.8rem;border:1px solid var(--line);border-radius:12px}
+.speaker-directory .speaker-chart figcaption{font-weight:700;line-height:1.8}
+.speaker-directory .speaker-question-count{font-size:.85rem;color:var(--muted)}
+.speaker-directory .speaker-chart-row{margin-block:1rem}
+.speaker-directory .speaker-chart-label{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:.25rem .75rem;line-height:1.8}
+.speaker-directory .speaker-chart-label>span{flex:1 1 180px;min-inline-size:0;overflow-wrap:anywhere}
+.speaker-directory .speaker-chart-label>strong{flex:0 0 auto;margin:0;white-space:nowrap;font-size:.9rem}
+.speaker-directory .speaker-chart-track{block-size:14px;margin-block-start:.35rem;border-radius:8px;background:#edf0f5;overflow:hidden;direction:rtl}
+.speaker-directory .speaker-chart-track>span{display:block;block-size:100%;border-radius:8px}
+.speaker-directory .speaker-free-text{padding:.6rem;border:1px solid var(--line);border-radius:12px}
+.speaker-directory :is(.speaker-photo,.speaker-video){margin:1rem 0;min-inline-size:0}
+.speaker-directory .speaker-photo img{display:block;max-inline-size:100%;max-block-size:480px;inline-size:auto;block-size:auto;margin:auto;border-radius:12px}
+.speaker-directory .speaker-video video{display:block;inline-size:100%;max-inline-size:100%;block-size:auto;margin-block:.7rem}
+.speaker-directory .btn{min-block-size:44px;max-inline-size:100%;margin-block:.35rem;white-space:normal;text-align:center;overflow-wrap:anywhere}
+.speaker-directory :is(.speaker-profile,.speaker-panel,.speaker-report-axis){scroll-margin-block-start:1rem}
+@media(max-width:480px){
+  .speaker-directory{padding-inline:0}
+  .speaker-directory .speaker-profile-body{padding-inline:.3rem}
+  .speaker-directory .speaker-panel-body,.speaker-directory .speaker-axis-body{padding-inline:.5rem}
+  .speaker-directory .speaker-identity>img{inline-size:120px;block-size:160px}
+  .speaker-directory .speaker-chart{padding:.55rem}
+}

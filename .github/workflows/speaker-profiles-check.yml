@@ -1,0 +1,32 @@
+name: Speaker profiles checks
+on:
+  push:
+    branches: [main, content/speaker-profiles]
+    paths:
+      - 'index.html'
+      - 'speaker-profiles.*'
+      - 'assets/speakers/**'
+      - 'tools/build-speakers.mjs'
+      - 'tests/speaker-profiles.test.cjs'
+      - '.github/workflows/speaker-profiles-check.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'speaker-profiles.*'
+      - 'assets/speakers/**'
+      - 'tools/build-speakers.mjs'
+      - 'tests/speaker-profiles.test.cjs'
+      - '.github/workflows/speaker-profiles-check.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node tests/speaker-profiles.test.cjs
+      - run: node tools/build-speakers.mjs
+      - run: git diff --exit-code -- index.html

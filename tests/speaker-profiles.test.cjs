@@ -21,9 +21,9 @@ test('all direct speaker/panel/axis anchors are unique; original Altooq links su
   for(const p of data.speakers){for(const id of ['speaker-'+p.slug,...['bio','paper','report','audience','media'].map(s=>p.prefix+'-'+s),...p.report.map(a=>p.prefix+'-axis-'+a.number)])assert.ok(ids.includes(id),id);}
   for(const id of ['speaker-papers','speaker-mohammed-altooq','altooq-bio','altooq-paper','altooq-report','altooq-axis-2','altooq-axis-3','altooq-axis-4','altooq-audience','altooq-media'])assert.ok(ids.includes(id));
 });
-test('all seven report downloads are real PDFs; Badr has both summary and original paper',()=>{
+test('all configured report and paper downloads are real PDFs; Badr summary remains available',()=>{
   for(const p of data.speakers)for(const file of [p.reportPdf,p.paperPdf].filter(Boolean)){const bytes=fs.readFileSync(path.join(root,file));assert.equal(bytes.subarray(0,5).toString(),'%PDF-');assert.ok(bytes.length>10000);assert.ok(bytes.subarray(-200).toString().includes('%%EOF'));}
-  const badr=data.speakers.find(p=>p.prefix==='badr');assert.ok(badr.paperPdf);assert.match(badr.reportNote,/الملخص التنفيذي/);
+  const badr=data.speakers.find(p=>p.prefix==='badr');assert.ok(badr.reportPdf);assert.match(badr.reportNote,/الملخص التنفيذي/);
 });
 test('the available project video is local and only belongs to Safiya',()=>{
   const available=data.speakers.filter(p=>typeof p.video==='string');assert.equal(available.length,1);assert.equal(available[0].prefix,'safiya');

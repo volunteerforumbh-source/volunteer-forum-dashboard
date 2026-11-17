@@ -1,7 +1,7 @@
 /* Moderated public speaker questions. Only approved messages are readable publicly. */
-import {initializeApp,getApps} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
-import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
-import {getFirestore,collection,doc,setDoc,updateDoc,getDocs,query,where,limit,serverTimestamp} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+import {initializeApp,getApps} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
+import {getFirestore,collection,doc,setDoc,updateDoc,getDocs,query,where,limit,serverTimestamp} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 const app=getApps().find(a=>a.name==='[DEFAULT]')||initializeApp({apiKey:'AIzaSyASssLjqgz-IViLCvPwDhjLayhLiDi2mGc',authDomain:'forum-committee-membership.firebaseapp.com',projectId:'forum-committee-membership',storageBucket:'forum-committee-membership.firebasestorage.app',messagingSenderId:'486503955171',appId:'1:486503955171:web:b930db260197d4614ea3d6'});
 const db=getFirestore(app),auth=getAuth(app);
 const kinds={question:'سؤال للمتحدث',comment:'تعليق',experience:'تجربة مرتبطة بالورقة'};

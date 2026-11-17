@@ -55,3 +55,6 @@ for(const profile of document.querySelectorAll('.speaker-profile')){
   catch{status.textContent='تعذّر إرسال المشاركة. تحقق من الاتصال ثم أعد المحاولة.';}finally{send.disabled=false;}
  };
 }
+
+// Reopen direct comment links after their sections have been mounted.
+if(document.getElementById(location.hash.slice(1))?.closest('.speaker-comments, .speaker-panel'))window.dispatchEvent(new Event('hashchange'));

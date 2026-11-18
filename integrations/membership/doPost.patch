@@ -1,0 +1,6 @@
+--- existing/الرمز.gs
++++ existing/الرمز.gs
+@@
+ function doPost(event) {
++  if (membershipWhatsAppOwns_(event)) return membershipWhatsAppHandle_(event);
+   if (forumNotificationOwns_(event)) return forumNotificationHandle_(event);

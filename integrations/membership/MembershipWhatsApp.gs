@@ -161,6 +161,7 @@ function mnExecute_(source,old,ledger,config) {
 function testMembershipBackgroundRead() {
   const email=Session.getEffectiveUser().getEmail();
   if (email !== 'volunteerforumbh@gmail.com') throw Error('owner-account-required');
+  ScriptApp.requireScopes(ScriptApp.AuthMode.FULL,['https://www.googleapis.com/auth/datastore']);
   const token=ScriptApp.getOAuthToken();
   const apps=mnList_('applications',token),members=mnList_('members',token),audits=mnList_('audit',token);
   console.log(JSON.stringify({ok:true,applications:apps.length,members:members.length,audits:audits.length,sendAttempted:false}));
@@ -176,4 +177,21 @@ function testMembershipPolicyClosed() {
   const config=mnConfig_();
   if (config.enabled) throw Error('closed-preparation-only');
   console.log(JSON.stringify({ok:true,policyChecks:3,sendEnabled:false,sendAttempted:false}));
+}
+
+// Owner-only probe: emit diagnostic codes, never response bodies, records or OAuth tokens.
+function diagnoseMembershipBackgroundRead() {
+  if (Session.getEffectiveUser().getEmail() !== 'volunteerforumbh@gmail.com') throw Error('owner-account-required');
+  const r=UrlFetchApp.fetch(MN_ROOT_+'applications?pageSize=1',{
+    headers:{Authorization:'Bearer '+ScriptApp.getOAuthToken()},muteHttpExceptions:true,followRedirects:false});
+  const result={stage:'firestore-read-probe',http:r.getResponseCode(),sendAttempted:false};
+  if (result.http !== 200) {
+    let error={}; try { error=JSON.parse(r.getContentText()).error || {}; } catch (_) {}
+    if (/^[A-Z_]{1,80}$/.test(error.status || '')) result.status=error.status;
+    const info=(error.details || []).find(d=>d['@type'] === 'type.googleapis.com/google.rpc.ErrorInfo');
+    if (/^[A-Z_]{1,80}$/.test(info?.reason || '')) result.reason=info.reason;
+    if (info?.metadata?.service === 'firestore.googleapis.com') result.service=info.metadata.service;
+    if (/^projects\/\d{1,30}$/.test(info?.metadata?.consumer || '')) result.consumer=info.metadata.consumer;
+  }
+  console.log(JSON.stringify(result));
 }

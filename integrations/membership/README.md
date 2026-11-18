@@ -21,6 +21,20 @@ the account level; the code limits usage to membership. They do not provide a
 provider-enforced restriction to just one template or recipient. Neither send
 gate has been opened, and no live send or test pass is implied by this setup.
 
+The owner supplied another deployment URL on the same project, verified as version 7:
+`https://script.google.com/macros/s/AKfycbxM_dnTVkkN5BAyf0X9w43mdCzN6oTyzdK-Yn78W5W3fQmeb5RwsXPNT7RXgDEu-rRQ/exec`.
+It runs as the forum owner and allows anonymous access. A browser GET reports
+missing doGet because this is a POST notification service, not a portal page.
+No endpoint migration has been applied to the client or GitHub secret yet.
+The editor's background-read probe actually returned HTTP 403,
+`PERMISSION_DENIED / ACCESS_TOKEN_SCOPE_INSUFFICIENT`; this does not prove an IAM
+problem and must not be fixed by broadening database permissions.
+`testMembershipBackgroundRead` now explicitly calls `ScriptApp.requireScopes`
+for datastore before reading. The owner must complete that consent; republishing
+alone is not proof of the grant. `diagnoseMembershipBackgroundRead` logs only
+HTTP/status/reason/service and a numeric consumer project identifier when provided;
+it never logs a response body, record, or OAuth token.
+
 ## Verified on 18 November 2026
 
 Based on `ae36ea49c937fa360518ebdb033d8248c6d8b534` from the existing repository.

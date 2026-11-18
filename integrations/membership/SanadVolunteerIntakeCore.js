@@ -22,7 +22,8 @@ var SanadVolunteerIntakeCore = (() => {
   }
   function decide(record,rows) {
     if(rows.some(r=>r[0]===record.key))return 'duplicate';
-    if(rows.some(r=>r[14]===source && (String(r[25])===record.contactId || String(r[6]).trim().toLowerCase()===record.email)))return 'review-existing-application';
+    // Include older Google Forms/portal rows as well; never silently create a second application.
+    if(rows.some(r=>String(r[25])===record.contactId || String(r[6]).trim().toLowerCase()===record.email))return 'review-existing-application';
     return 'append-pending';
   }
   function row(r) {

@@ -6,20 +6,24 @@ The owner separately approved adding the datastore OAuth scope and preparing a
 dedicated private transport. `appsscript.json` preserves the live timezone,
 runtime, deployment settings and the three previously inferred scopes, then adds
 datastore. It was saved in the existing service editor; the current public
-deployment was not updated. Google consent is still a manual owner step.
+deployment was not updated by the agent. The owner completed Google consent;
+the editor read check succeeded (2 applications, 8 members, 6 audits, no send).
 
 `MEMBERSHIP_SERVICE_URL` was saved in the existing repository's Actions secrets
 using the existing service URL. No worker credential or Sanad token was created
 or copied by this step. Sanad's existing integration is named
 `Munjez Forum — Read-only API Check` and was left untouched. A separate integration
 creation form was prepared with only contacts.readonly,
-conversations/message.readonly and conversations/message.write selected; it
-remains unsubmitted for the owner's credential creation and private entry.
+conversations/message.readonly and conversations/message.write selected. The
+owner reported saving its token privately as MEMBERSHIP_SANAD_TOKEN. The
+owner-only testMembershipSanadReadOnly then returned HTTP 200, one exact
+source-phone/location match and contactIdPresent=true. No token, name, phone,
+contact ID or provider response body was logged; no contact/message was written.
 
 These provider scopes allow general contact/message reads and message writes at
 the account level; the code limits usage to membership. They do not provide a
 provider-enforced restriction to just one template or recipient. Neither send
-gate has been opened, and no live send or test pass is implied by this setup.
+gate has been opened. The live read check does not prove send capability or delivery.
 
 The owner supplied another deployment URL on the same project, verified as version 7:
 `https://script.google.com/macros/s/AKfycbxM_dnTVkkN5BAyf0X9w43mdCzN6oTyzdK-Yn78W5W3fQmeb5RwsXPNT7RXgDEu-rRQ/exec`.
@@ -159,8 +163,8 @@ tests is synthetic. They test the actual client transaction and server adapters,
 durability from paired audits, authority, consent, historical holds, preflight
 failure, timeout/unknown, and repeated recovery. They do not prove delivery.
 
-Before merging: complete the Google background-read authorization, verify the
-provider contract, perform the authorized single live test, inspect historical
+Before merging: verify the provider contract, complete private worker-key setup,
+perform the authorized single live test, inspect historical
 accepted applications/provider logs, and test the authenticated UI on mobile.
 Keep this branch unmerged until those prerequisites are satisfied. Rollback:
 leave the sending flag false and retain the current main and current published

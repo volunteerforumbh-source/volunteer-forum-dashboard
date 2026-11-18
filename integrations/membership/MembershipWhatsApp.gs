@@ -195,3 +195,25 @@ function diagnoseMembershipBackgroundRead() {
   }
   console.log(JSON.stringify(result));
 }
+
+// Owner editor only: one exact source-phone search. No ledger/contact/message writes.
+function testMembershipSanadReadOnly() {
+  if (Session.getEffectiveUser().getEmail() !== 'volunteerforumbh@gmail.com') throw Error('owner-account-required');
+  const config=mnConfig_();
+  if (config.enabled) throw Error('closed-preparation-only');
+  if (!config.apiToken) throw Error('membership-sanad-token-missing');
+  const candidates=mnList_('applications',ScriptApp.getOAuthToken()).filter(a=>a.state === 'submitted');
+  if (candidates.length !== 1) throw Error('single-test-source-needs-review');
+  const phone=MembershipWhatsAppCore.phone(candidates[0].phone);
+  const result=mnSanad_('/contacts/search','post',{locationId:MN_LOCATION_,page:1,pageLimit:100,
+    filters:[{field:'phone',operator:'eq',value:phone}]},config);
+  const contacts=Array.isArray(result.data.contacts)?result.data.contacts:[];
+  const exact=contacts.filter(c=>{
+    try { return c.locationId === MN_LOCATION_ && MembershipWhatsAppCore.phone(c.phone) === phone; }
+    catch (_) { return false; }
+  });
+  console.log(JSON.stringify({ok:result.http === 200,http:result.http,
+    responseVerified:result.http === 200 && Array.isArray(result.data.contacts) && contacts.length < 100 && !(result.data.total > 100),
+    exactMatches:exact.length,contactIdPresent:exact.length === 1 && typeof exact[0].id === 'string' && !!exact[0].id,
+    sendEnabled:false,sendAttempted:false,contactWriteAttempted:false}));
+}

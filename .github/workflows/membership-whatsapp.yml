@@ -1,0 +1,52 @@
+name: Membership WhatsApp recovery
+on:
+  workflow_dispatch:
+    inputs:
+      request_id:
+        description: Optional opaque diagnostic UUID; never enter a name, phone or UID
+        required: false
+        type: string
+  schedule:
+    - cron: '*/5 * * * *'
+permissions: {}
+concurrency:
+  group: membership-whatsapp-recovery
+  cancel-in-progress: false
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Process durable activation records
+        env:
+          SERVICE_URL: ${{ secrets.MEMBERSHIP_SERVICE_URL }}
+          WORKER_TOKEN: ${{ secrets.MEMBERSHIP_WORKER_TOKEN }}
+          REQUEST_ID: ${{ inputs.request_id }}
+        run: |
+          node --input-type=module <<'JS'
+          const { SERVICE_URL, WORKER_TOKEN, REQUEST_ID } = process.env;
+          if (!SERVICE_URL || !WORKER_TOKEN) {
+            console.log('Membership transport is not configured; no send attempted.');
+            process.exit(0);
+          }
+          try {
+            const url = new URL(SERVICE_URL);
+            if (url.protocol !== 'https:' || url.host !== 'script.google.com' || !/^\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(url.pathname) || url.search || url.hash || url.username || url.password || WORKER_TOKEN.length < 32) throw Error();
+            if (REQUEST_ID && !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(REQUEST_ID)) throw Error();
+            const response = await fetch(url, {
+              method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+              body:JSON.stringify({action:'membershipWhatsAppWorker', workerToken:WORKER_TOKEN, requestId:REQUEST_ID || undefined}),
+              redirect:'follow', signal:AbortSignal.timeout(180000)
+            });
+            const result = await response.json();
+            if (!response.ok || result.ok !== true) throw Error();
+            const allowed = new Set(['disabled','busy','idle','sent','failed','unknown']);
+            if (!allowed.has(result.state)) throw Error();
+            // Never print response bodies, provider details, phone numbers or identities.
+            console.log('Membership worker state: ' + result.state);
+            if (result.state === 'unknown') process.exitCode = 1;
+          } catch {
+            console.error('Worker result unavailable. Check the private ledger before any retry.');
+            process.exitCode = 1;
+          }
+          JS

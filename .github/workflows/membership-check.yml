@@ -1,0 +1,23 @@
+name: Membership integration checks
+on:
+  pull_request:
+    paths:
+      - 'membership-activation.mjs'
+      - 'integrations/membership/**'
+      - 'tests/membership-whatsapp.test.cjs'
+      - 'tests/sanad-volunteer-intake.test.cjs'
+      - '.github/workflows/membership-*.yml'
+      - 'index.html'
+  push:
+    branches: ['codex/membership-whatsapp']
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --test tests/membership-whatsapp.test.cjs tests/sanad-volunteer-intake.test.cjs tests/speaker-profiles.test.cjs

@@ -2552,25 +2552,8 @@ function mountVolunteer(root, auth, authSdk, db, sdk, membershipPage = false, ac
           });
         }
         async function acceptAndActivate(a) {
-          if(member.role!=='manager') throw Error('permission-denied');
-          const applicationRef=sdk.doc(collection('applications'),a.id);
-          const memberRef=sdk.doc(collection('members'),a.id);
-          const applicationAudit=sdk.doc(collection('audit'));
-          const memberAudit=sdk.doc(collection('audit'));
-          await sdk.runTransaction(db,async tx=>{
-            const application=await tx.get(applicationRef);
-            const profile=await tx.get(memberRef);
-            if(!application.exists()||!application.data().updatedAt?.isEqual(a.updatedAt)) throw Error('stale');
-            const timestamp=sdk.serverTimestamp();
-            tx.set(applicationAudit,{actorId:user.uid,group:'applications',targetId:a.id,operation:'update',timestamp});
-            tx.update(applicationRef,{state:'accepted',auditId:applicationAudit.id,updatedAt:timestamp});
-            tx.set(memberAudit,{actorId:user.uid,group:'members',targetId:a.id,operation:profile.exists()?'update':'create',timestamp});
-            if(profile.exists()) {
-              tx.update(memberRef,{state:'active',auditId:memberAudit.id,updatedAt:timestamp});
-            } else {
-              tx.set(memberRef,{title:application.data().title,role:'member',teamId:'',primaryRole:'',supportRoles:'',skills:'',availability:application.data().availability||'',state:'active',portalSections:['volunteer-space'],auditId:memberAudit.id,updatedAt:timestamp});
-            }
-          });
+          const {acceptMembership}=await import('./membership-activation.mjs');
+          await acceptMembership({sdk,db,collection,actor:{uid:user.uid,role:member.role,state:member.state},application:a});
         }
         const overview=pane('الرئيسية');
         countLink(overview,'طلبات تحتاج متابعة',pending.length,'طلبات التطوع');
@@ -2587,6 +2570,26 @@ function mountVolunteer(root, auth, authSdk, db, sdk, membershipPage = false, ac
           const entry=add(acceptedPane,'details');add(entry,'summary',accepted.title+' · مقبول');
           if(accepted.email) add(entry,'p','البريد الإلكتروني · '+accepted.email);
           add(entry,'p',members.some(m=>m.id===accepted.id&&m.state==='active')?'العضوية مفعّلة':'تحتاج العضوية إلى تفعيل');
+          if(member.role==='manager') {
+            const notification=add(entry,'div');
+            const notice=add(notification,'p','حالة واتساب · افتح المتابعة لقراءة الحالة الحالية.');notice.setAttribute('role','status');
+            const controls=add(notification,'div');
+            let loading=false;
+            const refresh=async()=>{
+              if(loading)return;loading=true;controls.replaceChildren();
+              try {
+                const api=await import('./membership-activation.mjs');
+                const result=await api.membershipNotificationRequest(user,'membershipWhatsAppStatus',accepted.id);
+                notice.textContent='حالة واتساب · '+api.notificationLabels[result.state];
+                if(result.messageId)add(controls,'p','معرّف الرسالة · '+result.messageId);
+                if(result.retryable&&accepted.id!==user.uid)button(controls,'إعادة تجهيز الإشعار بعد فشل الفحص',async()=>{
+                  await api.membershipNotificationRequest(user,'membershipWhatsAppRetry',accepted.id);await refresh();
+                },notice);
+              } catch {notice.textContent='تعذّر قراءة حالة واتساب؛ لا تفترض الإرسال أو تعِده قبل التحقق من السجل الخاص.';}
+              finally {loading=false;}
+            };
+            button(notification,'متابعة حالة واتساب',refresh,notice);
+          }
         }
         for(const a of visibleApplications) {
           const row=add(requests,'details');

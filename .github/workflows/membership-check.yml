@@ -5,6 +5,7 @@ on:
       - 'membership-activation.mjs'
       - 'integrations/membership/**'
       - 'tests/membership-whatsapp.test.cjs'
+      - 'tests/sanad-volunteer-intake.test.cjs'
       - '.github/workflows/membership-*.yml'
       - 'index.html'
   push:
@@ -19,4 +20,4 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - run: node --test tests/membership-whatsapp.test.cjs tests/speaker-profiles.test.cjs
+      - run: node --test tests/membership-whatsapp.test.cjs tests/sanad-volunteer-intake.test.cjs tests/speaker-profiles.test.cjs

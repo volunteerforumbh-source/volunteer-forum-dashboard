@@ -1,0 +1,27 @@
+name: Association profiles checks
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'association-profiles.*'
+      - 'assets/associations/**'
+      - 'tests/association-profiles.test.mjs'
+      - '.github/workflows/association-profiles-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'association-profiles.*'
+      - 'assets/associations/**'
+      - 'tests/association-profiles.test.mjs'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --test tests/association-profiles.test.mjs

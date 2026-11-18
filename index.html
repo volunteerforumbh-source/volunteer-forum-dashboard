@@ -2563,7 +2563,7 @@ function mountVolunteer(root, auth, authSdk, db, sdk, membershipPage = false, ac
         for(const a of applications) {
           const row=add(requests,'details');
           add(row,'summary',a.title+' · '+(stages[a.state]||a.state));
-          for(const [label,value] of [['الاهتمامات',a.interests],['الخبرة',a.experience],['الأدوات',a.tools],['التفرّغ',a.availability]]) if(value) add(row,'p',label+' · '+value);
+          for(const [label,value] of [['رقم واتساب',a.phone],['البريد الإلكتروني',a.email],['نوع الطلب',a.kind==='athar-trial'?'تسجيل تجريبي في أكاديمية أثَر':''],['تاريخ التقديم',a.createdAt?.toDate ? a.createdAt.toDate().toLocaleString('ar-BH',{timeZone:'Asia/Bahrain'}) : ''],['الاهتمامات',a.interests],['الخبرة',a.experience],['الأدوات',a.tools],['التفرّغ',a.availability]]) if(value) add(row,'p',label+' · '+value);
           if(a.id===user.uid) continue;
           const state=field(row,'حالة الطلب','select');
           for(const [value,label] of Object.entries(stages)) add(state,'option',label).value=value;

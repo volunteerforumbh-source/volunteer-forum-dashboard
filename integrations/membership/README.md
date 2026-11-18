@@ -1,5 +1,26 @@
 # Membership activation WhatsApp — private transport preparation
 
+## Approved configuration follow-up — 18 November 2026
+
+The owner separately approved adding the datastore OAuth scope and preparing a
+dedicated private transport. `appsscript.json` preserves the live timezone,
+runtime, deployment settings and the three previously inferred scopes, then adds
+datastore. It was saved in the existing service editor; the current public
+deployment was not updated. Google consent is still a manual owner step.
+
+`MEMBERSHIP_SERVICE_URL` was saved in the existing repository's Actions secrets
+using the existing service URL. No worker credential or Sanad token was created
+or copied by this step. Sanad's existing integration is named
+`Munjez Forum — Read-only API Check` and was left untouched. A separate integration
+creation form was prepared with only contacts.readonly,
+conversations/message.readonly and conversations/message.write selected; it
+remains unsubmitted for the owner's credential creation and private entry.
+
+These provider scopes allow general contact/message reads and message writes at
+the account level; the code limits usage to membership. They do not provide a
+provider-enforced restriction to just one template or recipient. Neither send
+gate has been opened, and no live send or test pass is implied by this setup.
+
 ## Verified on 18 November 2026
 
 Based on `ae36ea49c937fa360518ebdb033d8248c6d8b534` from the existing repository.

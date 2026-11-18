@@ -1,7 +1,13 @@
-export function normalizePhone(value) {
-  const digits = value.trim().replace(/[٠-٩۰-۹]/g, digit => String(digit.charCodeAt(0) & 15)).replace(/[\s()-]/g, '');
-  const phone = /^\d{8}$/.test(digits) ? '+973' + digits : digits.replace(/^00/, '+');
-  if (!/^\+[1-9]\d{7,14}$/.test(phone)) throw new Error('أدخل رقم واتساب مع رمز الدولة.');
+export function normalizePhone(value, countryCode = '+973') {
+  const clean = text => text.trim().replace(/[٠-٩۰-۹]/g, digit => String(digit.charCodeAt(0) & 15)).replace(/[\s()-]/g, '');
+  const digits = clean(value);
+  const code = clean(countryCode);
+  if (!/^\+[1-9]\d{0,2}$/.test(code)) throw new Error('اختر رمز دولة صحيحًا.');
+  const international = digits.startsWith('+') || digits.startsWith('00');
+  const local = code === '+39' ? digits : digits.replace(/^0+/, '');
+  const phone = international ? digits.replace(/^00/, '+') : code + local;
+  if (!international && code === '+973' && !/^\d{8}$/.test(local)) throw new Error('أدخل الرقم البحريني المكوّن من 8 أرقام.');
+  if (!/^\+[1-9]\d{7,14}$/.test(phone)) throw new Error('أدخل رقم واتساب صحيحًا وتأكد من رمز الدولة.');
   return phone;
 }
 
@@ -19,6 +25,13 @@ const email = form.elements.email;
 const submit = document.getElementById('submit');
 const login = document.getElementById('login');
 const account = document.getElementById('account');
+const countryCode = form.elements.countryCode;
+countryCode.onchange = () => {
+  const custom = countryCode.value === 'other';
+  document.getElementById('custom-code-wrap').hidden = !custom;
+  form.elements.customCode.required = custom;
+  form.elements.phone.placeholder = countryCode.value === '+973' ? '35603690' : 'رقم الهاتف دون رمز الدولة';
+};
 let saving = false;
 let receiptEndpoint = '';
 try {
@@ -61,7 +74,7 @@ form.onsubmit = async event => {
   if(!user?.emailVerified || saving || !form.reportValidity()) return;
   if(!form.elements.name.value.trim()) { status.textContent = 'أدخل اسمك الكامل.'; return; }
   let phone;
-  try { phone = normalizePhone(form.elements.phone.value); }
+  try { phone = normalizePhone(form.elements.phone.value, countryCode.value === 'other' ? form.elements.customCode.value : countryCode.value); }
   catch(error) { status.textContent = error.message; return; }
   saving = true;
   submit.disabled = true;

@@ -43,8 +43,8 @@ test('anchors are unique and inherited public contact links and source records r
   assert.equal(new Set(anchors).size,anchors.length);
   for(const account of ['naimcharity','rasrummancharity','alekercharity','alhaddada_charity','nscs_bh','manama_charity','sitrasociety','tublicharity','sanabisfund','iskancharity','daihcharity'])assert.ok(directory.includes(`https://www.instagram.com/${account}/`));
   assert.equal((directory.match(/datetime="2026-11-18"/g)||[]).length,11);
-  assert.ok(directory.includes('لا تُعد الشراكة في المنتدى التزامًا رسميًا'));
-  assert.ok(directory.includes('لم تُرفق رؤية معتمدة'));
+  assert.ok(directory.includes('جمعية شريكة في المنتدى الثاني للعمل التطوعي 2026'));
+  assert.doesNotMatch(directory,/لم [يت]ُرفق|لا يُستنتج|يرد تاريخ البداية|المصدرين/);
   assert.ok(html.includes("if (section !== 'news') document.documentElement.dataset.portalAccess = 'locked';"));
   assert.ok(html.includes('id="association-search"'));assert.ok(html.includes('id="association-count"'));
 });

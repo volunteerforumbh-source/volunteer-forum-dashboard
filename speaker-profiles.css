@@ -3,6 +3,12 @@
 .speaker-directory :is(.speaker-profile,.speaker-panel,.speaker-report-axis){inline-size:100%;min-inline-size:0;box-sizing:border-box;margin:.75rem 0;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
 .speaker-directory :is(.speaker-profile,.speaker-panel,.speaker-report-axis)>summary{min-block-size:48px;padding:.75rem;font-weight:700;line-height:1.7;cursor:pointer;overflow-wrap:anywhere;list-style-position:inside}
 .speaker-directory .speaker-profile>summary{color:var(--c-indigo);background:var(--gradient-soft);border-radius:13px}
+.speaker-directory .speaker-profile>.speaker-heading{display:flex;align-items:center;gap:.8rem;list-style:none}
+.speaker-directory .speaker-heading::-webkit-details-marker{display:none}
+.speaker-directory .speaker-heading::before{content:'◀';font-size:.8rem;flex-shrink:0}
+.speaker-directory .speaker-profile[open]>.speaker-heading::before{content:'▼'}
+.speaker-directory .speaker-heading>strong{flex:1;min-inline-size:0}
+.speaker-directory .speaker-heading-photo{inline-size:64px;block-size:76px;object-fit:contain;flex-shrink:0;box-sizing:border-box;padding:.2rem;border-radius:8px;background:#fff}
 .speaker-directory summary:focus-visible{outline:3px solid var(--c-blue);outline-offset:2px}
 .speaker-directory .speaker-profile-body{padding:0 .5rem .5rem;min-inline-size:0}
 .speaker-directory .speaker-identity{display:flex;align-items:center;flex-wrap:wrap;gap:1rem;padding:1rem .25rem}
@@ -37,6 +43,8 @@
 .speaker-directory .btn{min-block-size:44px;max-inline-size:100%;margin-block:.35rem;white-space:normal;text-align:center;overflow-wrap:anywhere}
 .speaker-directory :is(.speaker-profile,.speaker-panel,.speaker-report-axis){scroll-margin-block-start:1rem}
 @media(max-width:480px){
+  .speaker-directory .speaker-profile>.speaker-heading{gap:.5rem;padding:.6rem .4rem}
+  .speaker-directory .speaker-heading-photo{inline-size:52px;block-size:64px}
   .speaker-directory{padding-inline:0}
   .speaker-directory .speaker-profile-body{padding-inline:.3rem}
   .speaker-directory .speaker-panel-body,.speaker-directory .speaker-axis-body{padding-inline:.5rem}

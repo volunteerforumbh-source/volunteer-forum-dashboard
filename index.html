@@ -2576,12 +2576,21 @@ function mountVolunteer(root, auth, authSdk, db, sdk, membershipPage = false, ac
         }
         const overview=pane('الرئيسية');
         countLink(overview,'طلبات تحتاج متابعة',pending.length,'طلبات التطوع');
-        countLink(overview,'طلبات مقبولة',applications.filter(a=>a.state==='accepted').length,'طلبات التطوع');
+        countLink(overview,'طلبات مقبولة',applications.filter(a=>a.state==='accepted').length,'الطلبات المقبولة');
         if(member.role==='manager') countLink(overview,'دعوات بانتظار أول دخول',waiting.length,'تفعيل العضويات');
         countLink(overview,'متطوعون بانتظار فريق',unassigned.length,'التوزيع على الفرق');
         const requests=pane('طلبات التطوع');
-        if(!applications.length) add(requests,'p','لا توجد طلبات مرسلة.');
-        for(const a of applications) {
+        const visibleApplications=applications.filter(a=>a.state!=='accepted');
+        if(!visibleApplications.length) add(requests,'p','لا توجد طلبات بانتظار المراجعة.');
+        const acceptedPane=pane('الطلبات المقبولة');
+        const acceptedApplications=applications.filter(a=>a.state==='accepted');
+        if(!acceptedApplications.length) add(acceptedPane,'p','لا توجد طلبات مقبولة.');
+        for(const accepted of acceptedApplications) {
+          const entry=add(acceptedPane,'details');add(entry,'summary',accepted.title+' · مقبول');
+          if(accepted.email) add(entry,'p','البريد الإلكتروني · '+accepted.email);
+          add(entry,'p',members.some(m=>m.id===accepted.id&&m.state==='active')?'العضوية مفعّلة':'تحتاج العضوية إلى تفعيل');
+        }
+        for(const a of visibleApplications) {
           const row=add(requests,'details');
           add(row,'summary',a.title+' · '+(stages[a.state]||a.state));
           for(const [label,value] of [['رقم واتساب',a.phone],['البريد الإلكتروني',a.email],['نوع الطلب',a.kind==='athar-trial'?'تسجيل تجريبي في أكاديمية أثَر':''],['تاريخ التقديم',a.createdAt?.toDate ? a.createdAt.toDate().toLocaleString('ar-BH',{timeZone:'Asia/Bahrain'}) : ''],['الاهتمامات',a.interests],['الخبرة',a.experience],['الأدوات',a.tools],['التفرّغ',a.availability]]) if(value) add(row,'p',label+' · '+value);

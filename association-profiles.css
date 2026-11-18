@@ -1,0 +1,40 @@
+/* Same full-width, RTL disclosure pattern as the speaker profiles. */
+.association-directory{display:block;min-inline-size:0}
+.association-news-body{padding:0 .5rem .75rem;min-inline-size:0}
+.association-directory :is(.association-profile,.association-panel){box-sizing:border-box;min-inline-size:0;inline-size:100%;margin:.75rem 0;border:1px solid var(--line);border-radius:14px;background:var(--surface);scroll-margin-block-start:1rem}
+.association-directory summary{min-block-size:48px;padding:.75rem;cursor:pointer;font-weight:700;line-height:1.7;overflow-wrap:anywhere;list-style-position:inside}
+.association-directory summary:focus-visible{outline:3px solid var(--c-blue);outline-offset:2px}
+.association-directory .association-heading{display:flex;align-items:center;gap:.8rem;color:var(--c-indigo);background:var(--gradient-soft);background-color:var(--surface);border-radius:13px;position:sticky;inset-block-start:0;z-index:1;isolation:isolate}
+.association-heading::before{content:'◀';font-size:.8rem;flex-shrink:0}
+.association-profile[open]>.association-heading::before{content:'▼'}
+.association-heading>strong{min-inline-size:0;flex:1}
+.association-heading .association-logo{inline-size:84px;block-size:70px;max-inline-size:30%;object-fit:contain;flex-shrink:0;background:#fff;border-radius:8px;padding:.25rem;box-sizing:border-box}
+.association-directory .association-profile-body{padding:0 .5rem .6rem;min-inline-size:0}
+.association-directory .association-panel-body{padding:.25rem .6rem .8rem;min-inline-size:0;line-height:1.9;overflow-wrap:anywhere}
+.association-directory .association-panel{scroll-margin-block-start:8rem}
+.association-panel-body :is(p,ul){margin-block:.65rem}
+.association-directory .association-panel-body ul{list-style:none;margin:.6rem 0;padding:0;border:0}
+.association-directory .association-panel-body ul>li{margin:.35rem 0;padding:.4rem .65rem;border:0;border-radius:8px;background:var(--surface-2)}
+.association-directory .association-panel-body ul>li::before{display:none}
+.association-panel-body a,.association-provenance a{overflow-wrap:anywhere}
+.association-panel-body h4{margin-block:.8rem .25rem}
+.association-directory :is(.association-note,.association-provenance){color:var(--muted);font-size:.9rem;line-height:1.8}
+.association-directory .association-provenance{padding:.5rem}
+.association-directory .association-share{margin:.6rem .25rem}
+.association-directory .association-share a,.association-directory .association-related-news a{display:inline-flex;align-items:center;min-block-size:44px}
+.association-directory .association-related-news{list-style:none;padding:0;margin:0;display:grid;gap:.65rem}
+.association-related-news>li{padding:.7rem;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
+.association-related-news time{display:block;color:var(--muted);font-size:.85rem}
+.association-news-links{list-style:none!important;border:0!important;padding:0!important;margin:0!important;display:grid;gap:.5rem}
+.association-news-links>li{border:0!important;margin:0!important;padding:0!important}
+.association-news-links>li::before{display:none!important}
+.association-news-links a{display:flex;align-items:center;gap:.75rem;padding:.5rem;min-block-size:44px;border:1px solid var(--line);border-radius:12px;overflow-wrap:anywhere}
+.association-news-links img{inline-size:44px;block-size:44px;object-fit:contain;flex-shrink:0;background:#fff;border-radius:6px}
+.association-news-links[hidden]{display:none!important}
+.association-directory [hidden]{display:none!important}
+@media(max-width:480px){
+ .association-directory .association-profile-body{padding-inline:.3rem}
+ .association-directory .association-panel-body{padding-inline:.5rem}
+ .association-directory .association-heading{gap:.5rem;padding:.6rem .4rem}
+ .association-heading .association-logo{inline-size:64px;block-size:60px}
+}

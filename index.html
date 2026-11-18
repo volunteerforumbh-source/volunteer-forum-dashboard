@@ -2564,11 +2564,20 @@ function mountVolunteer(root, auth, authSdk, db, sdk, membershipPage = false, ac
           const row=add(requests,'details');
           add(row,'summary',a.title+' · '+(stages[a.state]||a.state));
           for(const [label,value] of [['رقم واتساب',a.phone],['البريد الإلكتروني',a.email],['نوع الطلب',a.kind==='athar-trial'?'تسجيل تجريبي في أكاديمية أثَر':''],['تاريخ التقديم',a.createdAt?.toDate ? a.createdAt.toDate().toLocaleString('ar-BH',{timeZone:'Asia/Bahrain'}) : ''],['الاهتمامات',a.interests],['الخبرة',a.experience],['الأدوات',a.tools],['التفرّغ',a.availability]]) if(value) add(row,'p',label+' · '+value);
-          if(a.id===user.uid) continue;
+          if(a.id===user.uid) {
+            add(row,'p','هذا طلبك الشخصي؛ يجب أن يراجعه مسؤول عضويات آخر مخوّل. لا يمكنك قبول طلبك أو رفضه أو تغيير حالته من حسابك.').setAttribute('role','note');
+            continue;
+          }
+          const message=add(row,'p');message.setAttribute('role','status');
+          const actions=add(row,'div');actions.setAttribute('aria-label','إجراءات مراجعة الطلب');
+          for(const [value,label] of [['reviewing','بدء المراجعة'],['accepted','قبول الطلب'],['declined','رفض الطلب / اعتذار'],['information','طلب استكمال البيانات'],['deferred','تأجيل الطلب']]) {
+            if(a.state===value) continue;
+            button(actions,label,async()=>{await auditedEdit('applications',a,{state:value});await render(user,'طلبات التطوع');},message);
+          }
+          add(row,'p','قبول الطلب يحدّث حالة الطلب فقط. تفعيل العضوية وإعداد دعوة الدخول يتمان من قسم «تفعيل العضويات».');
           const state=field(row,'حالة الطلب','select');
           for(const [value,label] of Object.entries(stages)) add(state,'option',label).value=value;
           state.value=a.state;
-          const message=add(row,'p');message.setAttribute('role','status');
           button(row,'حفظ حالة الطلب',async()=>{await auditedEdit('applications',a,{state:state.value});await render(user,'طلبات التطوع');},message);
           button(row,'فتح ملاحظات التقييم',async()=>{
             const prior=await read('evaluations',a.id);
